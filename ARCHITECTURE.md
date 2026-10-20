@@ -95,6 +95,15 @@ Backend / device / host capabilities
 
 The URL is navigation state. A direct link and a refresh must work. Only navigation/shareable values go in the URL; never tokens or secrets. Mobile mirrors the same contract as deep links.
 
+URLs are owned and composed by the frontend from backend identifiers; the backend never returns URLs (ADR-0002). Every Session URL is shareable and connects directly:
+
+| Route | Connects through |
+| --- | --- |
+| `/join/:joinCode` | the join code |
+| `/sessions/:sessionUUID/play` | the Session UUID, as a player |
+
+A code join replaces its URL with the UUID route once the Session UUID is known, so refresh and reconnection work after the start.
+
 ## Game Frontend And GameHost (§8-§11, §16)
 
 - A GameVersion frontend is an immutable, versioned web artifact (compiled; never raw TSX at runtime). The backend game script never reaches the browser; the game receives only its PlayerProjection and scoped events/responses.
@@ -110,8 +119,8 @@ Errors are distinguished by origin: presentation, bridge/contract, transport, ba
 
 ## Tooling
 
-Proposed in `docs/decisions/architecture/ADR-0001-workspace-tooling-for-the-frontend-foundation.md` (PROPOSED, awaiting the human): npm workspaces with source-consumed TypeScript packages, Vite, TypeScript strict, React Router, Vitest, ESLint + Prettier; Zustand and a runtime validator (zod proposed) when first needed.
+`docs/decisions/architecture/ADR-0001-workspace-tooling-for-the-frontend-foundation.md` (ACCEPTED): npm workspaces with source-consumed TypeScript packages, Vite, TypeScript strict, React Router, Vitest, ESLint + Prettier; Zustand and a runtime validator (zod proposed) when first needed.
 
 ## Deliberately Open (§19)
 
-Bundler/pipeline of game artifacts; Host styling/design system; exact aspect-ratio list; safe asset handle shape; final Game SDK schema and names; bootstrap/me endpoint; per-platform credential persistence; interpolation/prediction helpers; how much presentation is shared between web and mobile. Decide them when implementation gives real information, through the owning process.
+Bundler/pipeline of game artifacts; Host styling/design system; exact aspect-ratio list; safe asset handle shape; final Game SDK schema and names; bootstrap/me endpoint; per-platform credential persistence (web: `localStorage`, decided 2026-10-20); interpolation/prediction helpers; how much presentation is shared between web and mobile. Decide them when implementation gives real information, through the owning process.

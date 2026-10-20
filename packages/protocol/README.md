@@ -2,7 +2,7 @@
 
 Shared wire and bridge contracts.
 
-Status: SCAFFOLD, no behavior yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: STARTED: backend HTTP error body and codes, `POST /v1/guests`. No realtime or bridge contract yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
@@ -18,8 +18,8 @@ TypeScript types plus runtime validators for every message that crosses a bounda
 
 - Nothing.
 
-## Planned dependencies
+## External dependencies
 
-- A runtime validation library (proposed: zod, see ADR-0001)
+- zod (runtime validation; proposed in ADR-0001)
 
 Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.

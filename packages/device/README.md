@@ -2,7 +2,7 @@
 
 Device capabilities and display abstraction.
 
-Status: SCAFFOLD, no behavior yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: FOUNDATION: `DeviceCapabilities`, `classifyDisplay`, capabilities store. Platform detection lives in each app. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
@@ -15,6 +15,10 @@ The shared `DeviceCapabilities` abstraction (plan §7): touch, keyboard, pointer
 
 ## Depends on
 
-- Nothing.
+- Nothing internal.
+
+## External dependencies
+
+- zustand (vanilla store only)
 
 Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.

@@ -2,7 +2,7 @@
 
 HTTP/WebSocket clients and credential-aware transport.
 
-Status: SCAFFOLD, no behavior yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: STARTED: HTTP client and `IdentityClient`. No realtime `SessionClient` yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

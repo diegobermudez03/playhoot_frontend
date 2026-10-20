@@ -20,24 +20,25 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [x] Monorepo with `apps/*`, `packages/*`, `packages/features/*`; each package has a README with what it owns and does not own (2026-10-19)
 - [x] Web app builds and serves (React + TS); typecheck, lint, format check and tests run from the root (`npm run check`, 2026-10-19)
 - [x] Package boundaries lint-enforced: packages never import apps/platform renderers/routers; game-sdk imports only the bridge protocol (2026-10-19, `eslint.config.js`; verified with temporary violating imports of `react`, `react-dom` and `@playhoot/app-core`)
-- [ ] Tooling accepted (decision: ADR-0001)
-- [ ] Routing skeleton: URL decides the open feature; unknown route handled; refresh on any route works in dev and in the production build (history fallback)
-- [ ] Minimal AppGlobalState: auth/identity snapshot (unknown/loading, authenticated, guest, none) readable by every feature (§4.4, §14)
-- [ ] Credential provider + persistence of the guest/test token in the browser; never in URL (decision: storage mechanism, §19)
-- [ ] Communication abstractions: HTTP client with automatic credentials and typed errors (branch on backend `code`), no caller passes tokens (§4.3)
-- [ ] DeviceCapabilities provider (web adapter): touch, keyboard, pointer, gamepad, viewport, orientation/display class (§7)
-- [ ] Dev setup against the local backend (same-origin proxy for REST and WS, or allowed origin) documented and working (Z1)
-- [ ] App bootstrap sequence (§13.1) does not block the whole UI; features can represent unknown/loading auth
+- [x] Tooling accepted (ADR-0001, accepted by the human 2026-10-20)
+- [ ] Routing skeleton: URL decides the open feature; unknown route handled; refresh on any route works in dev and in the production build (history fallback) (2026-10-20: data router with a root layout, a route error boundary and a catch-all; Vite serves the SPA fallback in dev and `vite preview`. Open: the production hosting fallback, which depends on how the web app is deployed)
+- [x] Minimal AppGlobalState: auth/identity snapshot (unknown/loading, authenticated, guest, none) readable by every feature (§4.4, §14) (2026-10-20: `createAppState` in app-core, a zustand vanilla store; `useAuth()` in the web app; unit tests)
+- [x] Credential provider + persistence of the guest/test token in the browser; never in URL (§19; `localStorage` accepted by the human 2026-10-20) (2026-10-20: implemented with `localStorage`, validated on read and degrading to "no credential" when storage is blocked; the communication layer reads the token through `CredentialProvider`; unit tests.)
+- [x] Communication abstractions: HTTP client with automatic credentials and typed errors (branch on backend `code`), no caller passes tokens (§4.3) (2026-10-20: `createHttpClient` returns `Result` with `network` / `http` (status, code, message, Retry-After) / `decode` failures and forgets a credential the backend calls `token_invalid`; `IdentityClient.createGuest`; unit tests, plus `POST /v1/guests` and a `token_invalid` answer checked against the real backend through the dev proxy)
+- [ ] DeviceCapabilities provider (web adapter): touch, keyboard, pointer, gamepad, viewport, orientation/display class (§7) (2026-10-20: abstraction, display classification (compact < 600 px <= medium < 1024 px <= wide) and store in `@playhoot/device`, unit tests; browser adapter in `apps/web/src/platform` keeps it current on resize, orientation, pointer and gamepad changes; `useDeviceCapabilities()`. Pending: checking the browser adapter in a real browser. Keyboard is a heuristic: assumed when a fine pointer exists)
+- [ ] Dev setup against the local backend (same-origin proxy for REST and WS, or allowed origin) documented and working (Z1) (2026-10-20: Vite proxies `/v1` with `ws: true` and without `changeOrigin`, target `PLAYHOOT_BACKEND_URL`; REST verified against the real backend, and WebSocket handshakes reach the backend routes with the token subprotocol. Pending: one real upgrade, which proves the backend's origin check passes; blocked locally because the local database is behind the backend's schema and Create Session fails)
+- [x] App bootstrap sequence (§13.1) does not block the whole UI; features can represent unknown/loading auth (2026-10-20: `startServices` resolves the persisted credential synchronously and starts the device watcher before the first render; the snapshot starts as `unknown`; covered by the app-core tests)
 
 ## B. Join Session (web) (§5, §13.2, §14, §18 step 2)
 
 - [ ] `/join/:joinCode` opens the join experience directly, without passing through Home, and survives refresh
+- [ ] `/sessions/:sessionUUID/play` connects directly as a player through the Session UUID (shareable; lobby join or reattach/rejoin depending on the Session) (ADR-0002)
 - [ ] Missing identity → guest setup (`POST /v1/guests` with display name + idempotency key) or test-token selection, then continue the join (UX only; backend decides)
 - [ ] Join state reads AppGlobalState and the DeviceCapabilities the join needs
 - [ ] Join opens the backend join flow through communication (`/v1/play/join/{joinCode}`) — the realtime connection IS the join
 - [ ] Rejections rendered as typed reasons with a next action: invalid/expired code, `lobby_full`, `session_started`, `session_unavailable`, auth errors, rate limits, `server_busy` (note: pre-upgrade HTTP errors are invisible to the browser WebSocket; decision: how to distinguish them, e.g. a pre-flight check)
 - [ ] Lobby state shown while waiting for start (`lobby_update`), including `lobby_closed`
-- [ ] Transition to Session Play route on `session_started` (decision: Session Play URL contract; depends on Z2)
+- [ ] Code join replaces its URL with `/sessions/:sessionUUID/play` as soon as the Session UUID is known, and Session Play runs there (ADR-0002; depends on Z2)
 - [ ] Leaving the lobby (`leave`) and navigating away dispose the feature state
 - [ ] Backend `401/403` respected even when the local snapshot said authenticated (§14)
 
@@ -80,7 +81,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 ## F. Session Play vertical slice (§12, §13, §18 step 6)
 
 - [ ] SessionPlayState: lifecycle (loading/lobby/running/terminal), connection (connecting/connected/reconnecting/disconnected), identity + role (`participant_id`, roster), current projection + revision baseline, platform messages/errors, artifact metadata, GameHost readiness
-- [ ] Session Play route reconstructs from URL + backend after refresh (depends on Z2)
+- [ ] `/sessions/:sessionUUID/play` reconstructs Session Play from URL + backend after refresh (ADR-0002)
 - [ ] Real Session: join, start (by admin via API/dev tool), load GameVersion, see projection, send SAMPLE/COMMAND, receive events/responses, end
 - [ ] Short disconnection tolerated: reconnect + resync, game receives an authoritative full resync
 - [ ] Leaving the route disposes subscriptions, GameHost and connection; returning rebuilds (§13.8)
@@ -132,8 +133,8 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## Z. Backend dependencies (changes in `../playhoot`, made through its workflow when the human directs)
 
-- [ ] Z1. Local development across origins: REST CORS or documented same-origin proxy; `WEBSOCKET_ALLOWED_ORIGINS` for the dev origin (G1, G2)
-- [ ] Z2. A player who joined by code can reconnect after start: the player learns the session UUID (e.g. in `lobby_update`/`session_started`) or the code keeps resolving for participants (G4) (backend, decision)
+- [ ] Z1. Local development across origins: REST CORS or documented same-origin proxy; `WEBSOCKET_ALLOWED_ORIGINS` for the dev origin (G1, G2) (2026-10-20: solved without a backend change for development by the same-origin proxy (A); a deployment on separate origins would still need CORS and allowed origins)
+- [ ] Z2. A player who joined by code learns the Session UUID, so the frontend can compose `/sessions/:sessionUUID/play` (ADR-0002) and reconnect after start (G4) (backend; proposal: `session_uuid` in `lobby_update` and `session_started`)
 - [ ] Z3. Frontend artifact access survives reconnects after 15 min: re-sign on reattach/rejoin/attach, or the frontend caches by hash (G5) (decision)
 - [ ] Z4. Game frontend artifact format and assets: what a package is (single HTML vs bundle), how assets are stored, referenced by logical key and resolved through the Host (G6, plan §9, §13.3) (backend, decision)
 - [ ] Z5. GameVersion frontend metadata: logical viewport / aspect ratio, bridge/SDK version, entry (G6, plan §8) (backend, decision)

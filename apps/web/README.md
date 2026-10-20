@@ -2,7 +2,7 @@
 
 The web host: React + TypeScript shell (plan §2, §3.1). Trusted Playhoot code.
 
-Status: SCAFFOLD. Routes `/` and `/join/:joinCode` render placeholders. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: FOUNDATION. Services are composed and bootstrapped; routes `/` and `/join/:joinCode` render placeholders. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
@@ -22,9 +22,14 @@ Status: SCAFFOLD. Routes `/` and `/join/:joinCode` render placeholders. Reposito
 ```text
 src/
 ├── main.tsx            # entry point
-├── app/                # router, bootstrap, app-level routes
+├── app/                # composition root (services.ts), React bindings, router, app-level routes
+├── platform/           # browser adapters: credential storage, device capability detection
 └── features/<feature>/ # web presentation for a feature (reads feature state, emits intents)
 ```
+
+## Local development against the backend
+
+The dev server proxies `/v1` (REST and WebSocket) to `PLAYHOOT_BACKEND_URL` (default `http://localhost:8081`; override in `apps/web/.env.local`, see `.env.example`). The browser only talks to `localhost:5173`, so the backend needs no CORS, and since the proxy keeps the Host header the backend's WebSocket origin check sees Origin == Host. Start the backend as described in `docs/architecture/BACKEND_CONTRACT.md` §7.
 
 ## Commands
 

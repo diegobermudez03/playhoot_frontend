@@ -2,7 +2,7 @@
 
 Status: ACTIVE
 Created: 2026-10-19
-Last updated: 2026-10-19
+Last updated: 2026-10-20
 
 ## Goal
 
@@ -21,7 +21,7 @@ The plan is the architectural skeleton; concrete implementation is decided step 
 
 ## Current Work
 
-Repository foundation scaffolded on 2026-10-19 (structure, tooling, docs, AI workflow); see `CURRENT_STATE.md`. Plan step 1 (foundation: routing, minimal AppGlobalState, communication abstractions, DeviceCapabilities provider) is the next step, waiting for the human's direction. The backend contract was inspected and recorded (`docs/architecture/BACKEND_CONTRACT.md`), with gaps G1-G9 mapped to CHECKLIST section Z.
+Repository foundation scaffolded on 2026-10-19 (structure, tooling, docs, AI workflow). Plan step 1 (foundation) implemented on 2026-10-20 at the human's direction: app-global state with the auth snapshot, credential provider and browser persistence, HTTP communication with typed failures and the first semantic client (guest creation), DeviceCapabilities with the web adapter, the router shell with an error boundary, and a same-origin dev proxy to the backend; verified by unit tests and, for REST, against the real backend through the proxy. Left open on purpose: production history fallback (depends on hosting), checking the device adapter in a real browser, and one real WebSocket upgrade through the proxy (blocked locally: the local database is behind the backend's schema, so Create Session fails); see CHECKLIST.md section A. The next step is the human's call; by the plan it is step 2 (Join Session).
 
 No WORK files exist: the human directs each step in conversation (see "Material Decisions Needing Human Input").
 
@@ -47,10 +47,10 @@ The required end state is tracked in [CHECKLIST.md](CHECKLIST.md). A checkpoint 
 ## Material Decisions Needing Human Input
 
 1. **Working mode (WORK vs checklist).** `docs/projects/README.md` Invariant 1 wants a PLANNED WORK per known outcome. This project copies the backend's working mode: the CHECKLIST is the coverage matrix and WORK items are created only when the human directs. Confirm, or ask for PLANNED WORK per checklist section.
-2. **Tooling (ADR-0001, PROPOSED).** npm workspaces, Vite, TypeScript 6 strict, React Router 7, Vitest, ESLint + Prettier; Zustand and zod when first used. Accept, change, or reject.
-3. **Session Play URL contract.** The plan fixes `/join/{joinCode}` only. Proposal to discuss at step 2: `/join/:joinCode` for joining and `/play/:sessionUUID` for the running Session (refresh/reconnect), which needs the player to learn the session UUID (backend gap Z2).
-4. **Backend gaps (section Z).** Which to fix in the backend now vs. work around for the slice: session UUID for code-joined players, frontend URL re-signing, assets and artifact format, frontend metadata in the GameVersion (aspect ratio), CORS/origins.
-5. **Plan durability.** The plan exists only as a `.docx`. `ARCHITECTURE.md` now owns its invariants, layout and layer rules in Markdown; the `.docx` stays as the full skeleton. Confirm this split.
+2. **Backend gaps (section Z).** Which to fix in the backend now vs. work around for the slice: session UUID for code-joined players (Z2, needed by ADR-0002's URL contract), frontend URL re-signing, assets and artifact format, frontend metadata in the GameVersion (aspect ratio).
+3. **Plan durability.** The plan exists only as a `.docx`. `ARCHITECTURE.md` now owns its invariants, layout, layer and navigation rules in Markdown; the `.docx` stays as the full skeleton. Confirm this split.
+
+Decided by the human on 2026-10-20: tooling (ADR-0001 accepted); web credential persistence in `localStorage`; Session URLs are frontend-owned and shareable, `/join/:joinCode` and `/sessions/:sessionUUID/play` (ADR-0002).
 
 ## Completion Criteria
 

@@ -1,14 +1,14 @@
 # ADR-0001: Workspace tooling for the frontend foundation
 
-Status: PROPOSED
+Status: ACCEPTED
 Created: 2026-10-19
-Last status change: 2026-10-19
+Last status change: 2026-10-20
 Supersedes: None
 Superseded by: None
 
 ## Context
 
-The architecture plan (`docs/Playhoot_Frontend_Architecture_Plan.docx`) fixes React + TypeScript for the web host, a Zustand-style store, React Router on web, runtime validation of bridge messages, and a monorepo of `apps/*` and `packages/*` (§2, §3.1, §3.3). It deliberately leaves the bundler, styling and other tooling open (§3.1, §19). Scaffolding the repository needed concrete choices; they were made by the agent while setting up the repository and need the human's confirmation.
+The architecture plan (`docs/Playhoot_Frontend_Architecture_Plan.docx`) fixes React + TypeScript for the web host, a Zustand-style store, React Router on web, runtime validation of bridge messages, and a monorepo of `apps/*` and `packages/*` (§2, §3.1, §3.3). It deliberately leaves the bundler, styling and other tooling open (§3.1, §19). Scaffolding the repository needed concrete choices; the agent proposed them while setting up the repository and the human accepted them on 2026-10-20.
 
 ## Decision
 
@@ -43,7 +43,7 @@ Task orchestration and caching. Not needed at this size.
 
 ## Canonical Knowledge Impact
 
-- `ARCHITECTURE.md` - "Tooling" section lists these choices as proposed until this ADR is accepted.
+- `ARCHITECTURE.md` - "Tooling" section lists these choices.
 
 ## Implementation Impact
 

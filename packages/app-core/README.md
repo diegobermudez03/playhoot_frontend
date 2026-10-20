@@ -2,7 +2,7 @@
 
 App-global contracts, state and bootstrap.
 
-Status: SCAFFOLD, no behavior yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: FOUNDATION: credential ports, auth snapshot, app-global store (`createAppState`). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
@@ -18,8 +18,8 @@ Truly global state only (plan §4.4, §13.1, §14): the authentication/identity 
 
 - Nothing.
 
-## Planned dependencies
+## External dependencies
 
-- zustand (plan §3.1; added when Step 1 implements the store)
+- zustand (vanilla store only; React bindings live in the apps)
 
 Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.

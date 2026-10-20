@@ -15,8 +15,8 @@ Rules for this file:
 
 | # | Gap | Impact | Source |
 | --- | --- | --- | --- |
-| G1 | No CORS on REST routes | Browser calls from another origin fail preflight. Dev: same-origin Vite proxy. | no CORS code in `api/` |
-| G2 | WS origin check | Dev origin must be in `WEBSOCKET_ALLOWED_ORIGINS` (e.g. `localhost:5173`) unless proxied same-host. | `api/internal/wsx/wsx.go:32-35`, `main.go:258` |
+| G1 | No CORS on REST routes | Browser calls from another origin fail preflight. Dev: handled by the same-origin Vite proxy (`apps/web/vite.config.ts`). | no CORS code in `api/` |
+| G2 | WS origin check | Dev origin must be in `WEBSOCKET_ALLOWED_ORIGINS` (e.g. `localhost:5173`) unless proxied keeping the Host header (what the Vite proxy does). | `api/internal/wsx/wsx.go:32-35`, `main.go:258` |
 | G3 | Identity is a placeholder | `POST /v1/guests` always returns the same guest (`test-guest`); only tokens `test-user-1`, `test-user-2` (accounts) and `test-guest` exist. Display names are not stored and no endpoint maps `user_uuid` to a name. | `identity/usecases/createguest/service.go`, `identity/usecases/authorize/service.go:22-26` |
 | G4 | A code-joined player never learns the session UUID, and the join code is released at Start | After the game starts, a player who joined by code cannot reconnect (reattach/rejoin need `/v1/play/join/sessions/{uuid}/player`; the code now answers 404). Needs a backend change (e.g. `session_uuid` in `lobby_update`/`session_started`). | `play/session/workflows/sessionlifecycle/step_commit_start.go:104`, `api/play/live_connection.go:70-90` |
 | G5 | Frontend URL signed once at Start (TTL 15 min), resent unchanged on reattach/rejoin | A reconnect after 15 min gets an expired URL. Fetch once, verify SHA-256, cache by hash; or the backend re-signs. | `play/session/usecases/frontendaccess/service.go:36`, `step_start_session.go:404`, `step_reattach_player.go:46` |
@@ -152,5 +152,7 @@ Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` +
 ## 7. Running the backend locally
 
 In `../playhoot`: `docker compose up -d` (Postgres, fake-gcs on 4443, adminer on 8080), then `go run .` (loads `.env`, migrates and seeds outside production; HTTP on `HTTP_PORT`, 8081 in the local `.env`). GCS must be configured or Start fails (frontend URL signing). For a browser dev origin set `WEBSOCKET_ALLOWED_ORIGINS`.
+
+Against the frontend dev server, use `http://localhost:5173` instead of the backend port: `/v1` is proxied.
 
 Manual flow: `POST /v1/sessions` with `Bearer test-user-1` and Space Drift; players connect to `/v1/play/join/{code}` with `test-user-2` / `test-guest`; the admin connects to `/v1/play/join/sessions/{uuid}/admin` with `test-user-1` and sends `start_session`.
