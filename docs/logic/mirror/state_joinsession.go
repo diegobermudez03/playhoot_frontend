@@ -183,7 +183,7 @@ func (j *JoinSession) OnConnectionClosed(kind CloseKind, attempt int, opened boo
 		return // a rejection or an end message already decided the outcome
 	}
 	if j.State.View.Phase == "leaving" {
-		j.State.View = outcome("left") // -> the view navigates home
+		j.State.View = outcome("left") // -> the view navigates to Enter a code
 		return
 	}
 	switch kind {

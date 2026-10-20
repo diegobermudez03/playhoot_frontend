@@ -5,5 +5,5 @@ package mirror
 
 func NotFoundView() {
 	// When: the person presses "Ir al inicio" / "Go home" / "Ir para o início".
-	Navigate("/") // -> HomeView
+	Navigate("/") // -> routes.go: "/" redirects to Enter a code for now
 }

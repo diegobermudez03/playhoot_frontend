@@ -8,10 +8,10 @@ export const ptBR: Messages = {
   'sound.mute': 'Desativar o som',
   'sound.unmute': 'Ativar o som',
 
-  'home.title': 'Entre em uma partida',
-  'home.codeLabel': 'Código da partida',
-  'home.join': 'Entrar',
-  'home.footnote': 'Recebeu um código do anfitrião? Digite acima.',
+  'enterCode.title': 'Entre em uma partida',
+  'enterCode.codeLabel': 'Código da partida',
+  'enterCode.join': 'Entrar',
+  'enterCode.footnote': 'Recebeu um código do anfitrião? Digite acima.',
 
   'identity.title': 'Como devemos te chamar?',
   'identity.joining': 'Você está entrando na partida <mark>{code}</mark>',

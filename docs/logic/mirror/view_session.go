@@ -12,7 +12,7 @@ package mirror
 var activeJoin *JoinSession
 
 func SessionRouteView(target SessionTarget) {
-	// When: this route opens (from Home, a shared link, a refresh) or its URL changes.
+	// When: this route opens (from Enter a code, a shared link, a refresh) or its URL changes.
 	join := SessionRouteOnOpened(target)
 
 	// Which screen is shown, decided by the phase:
@@ -35,7 +35,7 @@ func SessionRouteView(target SessionTarget) {
 	// When: the feature's outcome becomes "left" (the person left the game).
 	SessionRouteOnLeft(join)
 
-	// When: the person goes to a URL that is not a Session URL (Home, logo, "Enter a code", back button).
+	// When: the person goes to a URL that is not a Session URL (logo, "Enter a code", back button...).
 	SessionRouteOnLeftRoute()
 }
 
@@ -63,10 +63,10 @@ func SessionRouteOnSessionUUIDKnown(join *JoinSession) {
 	}
 }
 
-// SessionRouteOnLeft sends the person home after leaving.
+// SessionRouteOnLeft sends the person to Enter a code after leaving.
 func SessionRouteOnLeft(join *JoinSession) {
 	if join.State.View.Phase == "closed" && join.State.View.Outcome.Kind == "left" {
-		Navigate("/") // -> HomeView
+		Navigate(EnterCodeURL) // -> EnterCodeView (view_enter_code.go)
 	}
 }
 

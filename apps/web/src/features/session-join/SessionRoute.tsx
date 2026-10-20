@@ -7,7 +7,7 @@ import { useStore } from 'zustand';
 import { useAuth, useServices } from '../../app/ServicesContext';
 import { DevIdentityPicker } from '../../dev/DevIdentityPicker';
 import { AppShell } from '../../ui';
-import { sessionPlayPath, joinPath } from '../paths';
+import { enterCodePath, joinPath, sessionPlayPath } from '../paths';
 import { SessionScreen } from './SessionScreen';
 
 // Serves both Session URLs (ADR-0002): `/join/:joinCode` and `/sessions/:sessionUUID/play`.
@@ -38,7 +38,8 @@ function SessionView({ join }: { join: JoinSession }) {
   }, [state.sessionUUID, location.pathname, navigate]);
 
   useEffect(() => {
-    if (state.view.phase === 'closed' && state.view.outcome.kind === 'left') navigate('/');
+    if (state.view.phase === 'closed' && state.view.outcome.kind === 'left')
+      navigate(enterCodePath);
   }, [state.view, navigate]);
 
   const copyInvite = useCallback(async () => {
@@ -68,7 +69,7 @@ function SessionView({ join }: { join: JoinSession }) {
           submitDisplayName: (name) => void join.submitDisplayName(name),
           retry: join.retry,
           leave: join.leave,
-          enterAnotherCode: () => navigate('/'),
+          enterAnotherCode: () => navigate(enterCodePath),
           copyInvite,
         }}
         devIdentity={import.meta.env.DEV ? <DevIdentityPicker onPicked={join.retry} /> : undefined}

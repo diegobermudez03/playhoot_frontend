@@ -45,7 +45,7 @@ func LobbyOnCopyInvite(join *JoinSession, screen *LobbyScreenState) {
 // LobbyOnLeave leaves the game.
 func LobbyOnLeave(join *JoinSession) {
 	join.Leave() // state_joinsession.go -> sends "leave" -> phase "leaving" -> "closed(left)"
-	// -> SessionRouteOnLeft (view_session.go) navigates home.
+	// -> SessionRouteOnLeft (view_session.go) navigates to Enter a code.
 }
 
 func copyToClipboard(text string) {}

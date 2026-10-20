@@ -15,7 +15,7 @@ It is pseudocode with Go syntax: it does not compile and never runs, it only mir
 
 1. **[mirror/routes.go](mirror/routes.go)** — start here. Every URL and the view it runs. Navigating anywhere is just a call to `Router(url)`, so you can keep following.
 2. **`view_*.go`** — one per screen. The view function only lists what can happen on that screen; each call has a comment saying WHEN (a click, a submit, a message from the server). The Session route (`view_session.go`) picks one of its screens (`view_session_identity.go`, `_connecting`, `_lobby`, `_started`, `_outcome`) by the feature's phase.
-3. **Event functions** (`HomeOnJoinPressed`, `IdentityOnSubmitted`, `LobbyOnLeave`…) — right below each view. They call the logic, and `Navigate(...)` when the screen changes.
+3. **Event functions** (`EnterCodeOnJoinPressed`, `IdentityOnSubmitted`, `LobbyOnLeave`…) — right below each view. They call the logic, and `Navigate(...)` when the screen changes.
 4. **`state_*.go`** — what the events do to state: `state_app.go` (global state and browser storage), `state_joinsession.go` (the Session route's feature: phases, transitions, rules), `state_connection.go` (one live WebSocket).
 5. **[mirror/external.go](mirror/external.go)** — every backend call as a bare function: endpoint in the comment, inputs in, DTO out.
 
@@ -25,11 +25,11 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 
 | Screen (URL) | Control | Event function | File |
 | --- | --- | --- | --- |
-| Every page (top bar) | Logo | `Navigate("/")` | [view_app_shell.go](mirror/view_app_shell.go) |
+| Every page (top bar) | Logo | `Navigate("/")` (redirects to `/join` for now) | [view_app_shell.go](mirror/view_app_shell.go) |
 | Every page (top bar) | Language picker | `AppShellOnLanguagePicked` | [view_app_shell.go](mirror/view_app_shell.go) |
 | Every page (top bar) | Speaker button | `AppShellOnSoundToggled` | [view_app_shell.go](mirror/view_app_shell.go) |
-| Home (`/`) | Code tiles | `HomeOnCodeTyped` | [view_home.go](mirror/view_home.go) |
-| Home (`/`) | **Unirme** / Join / Entrar | `HomeOnJoinPressed` | [view_home.go](mirror/view_home.go) |
+| Enter a code (`/join`) | Code tiles | `EnterCodeOnCodeTyped` | [view_enter_code.go](mirror/view_enter_code.go) |
+| Enter a code (`/join`) | **Unirme** / Join / Entrar | `EnterCodeOnJoinPressed` | [view_enter_code.go](mirror/view_enter_code.go) |
 | Session: name step | Tu nombre / Your name / Seu nome (field) | `IdentityScreenState.Name` | [view_session_identity.go](mirror/view_session_identity.go) |
 | Session: name step | **¡A jugar!** / Let's play / Bora jogar | `IdentityOnSubmitted` | [view_session_identity.go](mirror/view_session_identity.go) |
 | Session: name step (dev only) | Test user 1 / Test user 2 | `IdentityOnDevAccountPicked` | [view_session_identity.go](mirror/view_session_identity.go) |
@@ -37,7 +37,7 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Session: lobby | **Salir de la partida** / Leave game / Sair da partida | `LobbyOnLeave` | [view_session_lobby.go](mirror/view_session_lobby.go) |
 | Session: ending | **Intentar de nuevo** / Try again · **Jugar aquí** / Play here | `OutcomeOnRetry` | [view_session_outcome.go](mirror/view_session_outcome.go) |
 | Session: ending | **Ingresar un código** / Enter a code / Digitar um código | `OutcomeOnEnterAnotherCode` | [view_session_outcome.go](mirror/view_session_outcome.go) |
-| Not found / error | **Ir al inicio** / Go home / Ir para o início | `Navigate("/")` | [view_not_found.go](mirror/view_not_found.go) |
+| Not found / error | **Ir al inicio** / Go home / Ir para o início | `Navigate("/")` (redirects to `/join` for now) | [view_not_found.go](mirror/view_not_found.go) |
 
 Conventions:
 

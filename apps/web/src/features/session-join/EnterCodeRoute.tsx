@@ -3,11 +3,13 @@ import { useState, type FormEvent } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
 
-import { joinPath } from '../features/paths';
-import { AppShell, Button, Card, CodeInput, Logo, Stage } from '../ui';
-import styles from './HomeRoute.module.css';
+import { joinPath } from '../paths';
+import { AppShell, Button, Card, CodeInput, Logo, Stage } from '../../ui';
+import styles from './EnterCodeRoute.module.css';
 
-export function HomeRoute() {
+// `/join`: type a join code. The entry to the Join Session feature for someone without a link.
+// Not the home page: `/` only redirects here until a real home exists.
+export function EnterCodeRoute() {
   const intl = useIntl();
   const navigate = useNavigate();
   const [code, setCode] = useState('');
@@ -30,23 +32,23 @@ export function HomeRoute() {
         <Card>
           <form className={styles.form} onSubmit={join}>
             <h1 className={styles.title}>
-              <FormattedMessage id="home.title" />
+              <FormattedMessage id="enterCode.title" />
             </h1>
             <CodeInput
               value={code}
               onChange={setCode}
               length={joinCodeLength}
               alphabet={joinCodeAlphabet}
-              label={intl.formatMessage({ id: 'home.codeLabel' })}
+              label={intl.formatMessage({ id: 'enterCode.codeLabel' })}
               autoFocus
             />
             <Button type="submit" size="lg" block disabled={!complete}>
-              <FormattedMessage id="home.join" />
+              <FormattedMessage id="enterCode.join" />
             </Button>
           </form>
         </Card>
         <p className={styles.footnote}>
-          <FormattedMessage id="home.footnote" />
+          <FormattedMessage id="enterCode.footnote" />
         </p>
       </Stage>
     </AppShell>

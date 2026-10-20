@@ -12,7 +12,7 @@ What happens, step by step, in every flow built so far: external calls, what is 
 | **Global state** | `Auth` (unknown / none / guest / authenticated + userUUID + displayName) · `Locale` | The open tab | [state_app.go](mirror/state_app.go) |
 | **Feature state** (Join Session) | `Target` (from the URL) · `SessionUUID` (learned) · `View` (the current phase) | While a Session route is open; discarded when leaving it | [state_joinsession.go](mirror/state_joinsession.go) |
 | **Connection state** | sample sequence · the player's game state rebuilt from views · pending commands | One WebSocket; a reconnection starts a new one from zero | [state_connection.go](mirror/state_connection.go) |
-| **Component state** | Home: the code being typed · Name step: the name being typed · Lobby: "link copied" flag | While the component is on screen | the screen's `view_*.go` |
+| **Component state** | Enter a code: the code being typed · Name step: the name being typed · Lobby: "link copied" flag | While the component is on screen | the screen's `view_*.go` |
 
 Rule of the architecture: nothing of a feature survives leaving its route. Coming back rebuilds it from the URL plus the backend.
 
@@ -42,12 +42,14 @@ sequenceDiagram
 
 No network call: the stored credential is trusted locally until a backend call rejects it (flow 10).
 
-## 2. Home → a join link
+## 2. Enter a code → a join link
+
+There is no home page yet (it comes late): `/` only redirects (**replace**) to `/join`, the Enter a code screen.
 
 1. The person types the code. Component state: `Code` (only valid letters, uppercased, max 6).
-2. With 6 characters, "Join" navigates (**push**) to `/join/{CODE}`.
+2. With 6 characters, "Unirme" / "Join" navigates (**push**) to `/join/{CODE}`.
 
-A join link opened directly (shared by someone) skips Home and starts at flow 3.
+A join link opened directly (shared by someone) skips this screen and starts at flow 3.
 
 ## 3. Joining by code
 
@@ -120,7 +122,7 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 
 ## 8. Leaving
 
-"Leave game" → `View = leaving`, sends `{"type":"leave"}` → server closes as `left` → `View = closed(left)` → navigation to `/` (**push**). Navigating away without pressing it only closes the socket (in a lobby that also removes the player).
+"Leave game" → `View = leaving`, sends `{"type":"leave"}` → server closes as `left` → `View = closed(left)` → navigation to `/join` (**push**). Navigating away without pressing it only closes the socket (in a lobby that also removes the player).
 
 ## 9. How a join can end
 
@@ -133,7 +135,7 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 | 3 reconnections failed | `closed(connection-lost)` | Try again · Enter a code |
 | A message breaks the protocol | `closed(protocol-error)` | Try again · Enter a code |
 
-"Try again" / "Play here" = `Retry()` → `Start()` again (same URL). "Enter a code" navigates to `/`.
+"Try again" / "Play here" = `Retry()` → `Start()` again (same URL). "Enter a code" navigates to `/join`.
 
 ## 10. A stored credential stops working
 

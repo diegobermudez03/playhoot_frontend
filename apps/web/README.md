@@ -2,7 +2,7 @@
 
 The web host: React + TypeScript shell (plan §2, §3.1). Trusted Playhoot code.
 
-Status: JOIN SESSION: home with join-code entry, Join Session on both Session URLs (ADR-0002), design system proposal and a dev-only style guide at `/design`. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: JOIN SESSION: Enter a code at `/join` (`/` redirects there; no home page yet), Join Session on both Session URLs (ADR-0002), design system proposal and a dev-only style guide at `/design`. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

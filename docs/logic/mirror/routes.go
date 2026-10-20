@@ -30,7 +30,11 @@ func AppStart(url string) {
 func Router(url string) {
 	switch {
 	case url == "/":
-		HomeView() // view_home.go
+		// No home page yet (it comes late): only a redirect, replacing the URL.
+		ReplaceURL(EnterCodeURL)
+
+	case url == EnterCodeURL:
+		EnterCodeView() // view_enter_code.go
 
 	case matches(url, "/join/{joinCode}"):
 		SessionRouteView(SessionTarget{Kind: "joinCode", JoinCode: param(url, "joinCode")}) // view_session.go
@@ -53,6 +57,8 @@ func Navigate(url string) { Router(url) }
 func ReplaceURL(url string) { Router(url) }
 
 // URLs are built only here, from backend identifiers; the backend never sends URLs (ADR-0002).
+const EnterCodeURL = "/join"
+
 func JoinURL(joinCode string) string           { return "/join/" + joinCode }
 func SessionPlayURL(sessionUUID string) string { return "/sessions/" + sessionUUID + "/play" }
 

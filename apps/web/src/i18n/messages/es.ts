@@ -8,10 +8,10 @@ export const es: Messages = {
   'sound.mute': 'Silenciar el sonido',
   'sound.unmute': 'Activar el sonido',
 
-  'home.title': 'Únete a una partida',
-  'home.codeLabel': 'Código de la partida',
-  'home.join': 'Unirme',
-  'home.footnote': '¿Tu anfitrión te dio un código? Escríbelo arriba.',
+  'enterCode.title': 'Únete a una partida',
+  'enterCode.codeLabel': 'Código de la partida',
+  'enterCode.join': 'Unirme',
+  'enterCode.footnote': '¿Tu anfitrión te dio un código? Escríbelo arriba.',
 
   'identity.title': '¿Cómo te llamamos?',
   'identity.joining': 'Te estás uniendo a la partida <mark>{code}</mark>',

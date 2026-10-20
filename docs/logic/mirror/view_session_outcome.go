@@ -18,7 +18,7 @@ func OutcomeOnRetry(join *JoinSession) {
 	join.Retry() // state_joinsession.go -> Start(): connect (or ask for a name if the identity is gone)
 }
 
-// OutcomeOnEnterAnotherCode goes back to Home.
+// OutcomeOnEnterAnotherCode goes to Enter a code.
 func OutcomeOnEnterAnotherCode() {
-	Navigate("/") // -> SessionRouteOnLeftRoute (feature discarded) -> HomeView
+	Navigate(EnterCodeURL) // -> SessionRouteOnLeftRoute (feature discarded) -> EnterCodeView
 }

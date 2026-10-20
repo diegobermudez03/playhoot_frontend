@@ -4,8 +4,8 @@
 package mirror
 
 func AppShellView() {
-	// When: the person clicks the logo (every page except Home, which shows a big logo instead).
-	Navigate("/")
+	// When: the person clicks the logo (every page except Enter a code, which shows a big logo instead).
+	Navigate("/") // -> routes.go: "/" redirects to Enter a code for now
 
 	// When: the person picks another language in the picker.
 	AppShellOnLanguagePicked("es")

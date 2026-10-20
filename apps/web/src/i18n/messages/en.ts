@@ -8,10 +8,10 @@ export const en = {
   'sound.mute': 'Turn sound off',
   'sound.unmute': 'Turn sound on',
 
-  'home.title': 'Join a game',
-  'home.codeLabel': 'Game code',
-  'home.join': 'Join',
-  'home.footnote': 'Got a code from your host? Type it above.',
+  'enterCode.title': 'Join a game',
+  'enterCode.codeLabel': 'Game code',
+  'enterCode.join': 'Join',
+  'enterCode.footnote': 'Got a code from your host? Type it above.',
 
   'identity.title': 'What should we call you?',
   'identity.joining': "You're joining game <mark>{code}</mark>",

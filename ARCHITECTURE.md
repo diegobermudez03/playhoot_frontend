@@ -99,10 +99,13 @@ URLs are owned and composed by the frontend from backend identifiers; the backen
 
 | Route | Connects through |
 | --- | --- |
+| `/join` | nothing: the Enter a code screen, for someone without a link |
 | `/join/:joinCode` | the join code |
 | `/sessions/:sessionUUID/play` | the Session UUID, as a player |
 
 A code join replaces its URL with the UUID route once the Session UUID is known, so refresh and reconnection work after the start.
+
+There is no home page yet; it will be one of the last features built. Until then `/` only redirects to `/join`, and nothing should be built on the assumption that the code entry is the home page.
 
 ## Game Frontend And GameHost (§8-§11, §16)
 
