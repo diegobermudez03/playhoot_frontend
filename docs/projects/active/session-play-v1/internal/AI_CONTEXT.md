@@ -1,11 +1,11 @@
 Process: Project execution (session-play-v1), human-directed implementation
 Topic: First web vertical slice (join link -> join -> play) per docs/Playhoot_Frontend_Architecture_Plan.docx
-Current stage: plan step 3 (realtime client) implemented and verified 2026-10-20; design accepted and made token-driven, animated, with sound and an asset registry the same day; earlier: i18n, Join Session, backend Z2, foundation
+Current stage: plan steps 4+5 (WebGameHost + Game SDK, bridge v1 ADR-0005 PROPOSED, Space Drift fixture, /dev/game-host lab) implemented and verified 2026-10-20; earlier the same day: step 3 (realtime client), design system, i18n, Join Session, backend Z2, foundation
 Current execution surface: CODEBASE AGENT
 Related durable artifacts: docs/projects/active/session-play-v1/PROJECT.md, docs/projects/active/session-play-v1/CHECKLIST.md, docs/Playhoot_Frontend_Architecture_Plan.docx, ARCHITECTURE.md, docs/architecture/BACKEND_CONTRACT.md, docs/decisions/architecture/ADR-0001-workspace-tooling-for-the-frontend-foundation.md
 Blocked by: nothing (open human decisions in PROJECT.md; a real WS upgrade check waits for the human's local DB to match the backend schema)
-Next action: wait for the human; by the plan, step 4 (WebGameHost) / step 5 (Game SDK); the human sources assets from docs/design/ASSETS.md
-Last durable checkpoint: realtime client + motion/sound/assets; CHECKLIST C, CURRENT_STATE, DESIGN_SYSTEM, ASSETS, ADR-0003/0004 accepted, AGENTS, KNOWLEDGE_MAP, PROJECT updated (2026-10-20)
+Next action: wait for the human: accept/change the bridge catalog (ADR-0005, PROJECT decision 5); by the plan, step 6 (Session Play), which needs the fixture artifact stored in the backend (Z4, a backend change only when the human directs it); the human sources assets from docs/design/ASSETS.md
+Last durable checkpoint: GameHost + SDK + fixture + lab; CHECKLIST D/E/M, CURRENT_STATE, ADR-0005 (PROPOSED), BACKEND_CONTRACT G7/G9, package READMEs, docs/logic (state_gamehost.go, FLOWS §12), PROJECT updated (2026-10-20)
 Last updated: 2026-10-20
 
 ## Working agreement (copied from the backend's practice; confirm with the human, PROJECT.md decision 1)
@@ -33,4 +33,7 @@ Last updated: 2026-10-20
 - Human preferences (2026-10-20): loves the design; wants everything driven by global variables, lively motion (fun, not excessive) and sound effects; agents build assuming assets exist and list them in docs/design/ASSETS.md for the human to source (AI-generable or downloadable).
 - Running TypeScript ad hoc against the backend: `npx --yes tsx@4 file.ts` works for one-off checks (Node 22 has a global WebSocket and sends no Origin header).
 - Scratchpad hazard: never name a scratch Python file after a stdlib module (a `tokenize.py` broke PIL).
+- GameHost verification in headless Edge: the sandboxed (opaque-origin) iframe runs out of process, so DevTools `Runtime.evaluate` inside it needs `Target.setAutoAttach {flatten: true}` and the iframe target's `sessionId`. React StrictMode mounts the lab twice in dev (first host disposed at once). Stop the dev server by the PID listening on 5173.
+- Fake-gcs (dev storage at localhost:4443) answers `Access-Control-Allow-Origin: *`; a real bucket needs CORS for the web origin (G7).
+- The fixture's artifact must be rebuilt (`npm run fixtures`) after SDK or game changes; `dist/` is git-ignored.
 - Human preference (2026-10-20): they will not read this repo's code; keep `docs/logic/` (FLOWS.md + Go pseudocode mirror of state, external calls and navigation, no presentation) current with every logic change.

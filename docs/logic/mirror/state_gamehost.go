@@ -1,0 +1,130 @@
+// PSEUDOCODE — Go syntax, not compiled.
+// STATE: the GameHost — one game artifact running for one player, isolated, talking to the
+// Session only through the Host. Not used by a screen yet: Session Play (plan step 6) will start it
+// after "session_started". Today only the dev lab /dev/game-host starts it, against a fake Session.
+//
+// The game is UNTRUSTED code. It runs in a sandboxed iframe with no network, no storage and no
+// access to this page. It never sees the token, the WebSocket, the signed URL, command tokens or
+// connection sample numbers. Bridge contract: ADR-0005 (PROPOSED).
+//
+// code: packages/game-host/src/gameHost.ts, packages/game-host/src/artifact.ts,
+//       apps/web/src/platform/iframeGameContainer.ts, apps/web/src/platform/browserArtifactCache.ts
+package mirror
+
+type GameHost struct {
+	Phase string // "loading" -> "starting" -> "running" | "failed"; "disposed" at the end
+	Error *GameHostError
+
+	Container *IframeContainer // the sandboxed iframe, while starting/running
+	Acks      AckTranslator    // game sample ids <-> connection sample sequences
+}
+
+type GameHostError struct {
+	Kind string // "artifact-unreachable" | "artifact-hash-mismatch" | "ready-timeout"
+	//             "unsupported-bridge-version" | "container-violation" (the game navigated its frame)
+}
+
+// What the Host needs from the player's live connection (state_connection.go) plus the current view.
+type GameSessionPort interface {
+	CurrentView() (state any, ack int, ok bool)
+	Sample(inputs map[string]any)
+	Command(name string, payload map[string]any) CommandResult
+}
+
+// GameContext is all the game is told about the player.
+type GameContext struct {
+	ParticipantID string   // "P1".."Pn", never the user id
+	Participants  []string // participant ids
+	Locale        string   // the platform UI language
+}
+
+// StartGameHost runs the artifact named by "session_started".frontend.
+// code: packages/game-host/src/gameHost.ts#startGameHost
+func StartGameHost(artifact struct{ URL, SHA256 string }, session GameSessionPort, context GameContext) *GameHost {
+	h := &GameHost{Phase: "loading"}
+
+	html, err := LoadArtifact(artifact.URL, artifact.SHA256)
+	if err != nil {
+		h.Fail(err.Kind) // "artifact-unreachable" | "artifact-hash-mismatch"
+		return h
+	}
+	// metric: artifact-load-ms
+
+	h.Phase = "starting"
+	// rule: the iframe has sandbox="allow-scripts" only -> its origin is "null": no cookies, no
+	//       storage, no access to this page. The HTML is parsed and a Content-Security-Policy is put
+	//       first in its head: no network at all (no fetch/WebSocket, no external images/media/fonts),
+	//       no forms, no <base>.
+	// rule: messages are accepted only from that iframe's window; a second "load" of the iframe means
+	//       the game navigated away -> Fail("container-violation").
+	h.Container = OpenIframe(html)
+
+	// rule: no "ready" within 10 s -> Fail("ready-timeout").
+	// -> the game's SDK sends "ready" with the bridge versions it speaks -> h.OnGameReady
+	return h
+}
+
+// LoadArtifact gets the game's HTML, byte-exact with what the backend pinned.
+// code: packages/game-host/src/artifact.ts#createArtifactLoader
+func LoadArtifact(url, sha256 string) (string, *GameHostError) {
+	// 1. Browser Cache Storage "playhoot-game-artifacts-v1", key = sha256. If there, re-check its
+	//    hash and use it (no network). This is what makes a refresh or a reconnect after the signed
+	//    URL expired (15 min) still work.
+	// 2. Otherwise FetchGameArtifact(url) (external.go), without cookies.
+	//    network error / CORS / HTTP error (an expired URL answers 4xx) -> "artifact-unreachable"
+	// 3. rule: SHA-256 of the bytes != sha256 -> "artifact-hash-mismatch" (nothing is run)
+	// 4. Store in the cache by hash; return the HTML.
+	return "", nil
+}
+
+// OnGameReady: the game said "ready".
+func (h *GameHost) OnGameReady(offeredVersions []int) {
+	// rule: a second "ready" is refused (recorded as bridge-rejected).
+	// rule: pick the newest bridge version both speak; none -> send "incompatible" and
+	//       Fail("unsupported-bridge-version").
+	h.Phase = "running"
+	// metric: ready-ms
+	// Send to game: "start" {version, context, projection: the current view (full) or null}
+	// From now on, every view/sample-sent of the connection -> h.OnSessionEvent
+}
+
+// OnSessionEvent forwards what the backend produced for this player.
+func (h *GameHost) OnSessionEvent(e any) {
+	// sample-sent(sequence)  -> h.Acks remembers which game sample that sequence carried
+	// view(state)            -> send "update" {projection: {state, full, ack}, ack, events, errors}
+	// view(ack only / gap)   -> send "update" {ack, events, errors} (no projection)
+	// rule: ack is translated to the game's own sample id; the game never sees sequences.
+	// rule: state is the WHOLE current state (patches already applied by the connection).
+}
+
+// OnGameMessage handles what the game posts. Every message is validated first:
+// rule: exact shape (unknown fields refused), at most 32 KiB, nothing but "ready" before "running".
+// A refused message is recorded (bridge-rejected) and dropped; the game keeps running.
+func (h *GameHost) OnGameMessage(m any, session GameSessionPort) {
+	// "sample" {id, inputs}
+	//     rule: id must grow (the game's own numbering) -> session.Sample(inputs)
+	// "command" {id, name, payload}
+	//     -> session.Command(name, payload) (the connection makes and hides the idempotency token)
+	//     -> send "command_result" {id, outcome, response}
+	//        outcome: executed (also already_processed) | rejected (invalid, too large)
+	//                 | unavailable (not running, connection closed, rate limited)
+	// "request_asset" {id, key}
+	//     -> AssetResolver(key): bytes + mime type, or none (no asset source exists outside the dev
+	//        lab until the backend stores assets) -> send "asset" {id, key, found, mimeType, bytes}
+}
+
+// Fail stops everything and keeps the reason.
+func (h *GameHost) Fail(kind string) {
+	h.Dispose()
+	h.Phase = "failed"
+	h.Error = &GameHostError{Kind: kind}
+}
+
+// Dispose closes the iframe, removes its listener and stops listening to the connection. The
+// connection itself is not touched: it belongs to whoever started the GameHost.
+func (h *GameHost) Dispose() { h.Phase = "disposed" }
+
+type IframeContainer struct{}
+type AckTranslator struct{}
+
+func OpenIframe(html string) *IframeContainer { return &IframeContainer{} }

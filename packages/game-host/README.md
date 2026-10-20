@@ -2,22 +2,29 @@
 
 GameHost abstraction and shared bridge logic.
 
-Status: SCAFFOLD, no behavior yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: MINIMAL HOST (plan step 4, ADR-0005 PROPOSED): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings. Viewport math (step 7) not started. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
-The trusted side of the Game <-> Host boundary (plan §10, §11, §13.3-§13.6, §15, §16): the `GameHost` lifecycle (load artifact -> isolated container -> versioned bridge -> READY handshake -> projection/events/input flow -> resync/reload -> dispose), validation of every inbound bridge message against the GameVersion contract, and the logic shared by `WebGameHost` (sandboxed iframe) and the future `NativeGameHost` (restricted WebView). Also the fixed-aspect logical viewport math and coordinate normalization (§8).
+The trusted side of the Game <-> Host boundary (plan §10, §11, §13.3-§13.6, §15, §16): the `GameHost` lifecycle (load artifact -> isolated container -> versioned bridge -> READY handshake -> projection/events/input flow -> resync/reload -> dispose), validation of every inbound bridge message, and the logic shared by `WebGameHost` (sandboxed iframe) and the future `NativeGameHost` (restricted WebView). Also, later, the fixed-aspect logical viewport math and coordinate normalization (§8).
+
+- `startGameHost(options)`: runs one artifact for one player. Options are ports: an `ArtifactLoader`, a `GameContainer` (the platform's isolated container), a `GameSessionPort` (the player's live connection plus its current view), the `GameContext`, and optionally an `AssetResolver`. Emits `status` (`loading` → `starting` → `running` | `failed` → `disposed`), `bridge-rejected` and `metric` (`artifact-load-ms`, `ready-ms`) events.
+- `createArtifactLoader({ cache })`: fetches the signed URL without credentials, checks the SHA-256, caches by hash (`ArtifactCache` port; `createMemoryArtifactCache()` here, Cache Storage in the web app).
+- `createAckTranslator()`: the game's sample ids <-> connection sample sequences.
+
+The platform containers live in each app: the web one is `apps/web/src/platform/iframeGameContainer.ts`.
 
 ## Does not own
 
 - The generated game's own render/state (the game is its own isolated application).
-- Raw socket access: it talks to the session through `communication`.
+- Raw socket access: it talks to the session through the `GameSessionPort` (a `communication` `SessionConnection` fits it).
 - Trusting the SDK: messages are validated even when they come from the official SDK.
+- DOM or WebView APIs: those are the platform containers'.
 
 ## Depends on
 
-- `@playhoot/protocol`
-- `@playhoot/communication`
-- `@playhoot/device`
+- `@playhoot/protocol` (`/bridge`, `/bridge/validation`)
+- `@playhoot/communication` (types, `Result`)
+- `@playhoot/game-sdk` only in tests (the real SDK is wired to the Host in `gameHost.test.ts`)
 
 Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.

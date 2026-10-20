@@ -2,11 +2,11 @@
 
 Shared wire and bridge contracts.
 
-Status: PLAYER PROTOCOL: HTTP error body and codes, `POST /v1/guests`, every player realtime message both ways, client limits. The admin messages and the bridge are not modeled yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: PLAYER PROTOCOL: HTTP error body and codes, `POST /v1/guests`, every player realtime message both ways, client limits. Game <-> Host bridge v1 (ADR-0005 PROPOSED). The admin messages are not modeled yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
-TypeScript types plus runtime validators for every message that crosses a boundary (plan §3.1, §11): backend HTTP request/response shapes, realtime (WebSocket) client<->server messages, and the versioned Game <-> Host bridge messages. The subpath `@playhoot/protocol/bridge` holds only the bridge contract, so the Game SDK can depend on it without pulling host-side contracts.
+TypeScript types plus runtime validators for every message that crosses a boundary (plan §3.1, §11): backend HTTP request/response shapes, realtime (WebSocket) client<->server messages, and the versioned Game <-> Host bridge messages. The subpath `@playhoot/protocol/bridge` holds only the bridge contract as dependency-free types and constants, so the Game SDK can depend on it without pulling host-side contracts or zod into game artifacts; the Host's validators for game messages are in `@playhoot/protocol/bridge/validation`.
 
 ## Does not own
 

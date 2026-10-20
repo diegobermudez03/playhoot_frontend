@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 
 import { DesignRoute } from '../dev/DesignRoute';
+import { GameHostLabRoute } from '../dev/GameHostLabRoute';
 import { enterCodePath } from '../features/paths';
 import { EnterCodeRoute } from '../features/session-join/EnterCodeRoute';
 import { SessionRoute } from '../features/session-join/SessionRoute';
@@ -23,7 +24,12 @@ const routes: RouteObject[] = [
   },
 ];
 
-if (import.meta.env.DEV) routes.push({ path: '/design', element: <DesignRoute /> });
+if (import.meta.env.DEV) {
+  routes.push(
+    { path: '/design', element: <DesignRoute /> },
+    { path: '/dev/game-host', element: <GameHostLabRoute /> },
+  );
+}
 
 export const router = createBrowserRouter([
   {

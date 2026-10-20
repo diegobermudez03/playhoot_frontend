@@ -61,23 +61,23 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## D. WebGameHost minimal (§10, §13.3, §16, §18 step 4)
 
-- [ ] `GameHost` abstraction used by Session Play; WebGameHost is its iframe implementation
-- [ ] Artifact obtained by the Host (signed URL from `session_started`), SHA-256 verified, cached by hash; URL/credentials never given to the game (decision: fetch + blob/srcdoc vs iframe src; depends on G5, G7)
-- [ ] Sandboxed iframe with a minimal sandbox (`allow-scripts` only unless explicitly needed) and restrictive CSP/origin strategy
-- [ ] Versioned bridge established (protocol version negotiated) + READY handshake with timeout
-- [ ] After READY: initial platform context + current FULL projection sent to the game
-- [ ] Container disposed on route/session end; no leaked listeners
-- [ ] Artifact failure states: not loading, hash mismatch, READY timeout, unsupported bridge version → typed GameHost errors
+- [ ] `GameHost` abstraction used by Session Play; WebGameHost is its iframe implementation (2026-10-20: `startGameHost` with a `GameContainer` port, iframe container in `apps/web/src/platform`; pending: use by Session Play, step 6)
+- [ ] Artifact obtained by the Host (signed URL from `session_started`), SHA-256 verified, cached by hash; URL/credentials never given to the game (fetch + hash + cache + `srcdoc` chosen by the human 2026-10-20, ADR-0005) (2026-10-20: unit tests; in headless Edge the fixture loaded from the dev server, a wrong hash failed as `artifact-hash-mismatch`, the verified HTML was in Cache Storage; fake-gcs answers CORS `*`. Pending: a real `session_started` URL, step 6)
+- [x] Sandboxed iframe with a minimal sandbox (`allow-scripts` only unless explicitly needed) and restrictive CSP/origin strategy (2026-10-20, headless Edge: the game's origin is `null`; `localStorage`, `document.cookie`, `fetch` and `window.parent.document` all blocked from inside; the CSP `<meta>` is the head's first element; the parent cannot reach the game's document. Hardening review stays in I)
+- [x] Versioned bridge established (protocol version negotiated) + READY handshake with timeout (2026-10-20: unit tests incl. no common version and timeout; `running (bridge v1)` in headless Edge)
+- [x] After READY: initial platform context + current FULL projection sent to the game (2026-10-20: unit tests; the fixture rendered its first projection in headless Edge)
+- [ ] Container disposed on route/session end; no leaked listeners (2026-10-20: `dispose` removes the iframe and its listener and unsubscribes from the Session, unit tests and headless Edge (0 iframes after Dispose and after failures); pending: route/session end, step 6)
+- [x] Artifact failure states: not loading, hash mismatch, READY timeout, unsupported bridge version → typed GameHost errors (2026-10-20: `artifact-unreachable`, `artifact-hash-mismatch`, `ready-timeout`, `unsupported-bridge-version`, plus `container-violation` when the game navigates its frame; unit tests, hash mismatch also in headless Edge)
 
 ## E. Playhoot Game SDK minimal (§9, §11, §18 step 5)
 
-- [ ] Bridge protocol defined in `@playhoot/protocol/bridge`, versioned, with runtime validation on the Host side (decision: message catalog and names, §19)
-- [ ] SDK API: projection updates, events, command responses, `sample`, `command`, `requestAsset` (minimal), READY
-- [ ] SDK has no Host/framework dependency (lint) and works with any game framework
-- [ ] Host validates every inbound bridge message (type, payload, context/role) even from the official SDK; invalid messages rejected and recorded
+- [ ] Bridge protocol defined in `@playhoot/protocol/bridge`, versioned, with runtime validation on the Host side (decision: message catalog and names, §19) (2026-10-20: v1 implemented and tested as ADR-0005 PROPOSED; ticks when the human accepts the catalog)
+- [x] SDK API: projection updates, events, command responses, `sample`, `command`, `requestAsset` (minimal), READY (2026-10-20: `createPlayhoot`; unit tests through the real Host; the fixture used all of it in headless Edge)
+- [x] SDK has no Host/framework dependency (lint) and works with any game framework (2026-10-20: lint rule verified with temporary violating imports, incl. the Host's validation subpath; the fixture is plain canvas TypeScript; its artifact has no zod)
+- [x] Host validates every inbound bridge message (type, payload, context/role) even from the official SDK; invalid messages rejected and recorded (2026-10-20: exact shapes, size, growing sample ids, nothing before READY, one READY; refused messages emitted as `bridge-rejected`; unit tests)
 - [ ] Host validates SAMPLE/COMMAND against the GameVersion contract before sending (needs the manifest or its frontend-relevant part on the client: Z6)
-- [ ] A small real game built as an artifact with the SDK (`fixtures/games`), matching a backend game (e.g. Space Drift), used end to end
-- [ ] Game build pipeline produces a single artifact the backend can store/serve (depends on Z4)
+- [ ] A small real game built as an artifact with the SDK (`fixtures/games`), matching a backend game (e.g. Space Drift), used end to end (2026-10-20: `fixtures/games/space-drift`, played in the GameHost lab in headless Edge against a fake Session: samples, teleport command, asset; pending: end to end with the real backend, which needs the artifact stored there (Z4), step 6)
+- [ ] Game build pipeline produces a single artifact the backend can store/serve (depends on Z4) (2026-10-20: the fixture's `build.mjs` produces one self-contained HTML + its SHA-256 with Vite; not stored in the backend yet)
 
 ## F. Session Play vertical slice (§12, §13, §18 step 6)
 
@@ -125,7 +125,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## M. Invariants verification (ARCHITECTURE.md "Invariants")
 
-- [ ] Game never receives tokens, the real WebSocket, signed URLs or backend access (test/inspection)
+- [ ] Game never receives tokens, the real WebSocket, signed URLs or backend access (test/inspection) (2026-10-20: GameHost unit tests check no command token reaches the game; headless Edge: no storage, cookies, network or parent access from the game; pending: with a real Session, step 6)
 - [ ] Same artifact contract usable by a future WebView host (no web-host-only assumptions in SDK/bridge)
 - [ ] Feature state discarded on route exit; rebuild from URL + backend (test)
 - [ ] Feature state knows semantic operations only (no WebSocket/iframe types in feature packages)
@@ -150,5 +150,6 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 Every frontend stub/stand-in that pretends to do something gets a line here and in `CURRENT_STATE.md`.
 
 - "Game on! Loading the game…" screen after `session_started`: stands in for Session Play (step 6); nothing loads.
+- `/dev/game-host` fake Space Drift Session (`apps/web/src/dev/fakeSpaceDriftSession.ts`): stands in for a live Session until step 6.
 - Other players appear as "Player N": the backend returns no names (Z9).
 - `scripts/dev-host.mjs`: development stand-in for the host experience (create and start a Session).

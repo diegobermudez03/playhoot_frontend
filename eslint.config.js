@@ -66,6 +66,10 @@ export default tseslint.config(
               name: '@playhoot/protocol',
               message: 'Import only @playhoot/protocol/bridge from the Game SDK.',
             },
+            {
+              name: '@playhoot/protocol/bridge/validation',
+              message: 'Host-side validation (zod) must not be bundled into game artifacts.',
+            },
           ],
           patterns: [
             {
@@ -75,6 +79,23 @@ export default tseslint.config(
             {
               group: ['react', 'react-*', 'react/*'],
               message: 'The Game SDK must not depend on a UI framework.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Fixture games are untrusted game artifacts: they see Playhoot only through the Game SDK.
+    files: ['fixtures/games/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [...hostOnlyPackages, '@playhoot/protocol', '@playhoot/protocol/*'],
+              message: 'A game uses Playhoot only through @playhoot/game-sdk.',
             },
           ],
         },
@@ -95,7 +116,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ['*.{js,ts}', 'apps/*/*.{js,ts}', 'scripts/**/*.{js,mjs}'],
+    files: [
+      '*.{js,ts}',
+      'apps/*/*.{js,ts}',
+      'scripts/**/*.{js,mjs}',
+      'fixtures/games/*/*.{js,mjs}',
+    ],
     languageOptions: { globals: { ...globals.node } },
   },
 );

@@ -8,8 +8,10 @@ import {
   type SessionConnector,
 } from '@playhoot/communication';
 import { createDeviceCapabilitiesStore, type DeviceCapabilitiesStore } from '@playhoot/device';
+import { createArtifactLoader, type ArtifactLoader } from '@playhoot/game-host';
 
 import { createSoundPlayer, type SoundPlayer } from '../sound';
+import { createBrowserArtifactCache } from '../platform/browserArtifactCache';
 import { createBrowserCredentialStore } from '../platform/browserCredentialStore';
 import { loadSoundMuted, saveSoundMuted } from '../platform/browserSoundPreference';
 import {
@@ -27,6 +29,8 @@ import { config } from './config';
 export interface Services {
   app: AppState;
   device: DeviceCapabilitiesStore;
+  // Loads GameVersion frontend artifacts, verified by hash and cached in the browser.
+  gameArtifacts: ArtifactLoader;
   http: HttpClient;
   identity: IdentityClient;
   sessions: SessionConnector;
@@ -52,7 +56,16 @@ export function createServices(): Services {
     initiallyMuted: loadSoundMuted(),
     onMutedChange: saveSoundMuted,
   });
-  return { app, device, http, identity: createIdentityClient(http), sessions, sound };
+  const gameArtifacts = createArtifactLoader({ cache: createBrowserArtifactCache() });
+  return {
+    app,
+    device,
+    gameArtifacts,
+    http,
+    identity: createIdentityClient(http),
+    sessions,
+    sound,
+  };
 }
 
 // WebSockets go to the same backend as HTTP: the configured origin, or this page's origin.

@@ -21,9 +21,9 @@ Rules for this file:
 | G4 | RESOLVED 2026-10-20: the join code is still released at Start, but every `lobby_update` and `session_started` now carries `session_uuid` | The frontend replaces `/join/:joinCode` with `/sessions/:sessionUUID/play` (ADR-0002) and reconnects by Session. | `api/play/live_connection.go`, `api/play/player_join.go`, `api/play/admin_join.go` |
 | G5 | Frontend URL signed once at Start (TTL 15 min), resent unchanged on reattach/rejoin | A reconnect after 15 min gets an expired URL. Fetch once, verify SHA-256, cache by hash; or the backend re-signs. | `play/session/usecases/frontendaccess/service.go:36`, `step_start_session.go:404`, `step_reattach_player.go:46` |
 | G6 | Game frontend package is a single self-contained HTML file; no assets; no frontend fields in the manifest (entry, aspect ratio, capabilities); manifest never sent to the client | Assets, aspect ratio and the SDK contract need backend work. The game must know its own inputs/commands. | `play/session/internal/migrations/seed_objects.go`, `play/session/internal/business/manifest/manifest.go` |
-| G7 | Signed GCS URL CORS unknown (fake-gcs in dev) | `fetch` + hash check may fail cross-origin; iframe `src` avoids CORS but skips the hash check. | `play/session/internal/objectstore/gcs.go:119-136` |
+| G7 | Signed GCS URL CORS: fake-gcs in dev answers `Access-Control-Allow-Origin: *` (checked 2026-10-20); a real bucket's CORS is unknown | The GameHost fetches the artifact and checks its hash (ADR-0005), so production needs bucket CORS for the web origin. | `play/session/internal/objectstore/gcs.go:119-136` |
 | G8 | `leave` during a Start attempt closes with 1011 | Treat as a transport error. | `step_leave_player.go:20-23` |
-| G9 | No Game <-> Host bridge exists anywhere | Defined by this repository (it was out of the backend's scope). | backend `docs/projects/active/session-runtime-v1/PROJECT.md:16` |
+| G9 | No Game <-> Host bridge exists anywhere | Defined by this repository (it was out of the backend's scope): ADR-0005 (PROPOSED). | backend `docs/projects/active/session-runtime-v1/PROJECT.md:16` |
 
 Backend doc drift seen (code wins): `api/README.md` shows paths without `/v1` and `/play/join`, says `lobby_closed` is sent "once the Session starts" and "Bearer <jwt>" (tokens are opaque); `play/CURRENT_STATE.md` mentions a non-existent `session_aborted`.
 

@@ -29,7 +29,7 @@ func IdentityOnSubmitted(join *JoinSession, screen *IdentityScreenState) {
 }
 
 // IdentityOnDevAccountPicked signs in as one of the backend's fixed test accounts (the backend's
-// placeholder identity treats every guest as the same user, so a second player needs one).
+// placeholder identity treats every guest as the same user, so a sec8ond player needs one).
 // code: apps/web/src/dev/DevIdentityPicker.tsx
 func IdentityOnDevAccountPicked(join *JoinSession, token string) {
 	SignIn(Credential{Token: token, Kind: "account" /* fixed userUUID and name per account */}) // state_app.go

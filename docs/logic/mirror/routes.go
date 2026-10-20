@@ -45,6 +45,11 @@ func Router(url string) {
 	case url == "/design" && developmentBuild:
 		// Living style guide: fake screens, no logic, no calls.
 
+	case url == "/dev/game-host" && developmentBuild:
+		// GameHost lab: StartGameHost (state_gamehost.go) with the built Space Drift fixture
+		// (/__fixtures/games/space-drift/, served by the dev server) and a FAKE local Session.
+		// No backend calls.
+
 	default:
 		NotFoundView() // view_not_found.go
 	}

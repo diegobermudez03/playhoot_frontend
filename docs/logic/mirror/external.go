@@ -39,6 +39,21 @@ type HttpFailure struct {
 	RetryAfterSeconds int
 }
 
+// ─── Storage (not the backend API) ──────────────────────────────────────────
+
+// FetchGameArtifact downloads a game's frontend artifact (one HTML file today).
+//
+//	GET <session_started.frontend.url>   (a signed storage URL, valid 15 min; no cookies sent)
+//
+// Only called when the browser's artifact cache has nothing for that SHA-256. The answer is
+// accepted only if its SHA-256 equals session_started.frontend.sha256. Needs CORS on the bucket
+// (fake-gcs in development allows any origin).
+//
+// code: packages/game-host/src/artifact.ts#createArtifactLoader
+func FetchGameArtifact(signedURL string) ([]byte, *HttpFailure) {
+	return nil, nil
+}
+
 // ─── WebSocket (one live connection per player per Session) ────────────────
 
 // OpenPlayerConnection opens the realtime connection. Opening it IS joining.
