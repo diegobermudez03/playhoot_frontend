@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import formatjs from 'eslint-plugin-formatjs';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
@@ -81,7 +82,20 @@ export default tseslint.config(
     },
   },
   {
-    files: ['*.{js,ts}', 'apps/*/*.{js,ts}'],
+    // Every text a person reads comes from the message catalogs (docs/design/DESIGN_SYSTEM.md, i18n).
+    // Development-only tools and tests may use literal text.
+    files: ['apps/web/src/**/*.tsx'],
+    ignores: ['apps/web/src/dev/**', '**/*.test.tsx'],
+    plugins: { formatjs },
+    rules: {
+      'formatjs/no-literal-string-in-jsx': [
+        'error',
+        { props: { include: [['*', '{label,placeholder,title,hint,alt}']] } },
+      ],
+    },
+  },
+  {
+    files: ['*.{js,ts}', 'apps/*/*.{js,ts}', 'scripts/**/*.{js,mjs}'],
     languageOptions: { globals: { ...globals.node } },
   },
 );

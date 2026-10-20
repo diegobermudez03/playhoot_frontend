@@ -2,7 +2,7 @@
 
 Shared wire and bridge contracts.
 
-Status: STARTED: backend HTTP error body and codes, `POST /v1/guests`. No realtime or bridge contract yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: PLAYER PROTOCOL: HTTP error body and codes, `POST /v1/guests`, every player realtime message both ways, client limits. The admin messages and the bridge are not modeled yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

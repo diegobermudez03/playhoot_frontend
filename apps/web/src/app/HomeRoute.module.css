@@ -1,0 +1,31 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-text-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-5);
+}
+
+.title {
+  font-size: var(--text-xl);
+  text-align: center;
+}
+
+.footnote {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--color-text-subtle);
+}

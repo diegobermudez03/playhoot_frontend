@@ -1,0 +1,18 @@
+.card {
+  position: relative;
+  padding: var(--space-5);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(180deg, var(--color-sheen), transparent 40%), var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 600px) {
+  .card {
+    padding: var(--space-6);
+  }
+}
+
+.raised {
+  background: var(--color-surface-raised);
+}

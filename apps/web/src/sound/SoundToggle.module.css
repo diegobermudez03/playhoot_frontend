@@ -1,0 +1,38 @@
+.toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: transform var(--duration-instant) var(--ease-bounce);
+}
+
+.toggle:hover {
+  border-color: var(--color-border-strong);
+}
+
+.toggle:active {
+  transform: scale(0.9);
+}
+
+.speaker {
+  fill: var(--color-text-muted);
+}
+
+.wave {
+  fill: none;
+  stroke: var(--color-text-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.toggle[aria-pressed='true'] .speaker {
+  fill: var(--color-primary);
+}
+
+.toggle[aria-pressed='true'] .wave {
+  stroke: var(--color-primary);
+}

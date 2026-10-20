@@ -35,10 +35,12 @@ export function createBrowserCredentialStore(
 
 function parseCredential(value: unknown): Credential | null {
   if (typeof value !== 'object' || value === null) return null;
-  const { token, userUUID, kind } = value as Record<string, unknown>;
+  const { token, userUUID, kind, displayName } = value as Record<string, unknown>;
   if (typeof token !== 'string' || !token || typeof userUUID !== 'string' || !userUUID) return null;
   if (kind !== 'guest' && kind !== 'account') return null;
-  return { token, userUUID, kind };
+  return typeof displayName === 'string' && displayName
+    ? { token, userUUID, kind, displayName }
+    : { token, userUUID, kind };
 }
 
 function safeLocalStorage(): Storage | undefined {

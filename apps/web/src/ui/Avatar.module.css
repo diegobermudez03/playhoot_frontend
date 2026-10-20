@@ -1,0 +1,28 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  background: var(--avatar-color);
+  color: var(--night-950);
+  font-family: var(--font-display);
+  font-weight: 700;
+  box-shadow: var(--shadow-piece);
+}
+
+.md {
+  width: 44px;
+  height: 44px;
+  font-size: 1.25rem;
+}
+
+.lg {
+  width: 64px;
+  height: 64px;
+  font-size: 1.75rem;
+}
+
+.highlighted {
+  outline: 3px solid var(--star-50);
+  outline-offset: 3px;
+}

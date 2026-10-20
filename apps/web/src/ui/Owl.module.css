@@ -1,0 +1,84 @@
+.wrap {
+  display: inline-block;
+  line-height: 0;
+}
+
+.owl {
+  display: block;
+  overflow: visible;
+}
+
+.body {
+  fill: var(--owl-body);
+}
+
+.tuft {
+  fill: var(--owl-tuft);
+}
+
+.belly {
+  fill: var(--owl-belly);
+}
+
+.eyeRing {
+  fill: var(--owl-eye);
+}
+
+.iris {
+  fill: var(--owl-iris);
+}
+
+.pupil {
+  fill: var(--owl-pupil);
+}
+
+.glint {
+  fill: var(--owl-glint);
+}
+
+.lid {
+  fill: none;
+  stroke: var(--owl-pupil);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.beak {
+  fill: var(--owl-beak);
+}
+
+.eyes {
+  transform-origin: 32px 29px;
+  animation: blink 5.2s infinite;
+  animation-delay: var(--blink-delay, 0s);
+}
+
+.animated {
+  animation: bob 2.4s var(--ease-out) infinite;
+}
+
+.animated .eyes {
+  animation-duration: 3.2s;
+}
+
+@keyframes blink {
+  0%,
+  44%,
+  50%,
+  100% {
+    transform: scaleY(1);
+  }
+  47% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  50% {
+    transform: translateY(-4px) rotate(-3deg);
+  }
+}

@@ -1,0 +1,215 @@
+/*
+ * Playhoot design tokens (proposal, docs/design/DESIGN_SYSTEM.md).
+ * "Game night": a deep night sky, an owl's amber eyes, warm playful accents.
+ * Components use the semantic tokens; the palette tokens exist to define them.
+ */
+
+:root {
+  /* Palette */
+  --night-950: #0d0b20;
+  --night-900: #141134;
+  --night-850: #1a1642;
+  --night-800: #211c52;
+  --night-700: #2c2669;
+  --night-600: #3b3485;
+  --night-500: #544ca6;
+  --lilac-300: #c9c2f2;
+  --lilac-200: #e2ddff;
+  --star-50: #f8f6ff;
+
+  --amber-200: #ffe7a6;
+  --amber-300: #ffd76a;
+  --amber-400: #ffc53d;
+  --amber-600: #d99400;
+  --amber-950: #2b1d00;
+
+  --coral-400: #ff6f91;
+  --coral-600: #d9466a;
+  --mint-400: #4ee0a6;
+  --sky-400: #63b3ff;
+  --violet-400: #a78bfa;
+  --lime-400: #b6e45a;
+  --orange-400: #ff9b54;
+  --teal-400: #3fd0d4;
+  --red-400: #ff6b6b;
+
+  /* Semantic */
+  --color-bg: var(--night-900);
+  --color-bg-deep: var(--night-950);
+  --color-surface: var(--night-800);
+  --color-surface-raised: var(--night-700);
+  --color-surface-sunken: var(--night-850);
+  --color-border: var(--night-600);
+  --color-border-strong: var(--night-500);
+  --color-text: var(--star-50);
+  --color-text-muted: var(--lilac-300);
+  --color-text-subtle: #9a93c9;
+
+  --color-primary: var(--amber-400);
+  --color-primary-hover: var(--amber-300);
+  --color-primary-shade: var(--amber-600);
+  --color-on-primary: var(--amber-950);
+
+  --color-primary-tint: color-mix(in srgb, var(--color-primary) 16%, transparent);
+  --color-primary-glow: color-mix(in srgb, var(--color-primary) 25%, transparent);
+
+  --color-accent: var(--coral-400);
+  --color-accent-hover: color-mix(in srgb, var(--coral-400) 80%, white);
+  --color-accent-shade: var(--coral-600);
+  --color-on-accent: #2b0010;
+
+  /* Sky */
+  --color-star: var(--star-50);
+  --color-glow-top: color-mix(in srgb, var(--owl-body) 22%, transparent);
+  --color-glow-bottom: color-mix(in srgb, var(--color-accent) 12%, transparent);
+
+  /* Light washes over dark surfaces. */
+  --color-sheen: rgb(255 255 255 / 3%);
+  --color-hover-wash: rgb(255 255 255 / 6%);
+  --color-hairline: rgb(255 255 255 / 8%);
+  --color-success: var(--mint-400);
+  --color-danger: var(--red-400);
+  --color-focus: var(--amber-300);
+
+  /* Player colors: assigned to people in a room, in this order. */
+  --player-1: var(--amber-400);
+  --player-2: var(--coral-400);
+  --player-3: var(--mint-400);
+  --player-4: var(--sky-400);
+  --player-5: var(--violet-400);
+  --player-6: var(--lime-400);
+  --player-7: var(--orange-400);
+  --player-8: var(--teal-400);
+
+  /* Hoot, the owl mascot */
+  --owl-body: #7b6cf6;
+  --owl-tuft: #6252e0;
+  --owl-belly: #a99ffb;
+  --owl-eye: var(--star-50);
+  --owl-iris: var(--color-primary);
+  --owl-pupil: var(--night-950);
+  --owl-glint: #fff;
+  --owl-beak: var(--color-accent);
+
+  /* Type */
+  --font-display: 'Fredoka Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Nunito Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(1.5rem, 1.2rem + 1.2vw, 1.875rem);
+  --text-2xl: clamp(1.875rem, 1.4rem + 2vw, 2.5rem);
+  --text-display: clamp(2.5rem, 1.6rem + 4vw, 4rem);
+
+  /* Shape and space */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Depth: chunky bottom edges make controls feel pressable, like game pieces. */
+  --edge: 4px;
+  --shadow-card: 0 18px 40px -12px rgb(5 3 20 / 70%);
+  --shadow-pop: 0 10px 24px -8px rgb(5 3 20 / 80%);
+  /* Game pieces (avatars, tokens): a carved bottom and a drop under it. */
+  --shadow-piece: inset 0 -4px 0 rgb(0 0 0 / 18%), 0 3px 0 rgb(0 0 0 / 30%);
+
+  /* Motion: lively but short. Everything collapses under prefers-reduced-motion. */
+  --duration-instant: 120ms;
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-enter: 420ms;
+  --duration-celebrate: 900ms;
+  --stagger-step: 70ms;
+  --ease-standard: ease;
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.5, 1.8, 0.5, 0.8);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  /* A night sky: two soft glows (the stars are the Starfield component). */
+  background-image:
+    radial-gradient(60rem 40rem at 85% -10%, var(--color-glow-top), transparent 60%),
+    radial-gradient(50rem 36rem at -10% 110%, var(--color-glow-bottom), transparent 60%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* Highlighted words inside translated sentences (the <mark> tag of a message). */
+.i18n-mark {
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

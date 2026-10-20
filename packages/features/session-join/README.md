@@ -2,7 +2,7 @@
 
 Join Session feature (logical state and ports).
 
-Status: SCAFFOLD, no behavior yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createJoinSession` (identity, connecting, lobby, started, typed outcomes, reconnection by Session UUID). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
@@ -13,6 +13,10 @@ Feature state and communication ports for opening `/join/{joinCode}` directly (p
 - Presentation (apps/web, apps/mobile).
 - Deciding whether joining is allowed (the backend decides).
 - Surviving route exit: state is discarded and rebuilt from URL + backend.
+
+## External dependencies
+
+- zustand (vanilla store only)
 
 ## Depends on
 

@@ -13,4 +13,4 @@ This index routes engineers and AI agents to accepted reusable engineering stand
 
 | Concern | Standard |
 | --- | --- |
-| - | No frontend standards accepted yet. |
+| User-facing text: languages, message catalogs, whole-sentence ICU messages, no hardcoded text | `user-facing-text.md` |

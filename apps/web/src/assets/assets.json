@@ -1,0 +1,28 @@
+{
+  "$comment": "Every file asset the web host uses. Paths are under apps/web/public. Specs, prompts and status: docs/design/ASSETS.md. Check: node scripts/check-assets.mjs",
+  "assets": [
+    { "id": "icon.favicon", "kind": "image", "path": "/favicon.svg" },
+    { "id": "icon.apple-touch", "kind": "image", "path": "/assets/icons/apple-touch-icon.png" },
+    { "id": "icon.app-192", "kind": "image", "path": "/assets/icons/icon-192.png" },
+    { "id": "icon.app-512", "kind": "image", "path": "/assets/icons/icon-512.png" },
+    {
+      "id": "icon.app-maskable-512",
+      "kind": "image",
+      "path": "/assets/icons/icon-maskable-512.png"
+    },
+    { "id": "image.og-share", "kind": "image", "path": "/assets/images/og-share.png" },
+
+    { "id": "sound.tap", "kind": "sound", "path": "/assets/sounds/tap.mp3" },
+    { "id": "sound.key", "kind": "sound", "path": "/assets/sounds/key.mp3" },
+    { "id": "sound.erase", "kind": "sound", "path": "/assets/sounds/erase.mp3" },
+    { "id": "sound.copy", "kind": "sound", "path": "/assets/sounds/copy.mp3" },
+    { "id": "sound.join", "kind": "sound", "path": "/assets/sounds/join.mp3" },
+    { "id": "sound.player-joined", "kind": "sound", "path": "/assets/sounds/player-joined.mp3" },
+    { "id": "sound.player-left", "kind": "sound", "path": "/assets/sounds/player-left.mp3" },
+    { "id": "sound.game-start", "kind": "sound", "path": "/assets/sounds/game-start.mp3" },
+    { "id": "sound.error", "kind": "sound", "path": "/assets/sounds/error.mp3" },
+    { "id": "sound.ended", "kind": "sound", "path": "/assets/sounds/ended.mp3" },
+    { "id": "sound.leave", "kind": "sound", "path": "/assets/sounds/leave.mp3" },
+    { "id": "music.lobby", "kind": "music", "path": "/assets/music/lobby-loop.mp3" }
+  ]
+}

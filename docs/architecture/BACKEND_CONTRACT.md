@@ -1,7 +1,7 @@
 # Backend Contract (frontend reference)
 
 Status: REFERENCE SNAPSHOT — the backend code is the authority
-Backend ref inspected: `../playhoot` at `36d0c9d` (2026-10-19)
+Backend ref inspected: `../playhoot` at `36d0c9d` (2026-10-19), plus `e4f0d85` (2026-10-20, `session_uuid` on lobby/start messages, G4)
 
 This document records the client-facing contract that the backend ACTUALLY implements, as the frontend needs it. It does not define the contract; the backend owns it (`../playhoot/api/README.md`, `../playhoot/play/CURRENT_STATE.md`, and the code). Paths below are relative to the backend repository.
 
@@ -18,7 +18,7 @@ Rules for this file:
 | G1 | No CORS on REST routes | Browser calls from another origin fail preflight. Dev: handled by the same-origin Vite proxy (`apps/web/vite.config.ts`). | no CORS code in `api/` |
 | G2 | WS origin check | Dev origin must be in `WEBSOCKET_ALLOWED_ORIGINS` (e.g. `localhost:5173`) unless proxied keeping the Host header (what the Vite proxy does). | `api/internal/wsx/wsx.go:32-35`, `main.go:258` |
 | G3 | Identity is a placeholder | `POST /v1/guests` always returns the same guest (`test-guest`); only tokens `test-user-1`, `test-user-2` (accounts) and `test-guest` exist. Display names are not stored and no endpoint maps `user_uuid` to a name. | `identity/usecases/createguest/service.go`, `identity/usecases/authorize/service.go:22-26` |
-| G4 | A code-joined player never learns the session UUID, and the join code is released at Start | After the game starts, a player who joined by code cannot reconnect (reattach/rejoin need `/v1/play/join/sessions/{uuid}/player`; the code now answers 404). Needs a backend change (e.g. `session_uuid` in `lobby_update`/`session_started`). | `play/session/workflows/sessionlifecycle/step_commit_start.go:104`, `api/play/live_connection.go:70-90` |
+| G4 | RESOLVED 2026-10-20: the join code is still released at Start, but every `lobby_update` and `session_started` now carries `session_uuid` | The frontend replaces `/join/:joinCode` with `/sessions/:sessionUUID/play` (ADR-0002) and reconnects by Session. | `api/play/live_connection.go`, `api/play/player_join.go`, `api/play/admin_join.go` |
 | G5 | Frontend URL signed once at Start (TTL 15 min), resent unchanged on reattach/rejoin | A reconnect after 15 min gets an expired URL. Fetch once, verify SHA-256, cache by hash; or the backend re-signs. | `play/session/usecases/frontendaccess/service.go:36`, `step_start_session.go:404`, `step_reattach_player.go:46` |
 | G6 | Game frontend package is a single self-contained HTML file; no assets; no frontend fields in the manifest (entry, aspect ratio, capabilities); manifest never sent to the client | Assets, aspect ratio and the SDK contract need backend work. The game must know its own inputs/commands. | `play/session/internal/migrations/seed_objects.go`, `play/session/internal/business/manifest/manifest.go` |
 | G7 | Signed GCS URL CORS unknown (fake-gcs in dev) | `fetch` + hash check may fail cross-origin; iframe `src` avoids CORS but skips the hash check. | `play/session/internal/objectstore/gcs.go:119-136` |
@@ -107,8 +107,8 @@ Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` +
 
 ### Server -> client
 
-- `lobby_update` `{members: [{user_uuid}]}` — whole lobby, join order. Admin's first message. None after start.
-- `session_started` — player: `{participant_id, participants: [{participant_id, user_uuid}], frontend: {url, sha256, expires_at}}`; admin: same without `participant_id`. Participants `P1..Pn` in lobby order. Re-sent on every reattach/rejoin, followed by a FULL view.
+- `lobby_update` `{session_uuid, members: [{user_uuid}]}` — whole lobby, join order. Admin's first message. None after start.
+- `session_started` — player: `{session_uuid, participant_id, participants: [{participant_id, user_uuid}], frontend: {url, sha256, expires_at}}`; admin: same without `participant_id`. Participants `P1..Pn` in lobby order. Re-sent on every reattach/rejoin, followed by a FULL view.
 - `player_view` (player) `{participant_id, full, revision, state, consumed_through_sample_sequence, errors?, events?}`.
 - `player_view` (admin) `{participant_id, full, revision, state, events?}` — no ack, no errors.
 - `command_result` `{token, outcome, response?}` — `executed` (response is the game's JSON, may be a game-rule rejection), `already_processed` (no response kept), `invalid`, `session_not_running`, `rate_limited` (token unused, may retry).

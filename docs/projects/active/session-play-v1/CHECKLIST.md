@@ -26,36 +26,37 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [x] Credential provider + persistence of the guest/test token in the browser; never in URL (§19; `localStorage` accepted by the human 2026-10-20) (2026-10-20: implemented with `localStorage`, validated on read and degrading to "no credential" when storage is blocked; the communication layer reads the token through `CredentialProvider`; unit tests.)
 - [x] Communication abstractions: HTTP client with automatic credentials and typed errors (branch on backend `code`), no caller passes tokens (§4.3) (2026-10-20: `createHttpClient` returns `Result` with `network` / `http` (status, code, message, Retry-After) / `decode` failures and forgets a credential the backend calls `token_invalid`; `IdentityClient.createGuest`; unit tests, plus `POST /v1/guests` and a `token_invalid` answer checked against the real backend through the dev proxy)
 - [ ] DeviceCapabilities provider (web adapter): touch, keyboard, pointer, gamepad, viewport, orientation/display class (§7) (2026-10-20: abstraction, display classification (compact < 600 px <= medium < 1024 px <= wide) and store in `@playhoot/device`, unit tests; browser adapter in `apps/web/src/platform` keeps it current on resize, orientation, pointer and gamepad changes; `useDeviceCapabilities()`. Pending: checking the browser adapter in a real browser. Keyboard is a heuristic: assumed when a fine pointer exists)
-- [ ] Dev setup against the local backend (same-origin proxy for REST and WS, or allowed origin) documented and working (Z1) (2026-10-20: Vite proxies `/v1` with `ws: true` and without `changeOrigin`, target `PLAYHOOT_BACKEND_URL`; REST verified against the real backend, and WebSocket handshakes reach the backend routes with the token subprotocol. Pending: one real upgrade, which proves the backend's origin check passes; blocked locally because the local database is behind the backend's schema and Create Session fails)
+- [x] Dev setup against the local backend (same-origin proxy for REST and WS, or allowed origin) documented and working (Z1) (2026-10-20: a real WebSocket upgrade through the proxy passed the backend's origin check during the Join Session end-to-end run; 2026-10-20: Vite proxies `/v1` with `ws: true` and without `changeOrigin`, target `PLAYHOOT_BACKEND_URL`; REST verified against the real backend, and WebSocket handshakes reach the backend routes with the token subprotocol.)
+- [x] UI available in Spanish, English and Brazilian Portuguese with a language picker, no hardcoded text, whole-sentence ICU messages (human requirement 2026-10-20, `docs/engineering/standards/user-facing-text.md`; French planned) (2026-10-20: catalogs for every screen, parity test, lint rule, checked in all three languages in the browser)
 - [x] App bootstrap sequence (§13.1) does not block the whole UI; features can represent unknown/loading auth (2026-10-20: `startServices` resolves the persisted credential synchronously and starts the device watcher before the first render; the snapshot starts as `unknown`; covered by the app-core tests)
 
 ## B. Join Session (web) (§5, §13.2, §14, §18 step 2)
 
-- [ ] `/join/:joinCode` opens the join experience directly, without passing through Home, and survives refresh
-- [ ] `/sessions/:sessionUUID/play` connects directly as a player through the Session UUID (shareable; lobby join or reattach/rejoin depending on the Session) (ADR-0002)
-- [ ] Missing identity → guest setup (`POST /v1/guests` with display name + idempotency key) or test-token selection, then continue the join (UX only; backend decides)
-- [ ] Join state reads AppGlobalState and the DeviceCapabilities the join needs
-- [ ] Join opens the backend join flow through communication (`/v1/play/join/{joinCode}`) — the realtime connection IS the join
-- [ ] Rejections rendered as typed reasons with a next action: invalid/expired code, `lobby_full`, `session_started`, `session_unavailable`, auth errors, rate limits, `server_busy` (note: pre-upgrade HTTP errors are invisible to the browser WebSocket; decision: how to distinguish them, e.g. a pre-flight check)
-- [ ] Lobby state shown while waiting for start (`lobby_update`), including `lobby_closed`
-- [ ] Code join replaces its URL with `/sessions/:sessionUUID/play` as soon as the Session UUID is known, and Session Play runs there (ADR-0002; depends on Z2)
-- [ ] Leaving the lobby (`leave`) and navigating away dispose the feature state
-- [ ] Backend `401/403` respected even when the local snapshot said authenticated (§14)
+- [x] `/join/:joinCode` opens the join experience directly, without passing through Home, and survives refresh (2026-10-20: end to end in headless Edge against the real backend through the dev proxy)
+- [x] `/sessions/:sessionUUID/play` connects directly as a player through the Session UUID (shareable; lobby join or reattach/rejoin depending on the Session) (ADR-0002) (2026-10-20: a refresh mid-game reattached and got the start again, end to end in headless Edge against the real backend through the dev proxy)
+- [x] Missing identity → guest setup (`POST /v1/guests` with display name + idempotency key) or test-token selection, then continue the join (UX only; backend decides) (2026-10-20: the name step creates the guest and keeps the name locally; a development-only picker signs in as the backend's test accounts; unit tests and end to end in headless Edge against the real backend through the dev proxy)
+- [x] Join state reads AppGlobalState and the DeviceCapabilities the join needs (2026-10-20: reads the auth snapshot; the backend's join takes no device capability today, so none is read)
+- [x] Join opens the backend join flow through communication (`/v1/play/join/{joinCode}`) — the realtime connection IS the join (2026-10-20: `SessionConnector` in communication; the feature never touches the socket; unit tests and end to end in headless Edge against the real backend through the dev proxy)
+- [x] Rejections rendered as typed reasons with a next action: invalid/expired code, `lobby_full`, `session_started`, `session_unavailable`, auth errors, rate limits, `server_busy` (2026-10-20: every admission reason and terminal outcome has copy and actions, shown in `/design`; refusals before the upgrade (wrong code, auth, limits) cannot be told apart by a browser and share one "couldn't find that game" outcome, see Z10)
+- [x] Lobby state shown while waiting for start (`lobby_update`), including `lobby_closed` (2026-10-20: unit tests and end to end in headless Edge against the real backend through the dev proxy)
+- [ ] Code join replaces its URL with `/sessions/:sessionUUID/play` as soon as the Session UUID is known, and Session Play runs there (ADR-0002; depends on Z2) (2026-10-20: the URL replacement works end to end and keeps the connection; Session Play itself is step 6)
+- [x] Leaving the lobby (`leave`) and navigating away dispose the feature state (2026-10-20: unit tests; the route disposes on unmount and keeps the instance only while the URL points at the same Session)
+- [ ] Backend `401/403` respected even when the local snapshot said authenticated (§14) (2026-10-20: done for HTTP, where `token_invalid` forgets the credential; a WebSocket handshake refused for auth is invisible to the browser, Z10)
 
 ## C. Realtime SessionClient (§4.3, §13.4-§13.7, §18 step 3)
 
-- [ ] SessionClient owns the WebSocket: subprotocols `playhoot.v1` + bearer token subprotocol; feature state never touches the raw socket
-- [ ] Typed inbound message decoding + runtime validation of the platform protocol; unknown/invalid server messages handled as protocol errors
+- [x] SessionClient owns the WebSocket: subprotocols `playhoot.v1` + bearer token subprotocol; feature state never touches the raw socket (2026-10-20: `SessionConnector` / `SessionConnection` in communication; unit tests and the end-to-end run)
+- [x] Typed inbound message decoding + runtime validation of the platform protocol; unknown/invalid server messages handled as protocol errors (2026-10-20: zod schemas for every player server message; unknown types are ignored so the server can add types, invalid known types are protocol errors)
 - [ ] Semantic event subscription (lobby, started, view, command result, leave result, rejected, terminal)
-- [ ] SAMPLE: per-connection sequence starting at 1 on every new connection; full logical input snapshot; respects 60/s limit
-- [ ] COMMAND: idempotency token generated/reused by the platform layer; `command_result` correlated by token; `rate_limited` retried with the same token (§13.5)
-- [ ] View application: FULL replaces; patch applied with backend merge semantics (objects recursive, arrays/scalars replaced, `null` is a value); revision gap → `resync`; ack-only views advance ack only
-- [ ] Ack (`consumed_through_sample_sequence`) exposed for prediction/reconciliation (§15)
-- [ ] Transient errors/events delivered once, never re-emitted on resync
+- [x] SAMPLE: per-connection sequence starting at 1 on every new connection; full logical input snapshot; respects 60/s limit (2026-10-20: unit tests with a fake socket and clock, and against the real backend: 300 snapshots offered in ~3.5 s left as 213, all acknowledged)
+- [x] COMMAND: idempotency token generated/reused by the platform layer; `command_result` correlated by token; `rate_limited` retried with the same token (§13.5) (2026-10-20: unit tests with a fake socket and clock, and against the real backend: `teleport` executed with the game's response, the same token again `already_processed`, an undeclared command `invalid`)
+- [x] View application: FULL replaces; patch applied with backend merge semantics (objects recursive, arrays/scalars replaced, `null` is a value); revision gap → `resync`; ack-only views advance ack only (2026-10-20: unit tests with a fake socket and clock, and against the real backend: 66 patches reproduced exactly the state of the FULL view sent on resync)
+- [x] Ack (`consumed_through_sample_sequence`) exposed for prediction/reconciliation (§15) (2026-10-20: every view update carries `ack`, and `sample-sent` events carry each sent sequence)
+- [x] Transient errors/events delivered once, never re-emitted on resync (2026-10-20: delivered with the view that carries them, also when that view is a gap; nothing is replayed; unit tests)
 - [ ] Reconnect: transport loss → `reconnecting`; reattach within grace via the session player endpoint; after reattach send current full SAMPLE immediately; `session_started` + FULL view on reattach treated as a resync baseline (§13.7)
 - [ ] Rejoin after grace; `participant_disconnected` / `rejoin_rejected` → terminal for this player
-- [ ] Close-code handling: 1000 reasons (`replaced` = do not reconnect, `left`, `session_ended`, `disconnected`), 1001/1006/1011/1012 → reconnect with backoff respecting handshake rate limits (5/s, 30/min per user), 1007/1008 → protocol error, not retried blindly
-- [ ] Terminal: `session_ended` / `lobby_closed` with status and end cause → terminal state
+- [ ] Close-code handling (2026-10-20: every close is classified, unit-tested; Join reconnects by Session UUID up to 3 times (1 s, 2 s, 4 s) and never after `replaced`; pending: reconnection with resync during a running game, step 3): 1000 reasons (`replaced` = do not reconnect, `left`, `session_ended`, `disconnected`), 1001/1006/1011/1012 → reconnect with backoff respecting handshake rate limits (5/s, 30/min per user), 1007/1008 → protocol error, not retried blindly
+- [x] Terminal: `session_ended` / `lobby_closed` with status and end cause → terminal state (2026-10-20: unit tests; host cancellation seen end to end)
 - [ ] Explicit leave vs navigate-away semantics (§13.8) (decision: does navigating away send `leave`, or only close the socket?)
 
 ## D. WebGameHost minimal (§10, §13.3, §16, §18 step 4)
@@ -106,7 +107,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [ ] iframe CSP/sandbox hardened and reviewed; no `window.parent` business API; no Host objects exposed
 - [ ] Bridge validation hardened: size limits, rate protection on game → host messages
 - [ ] Asset delivery through the Host with safe handles (depends on Z4)
-- [ ] Frontend-side rate/size protections aligned with backend limits (32 KiB message, per-type rates)
+- [ ] Frontend-side rate/size protections aligned with backend limits (32 KiB message, per-type rates) (2026-10-20: SAMPLE coalesced to 60/s, SAMPLE and COMMAND size-checked against 32 KiB; pending: bridge-side limits on game → host messages)
 - [ ] Reconnect/resync tests (automated) covering grace reattach, rejoin, revision gap, collapse to FULL, owner change (1012)
 
 ## J. Completion gate (§18)
@@ -134,17 +135,20 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 ## Z. Backend dependencies (changes in `../playhoot`, made through its workflow when the human directs)
 
 - [ ] Z1. Local development across origins: REST CORS or documented same-origin proxy; `WEBSOCKET_ALLOWED_ORIGINS` for the dev origin (G1, G2) (2026-10-20: solved without a backend change for development by the same-origin proxy (A); a deployment on separate origins would still need CORS and allowed origins)
-- [ ] Z2. A player who joined by code learns the Session UUID, so the frontend can compose `/sessions/:sessionUUID/play` (ADR-0002) and reconnect after start (G4) (backend; proposal: `session_uuid` in `lobby_update` and `session_started`)
+- [x] Z2. A player who joined by code learns the Session UUID, so the frontend can compose `/sessions/:sessionUUID/play` (ADR-0002) and reconnect after start (G4) (2026-10-20, directed by the human: backend `lobby_update` and `session_started` carry `session_uuid` for players and admins; backend `api/play` tests and full `go test ./...` pass; backend commit `e4f0d85`; used end to end by Join Session)
 - [ ] Z3. Frontend artifact access survives reconnects after 15 min: re-sign on reattach/rejoin/attach, or the frontend caches by hash (G5) (decision)
 - [ ] Z4. Game frontend artifact format and assets: what a package is (single HTML vs bundle), how assets are stored, referenced by logical key and resolved through the Host (G6, plan §9, §13.3) (backend, decision)
 - [ ] Z5. GameVersion frontend metadata: logical viewport / aspect ratio, bridge/SDK version, entry (G6, plan §8) (backend, decision)
 - [ ] Z6. The client gets what it needs to validate SAMPLE/COMMAND before sending (frontend-relevant manifest part) or validation stays backend-only (G6) (decision)
 - [ ] Z7. Signed artifact URL readable by the Host (bucket/emulator CORS) if the Host fetches it (G7)
 - [ ] Z8. `leave` during a Start attempt answered instead of closing with 1011 (G8)
-- [ ] Z9. Real identity enough for multiple distinct guests in one session (G3) (backend; may stay out of scope for this project by human decision)
+- [ ] Z9. Real identity enough for multiple distinct guests in one session, and display names returned in the lobby and roster so players see each other's names (G3) (backend; may stay out of scope for this project by human decision)
+- [ ] Z10. The client can tell why a WebSocket handshake was refused (unknown/expired code, auth, rate limit, Session not joinable): browsers cannot read pre-upgrade HTTP errors (backend, decision: e.g. a REST pre-check of a join code, or accepting then rejecting with a reason)
 
 ## Placeholders Left Behind
 
 Every frontend stub/stand-in that pretends to do something gets a line here and in `CURRENT_STATE.md`.
 
-- None yet.
+- "Game on! Loading the game…" screen after `session_started`: stands in for Session Play (step 6); nothing loads.
+- Other players appear as "Player N": the backend returns no names (Z9).
+- `scripts/dev-host.mjs`: development stand-in for the host experience (create and start a Session).

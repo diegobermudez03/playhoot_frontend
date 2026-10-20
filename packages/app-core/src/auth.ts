@@ -5,12 +5,13 @@ import type { Credential } from './credentials';
 export type AuthSnapshot =
   | { status: 'unknown' }
   | { status: 'none' }
-  | { status: 'guest'; userUUID: string }
-  | { status: 'authenticated'; userUUID: string };
+  | { status: 'guest'; userUUID: string; displayName: string | null }
+  | { status: 'authenticated'; userUUID: string; displayName: string | null };
 
 export function authSnapshotOf(credential: Credential | null): AuthSnapshot {
   if (!credential) return { status: 'none' };
+  const identity = { userUUID: credential.userUUID, displayName: credential.displayName ?? null };
   return credential.kind === 'guest'
-    ? { status: 'guest', userUUID: credential.userUUID }
-    : { status: 'authenticated', userUUID: credential.userUUID };
+    ? { status: 'guest', ...identity }
+    : { status: 'authenticated', ...identity };
 }

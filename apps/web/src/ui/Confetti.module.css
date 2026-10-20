@@ -1,0 +1,33 @@
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.piece {
+  position: absolute;
+  width: 9px;
+  height: 14px;
+  border-radius: var(--piece-shape);
+  background: var(--piece-color);
+  opacity: 0;
+  animation: burst calc(var(--duration-celebrate) * 1.6) var(--ease-out) var(--piece-delay) both;
+}
+
+@keyframes burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0) scale(0.4);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--piece-x), calc(var(--piece-y) + 140px)) rotate(var(--piece-spin))
+      scale(1);
+  }
+}

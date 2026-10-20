@@ -8,5 +8,11 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@playhoot/app-core": "*",
+    "@playhoot/communication": "*",
+    "@playhoot/protocol": "*",
+    "zustand": "^5.0.15"
   }
 }

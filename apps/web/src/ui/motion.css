@@ -1,0 +1,130 @@
+/*
+ * Shared motion vocabulary (docs/design/DESIGN_SYSTEM.md "Motion").
+ * Use the utility classes, or the keyframes from component CSS. Timing comes from the motion
+ * tokens; `--motion-index` staggers siblings. prefers-reduced-motion collapses all of it
+ * (tokens.css).
+ */
+
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes motion-bump {
+  40% {
+    transform: scale(1.25);
+  }
+}
+
+@keyframes motion-hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  20% {
+    transform: translateY(0) scale(1.08, 0.9);
+  }
+  45% {
+    transform: translateY(-22px) scale(0.95, 1.06) rotate(-6deg);
+  }
+  70% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+}
+
+@keyframes motion-shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  20% {
+    transform: translateX(-6px) rotate(-4deg);
+  }
+  40% {
+    transform: translateX(5px) rotate(3deg);
+  }
+  60% {
+    transform: translateX(-3px) rotate(-2deg);
+  }
+  80% {
+    transform: translateX(2px) rotate(1deg);
+  }
+}
+
+@keyframes motion-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.motion-rise {
+  animation: motion-rise var(--duration-enter) var(--ease-out) both;
+  animation-delay: calc(var(--motion-index, 0) * var(--stagger-step));
+}
+
+.motion-pop {
+  animation: motion-pop var(--duration-enter) var(--ease-bounce) both;
+  animation-delay: calc(var(--motion-index, 0) * var(--stagger-step));
+}
+
+.motion-fade {
+  animation: motion-fade var(--duration-base) var(--ease-standard) both;
+}
+
+.motion-bump {
+  animation: motion-bump var(--duration-base) var(--ease-bounce);
+}
+
+.motion-hop {
+  animation: motion-hop var(--duration-celebrate) var(--ease-out) both;
+}
+
+.motion-shake {
+  animation: motion-shake var(--duration-enter) var(--ease-out) both;
+}
+
+/* Children of a cascade container enter one after another (Stage uses it for every screen). */
+.motion-cascade > * {
+  animation: motion-rise var(--duration-enter) var(--ease-out) both;
+  animation-delay: calc(var(--motion-index, 0) * var(--stagger-step));
+}
+
+.motion-cascade > :nth-child(2) {
+  --motion-index: 1;
+}
+
+.motion-cascade > :nth-child(3) {
+  --motion-index: 2;
+}
+
+.motion-cascade > :nth-child(4) {
+  --motion-index: 3;
+}
+
+.motion-cascade > :nth-child(n + 5) {
+  --motion-index: 4;
+}

@@ -19,7 +19,10 @@ npm install
 npm run dev        # web app at http://localhost:5173
 npm run check      # typecheck + lint + format check + tests
 npm run build      # production build of the web app
+node scripts/dev-host.mjs   # dev: create + start a Session on the local backend
 ```
+
+Design proposal: [docs/design/DESIGN_SYSTEM.md](docs/design/DESIGN_SYSTEM.md); live style guide at http://localhost:5173/design while `npm run dev` runs.
 
 ## Layout
 
@@ -29,5 +32,6 @@ apps/mobile         React Native/Expo shell (not started)
 packages/*          app-core, protocol, communication, device, game-host, game-sdk
 packages/features/* feature logical state (session-join, session-play, ...)
 fixtures/games      small game artifacts for end-to-end work
+scripts/            development tools
 docs/               architecture, decisions, projects, AI workflow
 ```

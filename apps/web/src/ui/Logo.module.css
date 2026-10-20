@@ -1,0 +1,29 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.word {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.hoot {
+  color: var(--color-primary);
+}
+
+.md .word {
+  font-size: 1.5rem;
+}
+
+.lg {
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lg .word {
+  font-size: var(--text-display);
+}

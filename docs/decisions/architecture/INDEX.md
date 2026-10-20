@@ -8,5 +8,7 @@ Frontend ADRs (`ADR-NNNN`, this repository's own sequence). Process: `docs/decis
 | --- | --- | --- |
 | ADR-0001 | [Workspace tooling for the frontend foundation](ADR-0001-workspace-tooling-for-the-frontend-foundation.md) | ACCEPTED |
 | ADR-0002 | [Frontend-owned, shareable Session URLs](ADR-0002-frontend-owned-shareable-session-urls.md) | ACCEPTED |
+| ADR-0003 | [Styling with CSS Modules and design tokens](ADR-0003-styling-with-css-modules-and-design-tokens.md) | ACCEPTED |
+| ADR-0004 | [Internationalization with FormatJS and ICU messages](ADR-0004-internationalization-with-formatjs-and-icu-messages.md) | ACCEPTED |
 
-Next ID: `ADR-0003`.
+Next ID: `ADR-0005`.

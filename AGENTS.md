@@ -71,6 +71,14 @@ Canonical reusable engineering standards live under
 standards from recurring implementation patterns; use the Engineering
 Standard process.
 
+## Assets
+
+Build as if every asset (image, sprite, sound, music) already exists: register it in
+`apps/web/src/assets/assets.json`, use it by id, give it a placeholder behavior
+while missing, and document it in `docs/design/ASSETS.md` with its spec and a
+generation prompt. The human sources the files. `npm run check` fails if a
+registered asset is not documented.
+
 ## Commands
 
 From the repository root (npm workspaces): `npm install`, `npm run dev`,

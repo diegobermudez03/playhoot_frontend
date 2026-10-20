@@ -6,7 +6,7 @@ Status: FOUNDATION: credential ports, auth snapshot, app-global store (`createAp
 
 ## Owns
 
-Truly global state only (plan §4.4, §13.1, §14): the authentication/identity snapshot (unknown/loading, authenticated, guest, none), visibility capabilities from a future bootstrap/me endpoint, and app-level config that several features genuinely need. Also the app bootstrap sequence contract.
+Truly global state only (plan §4.4, §13.1, §14): the authentication/identity snapshot (unknown/loading, authenticated, guest, none), the current language (supported languages, resolution from the device, persisted choice), visibility capabilities from a future bootstrap/me endpoint, and app-level config that several features genuinely need. Also the app bootstrap sequence contract.
 
 ## Does not own
 

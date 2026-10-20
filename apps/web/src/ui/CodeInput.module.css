@@ -1,0 +1,20 @@
+.wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  border: 0;
+  cursor: text;
+  /* Keeps iOS from zooming into the field. */
+  font-size: 16px;
+}
+
+.wrap:focus-within {
+  outline: none;
+}

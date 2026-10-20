@@ -1,0 +1,68 @@
+.tiles {
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    transform var(--duration-fast) var(--ease-bounce),
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.md .tile {
+  width: 40px;
+  height: 48px;
+  font-size: 1.5rem;
+}
+
+/* Large tiles fill the space they are given, up to 56px each, and shrink with it. */
+.lg {
+  display: flex;
+  width: 100%;
+  max-width: calc(6 * 56px + 5 * var(--space-2));
+  container-type: inline-size;
+}
+
+.lg .tile {
+  flex: 1 1 0;
+  min-width: 0;
+  aspect-ratio: 5 / 6;
+  font-size: min(2.25rem, 9cqi);
+}
+
+.filled {
+  border-color: var(--color-primary-shade);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 3px 0 var(--color-primary-shade);
+  transform: translateY(-2px);
+}
+
+.active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.active::after {
+  content: '';
+  width: 2px;
+  height: 50%;
+  background: var(--color-primary);
+  animation: caret 1s steps(1) infinite;
+}
+
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
