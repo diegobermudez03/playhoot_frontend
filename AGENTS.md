@@ -71,6 +71,14 @@ Canonical reusable engineering standards live under
 standards from recurring implementation patterns; use the Engineering
 Standard process.
 
+## Logic Mirror
+
+`docs/logic/` explains the frontend's behavior for the human, who does not read
+this TypeScript: `FLOWS.md` (flows, external calls, state, navigation) and
+`mirror/*.go` (the same as Go-syntax pseudocode). Any change to an external
+call, a state shape, a transition or navigation updates them in the same
+change (`docs/logic/README.md`).
+
 ## Assets
 
 Build as if every asset (image, sprite, sound, music) already exists: register it in

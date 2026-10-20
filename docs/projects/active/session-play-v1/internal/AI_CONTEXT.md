@@ -33,3 +33,4 @@ Last updated: 2026-10-20
 - Human preferences (2026-10-20): loves the design; wants everything driven by global variables, lively motion (fun, not excessive) and sound effects; agents build assuming assets exist and list them in docs/design/ASSETS.md for the human to source (AI-generable or downloadable).
 - Running TypeScript ad hoc against the backend: `npx --yes tsx@4 file.ts` works for one-off checks (Node 22 has a global WebSocket and sends no Origin header).
 - Scratchpad hazard: never name a scratch Python file after a stdlib module (a `tokenize.py` broke PIL).
+- Human preference (2026-10-20): they will not read this repo's code; keep `docs/logic/` (FLOWS.md + Go pseudocode mirror of state, external calls and navigation, no presentation) current with every logic change.

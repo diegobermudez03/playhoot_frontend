@@ -19,6 +19,7 @@ This is a machine-facing routing document. It does not explain Playhoot. It tell
 | Frontend architecture rules, invariants, layout, layers | `ARCHITECTURE.md` | AVAILABLE |
 | Full architecture skeleton / rationale (§N references) | `docs/Playhoot_Frontend_Architecture_Plan.docx` | AVAILABLE (.docx; see `AGENTS.md` for how to read it) |
 | What is actually implemented | `CURRENT_STATE.md`, then code/tests | AVAILABLE |
+| Behavior for the human: flows, external calls, global/feature state, navigation (prose + Go pseudocode) | `docs/logic/FLOWS.md`, `docs/logic/mirror/` | AVAILABLE (must be kept in sync with code) |
 | Visual identity, design tokens, motion, sound, UI components, UI voice | `docs/design/DESIGN_SYSTEM.md` (living style guide at `/design` in dev) | AVAILABLE |
 | Images, sounds, music the app uses; which are missing | `docs/design/ASSETS.md`, registry `apps/web/src/assets/assets.json`, `npm run assets` | AVAILABLE |
 | Languages, message catalogs, how to write user-facing text | `docs/engineering/standards/user-facing-text.md`, catalogs in `apps/web/src/i18n/messages/` | AVAILABLE |

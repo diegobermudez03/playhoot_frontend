@@ -1,0 +1,225 @@
+// PSEUDOCODE — Go syntax, not compiled.
+// STATE: the Join Session feature — the logic behind every screen of the Session route
+// (view_session*.go), from "who are you?" to the game start.
+//
+// The views call these methods; the screen shown follows State.View.Phase.
+// In the real code the connection's events reach one dispatcher that calls the On* methods below.
+// code: packages/features/session-join/src/joinSession.ts
+package mirror
+
+// JoinSessionState is the feature's whole state. It lives while a Session route is on screen and is
+// thrown away when the person leaves it. Nothing of it is persisted.
+type JoinSessionState struct {
+	Target      SessionTarget // what the URL asked for (code or Session UUID)
+	SessionUUID string        // learned from the backend; once known, the URL names it (view_session.go)
+	View        JoinView      // the current phase; decides the screen
+}
+
+// JoinView: one phase at a time, with the data that phase needs.
+type JoinView struct {
+	Phase string // "identity" | "connecting" | "lobby" | "started" | "leaving" | "closed"
+
+	Submitting       bool           // identity: waiting for POST /v1/guests
+	IdentityError    *IdentityError // identity: why the name was not accepted
+	ReconnectAttempt int            // connecting: 0 first try, 1..3 reconnecting
+	Members          []LobbyMember  // lobby
+	Started          *StartedSession
+	Outcome          *JoinOutcome // closed
+}
+
+type LobbyMember struct {
+	UserUUID string
+	IsYou    bool // computed: UserUUID == global.Auth.UserUUID
+}
+
+type StartedSession struct {
+	ParticipantID string // "P2": this player
+	Participants  []struct {
+		ParticipantID, UserUUID string
+		IsYou                   bool
+	}
+	Frontend struct{ URL, SHA256, ExpiresAt string } // the game's frontend, for Session Play (later)
+}
+
+type IdentityError struct {
+	Kind              string // "invalid-name" | "rate-limited" | "unavailable"
+	Reason            string // invalid-name: "empty" | "too-long" | "rejected"
+	MaxLength         int    // 64
+	RetryAfterSeconds int
+}
+
+type JoinOutcome struct {
+	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "replaced" | "connection-lost" | "protocol-error"
+	Reason      string // rejected: lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
+	Status      string // ended: FINISHED | CANCELLED | EXPIRED | ABORTED
+	EndCause    string // ended: HOST_CANCELLED, LOBBY_EXPIRED, GAME_FINISHED...
+	BeforeStart bool   // ended: the lobby closed before the game started
+}
+
+type JoinSession struct {
+	State      JoinSessionState
+	connection *ConnectionState // state_connection.go; at most one at a time
+	attempt    int              // which connection attempt is current
+	pendingKey struct{ Name, Key string }
+}
+
+// ─── Lifecycle ─────────────────────────────────────────────────────────────
+
+func NewJoinSession(target SessionTarget) *JoinSession {
+	j := &JoinSession{State: JoinSessionState{Target: target, View: JoinView{Phase: "connecting"}}}
+	if target.Kind == "session" {
+		j.State.SessionUUID = target.SessionUUID
+	}
+	return j
+}
+
+// PointsAt: does this feature already serve that URL? (same Session UUID, or same code)
+func (j *JoinSession) PointsAt(target SessionTarget) bool { return false }
+
+// Dispose: the route was left. Closes the connection WITHOUT sending leave; cancels a pending reconnect.
+func (j *JoinSession) Dispose() { j.dropConnection() }
+
+// ─── Intents (called by the views) ─────────────────────────────────────────
+
+// Start: right after creation, and again on Retry.
+func (j *JoinSession) Start() {
+	if global.Auth.Status == "guest" || global.Auth.Status == "authenticated" {
+		j.connect(0) // already someone: the name is not asked again
+		return
+	}
+	j.State.View = JoinView{Phase: "identity"} // -> IdentityScreen
+}
+
+// SubmitDisplayName: "Let's play" on the identity screen.
+func (j *JoinSession) SubmitDisplayName(raw string) {
+	name := trim(raw)
+	// rule: 1..64 characters, else IdentityError{invalid-name, empty | too-long}; the backend is not called.
+
+	// rule: same name submitted again -> same idempotency key, so a retry never creates two guests.
+	if j.pendingKey.Name != name {
+		j.pendingKey.Name, j.pendingKey.Key = name, newUUID()
+	}
+	j.State.View = JoinView{Phase: "identity", Submitting: true}
+
+	guest, failure := CreateGuest(name, j.pendingKey.Key) // external.go: POST /v1/guests
+
+	if failure != nil {
+		// rule: 400 -> invalid-name/rejected · code rate_limited -> rate-limited (+ seconds) · else unavailable.
+		j.State.View = JoinView{Phase: "identity", IdentityError: &IdentityError{}} // stays on IdentityScreen
+		return
+	}
+	SignIn(Credential{Token: guest.Token, UserUUID: guest.UserUUID, Kind: "guest", DisplayName: name}) // state_app.go (persisted)
+	j.connect(0)
+}
+
+// Retry: "Try again" / "Play here" on the outcome screen, and after a dev account is picked.
+func (j *JoinSession) Retry() { j.Start() }
+
+// Leave: "Leave game" on the lobby screen.
+func (j *JoinSession) Leave() {
+	if j.connection != nil && j.State.View.Phase != "closed" {
+		j.State.View = JoinView{Phase: "leaving"} // -> ConnectingScreen ("Leaving the game…")
+		j.connection.Leave()                      // sends {"type":"leave"}; the server closes as "left" -> OnConnectionClosed
+		return
+	}
+	j.dropConnection()
+	j.State.View = outcome("left")
+}
+
+// ─── Connecting ────────────────────────────────────────────────────────────
+
+func (j *JoinSession) connect(attempt int) {
+	j.dropConnection()
+	target := j.State.Target
+	if j.State.SessionUUID != "" {
+		// rule: once the Session is known, always connect by Session UUID (the code dies at start).
+		target = SessionTarget{Kind: "session", SessionUUID: j.State.SessionUUID}
+	}
+
+	socket, noCredential := OpenPlayerConnection(target) // external.go: WebSocket /v1/play/join/...
+
+	if noCredential != nil {
+		j.State.View = JoinView{Phase: "identity"} // -> IdentityScreen
+		return
+	}
+	j.attempt = attempt
+	j.State.View = JoinView{Phase: "connecting", ReconnectAttempt: attempt} // -> ConnectingScreen
+	j.connection = connectionOf(socket)                                      // its events call the On* methods below
+}
+
+// ─── Events from the server (through the connection) ───────────────────────
+
+// OnLobbyUpdate: "lobby_update" — joined the lobby, or someone joined/left. Always the whole list.
+func (j *JoinSession) OnLobbyUpdate(m LobbyUpdate) {
+	j.State.SessionUUID = m.SessionUUID                            // -> the view replaces the URL
+	j.State.View = JoinView{Phase: "lobby", Members: membersOf(m)} // -> LobbyScreen
+}
+
+// OnSessionStarted: "session_started" — the game began (also re-sent after a reconnection).
+func (j *JoinSession) OnSessionStarted(m SessionStarted) {
+	j.State.SessionUUID = m.SessionUUID
+	j.State.View = JoinView{Phase: "started", Started: startedOf(m)} // -> StartedScreen
+}
+
+// OnRejected: "rejected" — the backend refused the player; the connection closes right after.
+func (j *JoinSession) OnRejected(m Rejected) {
+	j.State.View = JoinView{Phase: "closed", Outcome: &JoinOutcome{Kind: "rejected", Reason: m.Reason}} // -> OutcomeScreen
+}
+
+// OnSessionEnd: "lobby_closed" (beforeStart) or "session_ended".
+func (j *JoinSession) OnSessionEnd(m SessionEnd, beforeStart bool) {
+	j.State.View = JoinView{Phase: "closed", Outcome: &JoinOutcome{Kind: "ended", Status: m.Status, EndCause: m.EndCause, BeforeStart: beforeStart}}
+}
+
+// OnProtocolError: a server message broke the contract.
+func (j *JoinSession) OnProtocolError() {
+	j.dropConnection()
+	j.State.View = outcome("protocol-error")
+}
+
+// OnConnectionClosed: the WebSocket closed. kind comes from state_connection.go#classifyClose.
+func (j *JoinSession) OnConnectionClosed(kind CloseKind, attempt int, opened bool) {
+	if j.State.View.Phase == "closed" {
+		return // a rejection or an end message already decided the outcome
+	}
+	if j.State.View.Phase == "leaving" {
+		j.State.View = outcome("left") // -> the view navigates home
+		return
+	}
+	switch kind {
+	case "left":
+		j.State.View = outcome("left")
+	case "replaced":
+		j.State.View = outcome("replaced") // same player connected elsewhere: never reconnect by itself
+	case "session-ended":
+		j.State.View = JoinView{Phase: "closed", Outcome: &JoinOutcome{Kind: "ended", Status: "UNKNOWN"}}
+	case "protocol":
+		j.State.View = outcome("protocol-error")
+	case "unreachable", "retryable", "disconnected":
+		if kind == "unreachable" && attempt == 0 {
+			j.State.View = outcome("unreachable") // the code/link itself is not joinable
+			return
+		}
+		// rule: up to 3 reconnections, waiting 1 s, 2 s, then 4 s; a connection that had opened
+		// restarts the count. After the 3rd failure -> outcome("connection-lost").
+		next := attempt + 1
+		if opened {
+			next = 1
+		}
+		if next > 3 {
+			j.State.View = outcome("connection-lost")
+			return
+		}
+		j.State.View = JoinView{Phase: "connecting", ReconnectAttempt: next} // -> ConnectingScreen
+		afterDelay(next, func() { j.connect(next) })
+	}
+}
+
+func (j *JoinSession) dropConnection() {} // cancels a pending reconnect and closes the connection (no leave)
+
+func outcome(kind string) JoinView               { return JoinView{Phase: "closed", Outcome: &JoinOutcome{Kind: kind}} }
+func membersOf(m LobbyUpdate) []LobbyMember      { return nil } // marks IsYou
+func startedOf(m SessionStarted) *StartedSession { return nil } // marks IsYou by ParticipantID
+func connectionOf(s Socket) *ConnectionState     { return nil }
+func trim(s string) string                       { return s }
+func afterDelay(attempt int, f func())           {} // 1000, 2000, 4000 ms

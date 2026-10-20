@@ -4,6 +4,7 @@ Web host (and, later, mobile host), GameHost, Game SDK and shared packages for P
 
 - Architecture: [ARCHITECTURE.md](ARCHITECTURE.md) (from the plan in [docs/Playhoot_Frontend_Architecture_Plan.docx](docs/Playhoot_Frontend_Architecture_Plan.docx))
 - What exists today: [CURRENT_STATE.md](CURRENT_STATE.md)
+- How it behaves (flows, calls, state, navigation, without code): [docs/logic/](docs/logic/)
 - Active work: [docs/projects/active/](docs/projects/active/)
 - What the backend exposes: [docs/architecture/BACKEND_CONTRACT.md](docs/architecture/BACKEND_CONTRACT.md)
 - Working with AI agents: [AGENTS.md](AGENTS.md) and [docs/ai/README.md](docs/ai/README.md)
