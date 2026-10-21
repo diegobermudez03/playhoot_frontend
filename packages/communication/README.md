@@ -2,7 +2,7 @@
 
 HTTP/WebSocket clients and credential-aware transport.
 
-Status: REALTIME CLIENT: HTTP client, `IdentityClient`, `SessionConnector` (player connection, message validation, close classification, coalesced SAMPLEs, correlated and retried COMMANDs, reconciled views with automatic resync, leave). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: REALTIME CLIENT: HTTP client, `IdentityClient`, `SessionConnector` (player connection, message validation, close classification, coalesced SAMPLEs, correlated and retried COMMANDs, reconciled views with automatic resync and `currentView()` (state + ack), leave). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

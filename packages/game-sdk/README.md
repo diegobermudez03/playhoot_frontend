@@ -2,7 +2,7 @@
 
 API exposed to the generated game frontend.
 
-Status: MINIMAL SDK (plan step 5, bridge v1, ADR-0005 PROPOSED). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: MINIMAL SDK (plan step 5, bridge v1, ADR-0005). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

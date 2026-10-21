@@ -2,7 +2,7 @@
 
 Join Session feature (logical state and ports).
 
-Status: IMPLEMENTED: `createJoinSession` (identity, connecting, lobby, started, typed outcomes, reconnection by Session UUID). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createJoinSession` (identity, connecting, lobby, started, typed outcomes, reconnection by Session UUID). During a game a lost connection keeps the phase `started` with `connection: 'reconnecting'`, so Session Play keeps the game on screen; `live` is a link to whatever connection is current (sample, command, current view, and the `open` / `view` / `sample-sent` events), which Session Play's GameHost uses. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

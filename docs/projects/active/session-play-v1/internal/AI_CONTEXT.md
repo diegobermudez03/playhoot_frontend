@@ -1,11 +1,11 @@
 Process: Project execution (session-play-v1), human-directed implementation
 Topic: First web vertical slice (join link -> join -> play) per docs/Playhoot_Frontend_Architecture_Plan.docx
-Current stage: plan steps 4+5 (WebGameHost + Game SDK, bridge v1 ADR-0005 PROPOSED, Space Drift fixture, /dev/game-host lab) implemented and verified 2026-10-20; earlier the same day: step 3 (realtime client), design system, i18n, Join Session, backend Z2, foundation
+Current stage: plan step 6 (Session Play) implemented and verified end to end 2026-10-20 (completion gate J met); same day: steps 4+5 (GameHost, SDK, bridge v1 ADR-0005 ACCEPTED, Space Drift fixture, lab), step 3, design system, i18n, Join Session, backend Z2, foundation
 Current execution surface: CODEBASE AGENT
 Related durable artifacts: docs/projects/active/session-play-v1/PROJECT.md, docs/projects/active/session-play-v1/CHECKLIST.md, docs/Playhoot_Frontend_Architecture_Plan.docx, ARCHITECTURE.md, docs/architecture/BACKEND_CONTRACT.md, docs/decisions/architecture/ADR-0001-workspace-tooling-for-the-frontend-foundation.md
 Blocked by: nothing (open human decisions in PROJECT.md; a real WS upgrade check waits for the human's local DB to match the backend schema)
-Next action: wait for the human: accept/change the bridge catalog (ADR-0005, PROJECT decision 5); by the plan, step 6 (Session Play), which needs the fixture artifact stored in the backend (Z4, a backend change only when the human directs it); the human sources assets from docs/design/ASSETS.md
-Last durable checkpoint: GameHost + SDK + fixture + lab; CHECKLIST D/E/M, CURRENT_STATE, ADR-0005 (PROPOSED), BACKEND_CONTRACT G7/G9, package READMEs, docs/logic (state_gamehost.go, FLOWS §12), PROJECT updated (2026-10-20)
+Next action: wait for the human; by the plan step 7 (fixed-aspect viewport; needs Z5 aspect ratio from the backend), 8 (adaptive presentation), 9 (hardening), K (observability). Uncommitted backend changes in ../playhoot (Space Drift seed version c2 + docs) for the human to review/commit
+Last durable checkpoint: Session Play; CHECKLIST B/C/D/E/F/J/K/M/Z, CURRENT_STATE, package READMEs, docs/logic (state_sessionplay.go, view_session_started.go, FLOWS 5-7, 11-12), PROJECT; backend: seed migration seed_20261020000000_space_drift_frontend + seeddata/, play/CURRENT_STATE.md, ENGINEERING_RADAR (bucket CORS), session-runtime-v1 PROJECT (2026-10-20)
 Last updated: 2026-10-20
 
 ## Working agreement (copied from the backend's practice; confirm with the human, PROJECT.md decision 1)
@@ -35,5 +35,6 @@ Last updated: 2026-10-20
 - Scratchpad hazard: never name a scratch Python file after a stdlib module (a `tokenize.py` broke PIL).
 - GameHost verification in headless Edge: the sandboxed (opaque-origin) iframe runs out of process, so DevTools `Runtime.evaluate` inside it needs `Target.setAutoAttach {flatten: true}` and the iframe target's `sessionId`. React StrictMode mounts the lab twice in dev (first host disposed at once). Stop the dev server by the PID listening on 5173.
 - Fake-gcs (dev storage at localhost:4443) answers `Access-Control-Allow-Origin: *`; a real bucket needs CORS for the web origin (G7).
-- The fixture's artifact must be rebuilt (`npm run fixtures`) after SDK or game changes; `dist/` is git-ignored.
+- The fixture's artifact must be rebuilt (`npm run fixtures`) after SDK or game changes; `dist/` is git-ignored. The backend embeds a copy (`../playhoot/play/session/internal/migrations/seeddata/space_drift_frontend.html`); a changed game needs a NEW backend seed version, never an edit (versions are pinned by Sessions).
+- End-to-end Session Play runs (2026-10-20): temporary DB `playhoot_fe_e2e` (create, `DATABASE_NAME=playhoot_fe_e2e go run .` in ../playhoot, drop WITH (FORCE) after); browser credential injected as `{token:'test-user-2', userUUID:'aaaaaaaa-aaaa-4aaa-8aaa-000000000002', kind:'account'}`; host via REST + admin WS (`start_session`, `select_perspective` to read the authoritative view). To cut the connection without the Vite client reloading the page, run Vite with `PLAYHOOT_BACKEND_URL` pointing to a local TCP proxy and destroy its sockets (restarting Vite makes its client reload the page).
 - Human preference (2026-10-20): they will not read this repo's code; keep `docs/logic/` (FLOWS.md + Go pseudocode mirror of state, external calls and navigation, no presentation) current with every logic change.

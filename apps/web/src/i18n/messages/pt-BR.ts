@@ -48,6 +48,17 @@ export const ptBR: Messages = {
   'started.body': 'Você é o jogador <b>{seat}</b> de {total}. Carregando o jogo…',
   'started.bodyNamed': '{name}, você é o jogador <b>{seat}</b> de {total}. Carregando o jogo…',
 
+  'play.seat': 'Jogador {seat} de {total}',
+  'play.reconnecting': 'A conexão caiu. Reconectando…',
+  'play.leave': 'Sair',
+  'play.gameFrame': 'Jogo',
+  'play.failed.title': 'Não conseguimos carregar o jogo',
+  'play.failed.unreachable': 'Verifique sua conexão e tente de novo.',
+  'play.failed.broken': 'Este jogo tem um problema e não consegue começar.',
+  'play.failed.outdated':
+    'Este jogo precisa de uma versão mais nova do Playhoot. Recarregue a página.',
+  'play.failed.retry': 'Tentar de novo',
+
   'outcome.unreachable.title': 'Não encontramos essa partida',
   'outcome.unreachable.body':
     'O código pode estar errado ou expirado, ou a partida já começou. Confirme com o anfitrião.',

@@ -8,6 +8,7 @@ import { useAuth, useServices } from '../../app/ServicesContext';
 import { DevIdentityPicker } from '../../dev/DevIdentityPicker';
 import { AppShell } from '../../ui';
 import { enterCodePath, joinPath, sessionPlayPath } from '../paths';
+import { SessionPlayView } from '../session-play/SessionPlayView';
 import { SessionScreen } from './SessionScreen';
 
 // Serves both Session URLs (ADR-0002): `/join/:joinCode` and `/sessions/:sessionUUID/play`.
@@ -73,6 +74,14 @@ function SessionView({ join }: { join: JoinSession }) {
           copyInvite,
         }}
         devIdentity={import.meta.env.DEV ? <DevIdentityPicker onPicked={join.retry} /> : undefined}
+        renderPlay={(view) => (
+          <SessionPlayView
+            view={view}
+            live={join.live}
+            displayName={displayName}
+            onLeave={join.leave}
+          />
+        )}
       />
     </AppShell>
   );

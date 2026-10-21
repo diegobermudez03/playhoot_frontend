@@ -32,7 +32,14 @@ class FakeConnection implements SessionConnection {
   leave() {
     this.left = true;
   }
-  sample() {}
+  samples: Record<string, unknown>[] = [];
+  view: { state: unknown; ack: number } | undefined = undefined;
+  sample(inputs: Record<string, unknown>) {
+    this.samples.push(inputs);
+  }
+  currentView() {
+    return this.view;
+  }
   resync() {}
   command(name: string) {
     return Promise.resolve({ token: name, outcome: 'connection-closed' as const });
@@ -90,6 +97,14 @@ function setup(options: { signedIn?: boolean; target?: SessionTarget } = {}) {
     view: () => join.store.getState().view,
   };
 }
+
+const started = {
+  type: 'session_started',
+  session_uuid: 's-1',
+  participant_id: 'P1',
+  participants: [{ participant_id: 'P1', user_uuid: me }],
+  frontend: { url: 'u', sha256: 'h', expires_at: 'x' },
+};
 
 describe('createJoinSession', () => {
   it('asks for a name without an identity, creates a guest, then connects by code', async () => {
@@ -154,6 +169,41 @@ describe('createJoinSession', () => {
       participantId: 'P2',
       userUUID: me,
       isYou: true,
+    });
+  });
+
+  it('keeps the game when the connection drops mid-game, and the live link follows the new one', () => {
+    const t = setup();
+    t.join.start();
+    const events: string[] = [];
+    t.join.live.subscribe((event) => events.push(event.type));
+    t.last().emit({ type: 'open' });
+    t.last().message(started);
+    t.join.live.sample({ move: [1, 0] });
+    expect(t.last().samples).toEqual([{ move: [1, 0] }]);
+
+    t.last().emit({ type: 'closed', kind: 'retryable', code: 1006, reason: '' });
+    expect(t.view()).toMatchObject({ phase: 'started', connection: 'reconnecting' });
+    t.scheduled[0]!.run();
+    expect(t.connections[1]!.target).toEqual({ kind: 'session', sessionUUID: 's-1' });
+    expect(t.view()).toMatchObject({ phase: 'started', connection: 'reconnecting' });
+
+    t.last().view = { state: { x: 1 }, ack: 0 };
+    t.last().emit({ type: 'open' });
+    t.last().message(started);
+    expect(t.view()).toMatchObject({ phase: 'started', connection: 'connected' });
+    expect(t.join.live.currentView()).toEqual({ state: { x: 1 }, ack: 0 });
+    t.join.live.sample({ move: [0, 1] });
+    expect(t.last().samples).toEqual([{ move: [0, 1] }]);
+    // Lobby and lifecycle messages are the join's business, not the game's.
+    expect(events).toEqual(['open', 'open']);
+  });
+
+  it('answers commands on the live link as connection-closed while there is no connection', async () => {
+    const t = setup();
+    expect(await t.join.live.command('teleport', null, { token: 'k' })).toEqual({
+      token: 'k',
+      outcome: 'connection-closed',
     });
   });
 

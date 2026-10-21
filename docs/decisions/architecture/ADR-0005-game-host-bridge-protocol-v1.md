@@ -1,6 +1,6 @@
 # ADR-0005: Game <-> Host bridge protocol v1 and artifact loading
 
-Status: PROPOSED
+Status: ACCEPTED
 Created: 2026-10-20
 Last status change: 2026-10-20
 Supersedes: None
@@ -73,8 +73,9 @@ Smaller messages but every game would reimplement patch merging, which the plan 
 
 ## Canonical Knowledge Impact
 
-None until accepted. When accepted: `ARCHITECTURE.md` "Game Frontend And GameHost" records the bridge and loading rules, and `packages/protocol/README.md` points to this ADR as the owner of the catalog.
+- `ARCHITECTURE.md` "Game Frontend And GameHost" records the bridge and loading rules.
+- `packages/protocol/README.md` points to this ADR as the owner of the catalog.
 
 ## Implementation Impact
 
-Implemented 2026-10-20 as a proposal for the human to react to: `@playhoot/protocol/bridge` (+ `/validation`), `@playhoot/game-host` (`startGameHost`, `createArtifactLoader`), `@playhoot/game-sdk` (`createPlayhoot`), the web iframe container and artifact cache (`apps/web/src/platform`), the Space Drift fixture (`fixtures/games/space-drift`) and the development lab `/dev/game-host`.
+Accepted by the human on 2026-10-20 (every name approved). Implemented 2026-10-20: `@playhoot/protocol/bridge` (+ `/validation`), `@playhoot/game-host` (`startGameHost`, `createArtifactLoader`), `@playhoot/game-sdk` (`createPlayhoot`), the web iframe container and artifact cache (`apps/web/src/platform`), the Space Drift fixture (`fixtures/games/space-drift`) and the development lab `/dev/game-host`.

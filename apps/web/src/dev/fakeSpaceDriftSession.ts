@@ -82,9 +82,8 @@ export function createFakeSpaceDriftSession(me: string, bot: string): FakeSessio
     }
     if (time % 8000 === 0) {
       botShip.adrift = !botShip.adrift;
-      events.push({
-        event: { type: botShip.adrift ? 'SHIP_ADRIFT' : 'SHIP_RECLAIMED', ship: bot },
-      });
+      // As the backend delivers them: the game's `event` value alone.
+      events.push({ type: botShip.adrift ? 'SHIP_ADRIFT' : 'SHIP_RECLAIMED', ship: bot });
     }
     view(false);
   };

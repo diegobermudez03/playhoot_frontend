@@ -24,6 +24,7 @@ type JoinView struct {
 	ReconnectAttempt int            // connecting: 0 first try, 1..3 reconnecting
 	Members          []LobbyMember  // lobby
 	Started          *StartedSession
+	Connection       string       // started: "connected" | "reconnecting" (the game stays on screen)
 	Outcome          *JoinOutcome // closed
 }
 
@@ -38,7 +39,7 @@ type StartedSession struct {
 		ParticipantID, UserUUID string
 		IsYou                   bool
 	}
-	Frontend struct{ URL, SHA256, ExpiresAt string } // the game's frontend, for Session Play (later)
+	Frontend struct{ URL, SHA256, ExpiresAt string } // the game's frontend, run by Session Play
 }
 
 type IdentityError struct {
@@ -58,6 +59,11 @@ type JoinOutcome struct {
 
 type JoinSession struct {
 	State      JoinSessionState
+	// Live is the link Session Play uses: Sample / Command / CurrentView always go to the CURRENT
+	// connection (nothing while there is none: Command answers "connection-closed"), and it
+	// forwards that connection's "open", "view" and "sample-sent" events. A new connection after a
+	// reconnection announces itself with "open". Its listeners are dropped on Dispose.
+	Live       LiveSession
 	connection *ConnectionState // state_connection.go; at most one at a time
 	attempt    int              // which connection attempt is current
 	pendingKey struct{ Name, Key string }
@@ -158,7 +164,7 @@ func (j *JoinSession) OnLobbyUpdate(m LobbyUpdate) {
 // OnSessionStarted: "session_started" — the game began (also re-sent after a reconnection).
 func (j *JoinSession) OnSessionStarted(m SessionStarted) {
 	j.State.SessionUUID = m.SessionUUID
-	j.State.View = JoinView{Phase: "started", Started: startedOf(m)} // -> StartedScreen
+	j.State.View = JoinView{Phase: "started", Started: startedOf(m), Connection: "connected"} // -> StartedScreen (the game)
 }
 
 // OnRejected: "rejected" — the backend refused the player; the connection closes right after.
@@ -210,7 +216,14 @@ func (j *JoinSession) OnConnectionClosed(kind CloseKind, attempt int, opened boo
 			j.State.View = outcome("connection-lost")
 			return
 		}
-		j.State.View = JoinView{Phase: "connecting", ReconnectAttempt: next} // -> ConnectingScreen
+		if j.State.View.Phase == "started" {
+			// rule: during a game the phase stays "started" so the game is not torn down; the
+			// screen shows a "reconnecting" banner over it. The next session_started sets it back
+			// to "connected".
+			j.State.View.Connection = "reconnecting"
+		} else {
+			j.State.View = JoinView{Phase: "connecting", ReconnectAttempt: next} // -> ConnectingScreen
+		}
 		afterDelay(next, func() { j.connect(next) })
 	}
 }

@@ -72,6 +72,9 @@ export interface SessionConnection {
     payload?: Record<string, unknown> | null,
     options?: { token?: string },
   ): Promise<CommandResult>;
+  // The player's current trustworthy state and its ack (the last sample sequence the backend
+  // consumed), or undefined before the first FULL view and while a gap waits for one.
+  currentView(): { state: unknown; ack: number } | undefined;
   // Asks for a FULL view. Gaps already trigger one; this is for the caller's own reasons.
   resync(): void;
   // Asks to leave the Session. The server answers and closes the connection as `left`.
@@ -148,6 +151,7 @@ function wrap(socket: WebSocket, timers: Timers, newToken: () => string): Sessio
   let closed = false;
   let closedByClient = false;
   let resyncRequested = false;
+  let lastAck = 0;
   let sequence = 0;
   let lastSampleAt = -Infinity;
   let pendingInputs: Record<string, unknown> | null = null;
@@ -225,6 +229,7 @@ function wrap(socket: WebSocket, timers: Timers, newToken: () => string): Sessio
     const message = decoded.message;
     if (message.type === 'player_view') {
       const update = views.receive(message);
+      lastAck = update.ack;
       if (update.kind === 'gap' && !resyncRequested) {
         resyncRequested = send({ type: 'resync' });
       }
@@ -287,6 +292,10 @@ function wrap(socket: WebSocket, timers: Timers, newToken: () => string): Sessio
         }
         commands.set(token, { message, attempt: 0, resolve });
       });
+    },
+    currentView() {
+      const state = views.state;
+      return state === undefined ? undefined : { state, ack: lastAck };
     },
     resync() {
       send({ type: 'resync' });

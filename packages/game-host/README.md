@@ -2,7 +2,7 @@
 
 GameHost abstraction and shared bridge logic.
 
-Status: MINIMAL HOST (plan step 4, ADR-0005 PROPOSED): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings. Viewport math (step 7) not started. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: MINIMAL HOST (plan step 4, ADR-0005): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings; a new connection (`open` event) resets the ack translation and sends the game's last inputs again with the first FULL view (plan §13.7). Used by Session Play. Viewport math (step 7) not started. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

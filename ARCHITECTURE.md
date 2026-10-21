@@ -115,6 +115,7 @@ There is no home page yet; it will be one of the last features built. Until then
 - The Host owns SAMPLE sequence, COMMAND idempotency tokens, view revision/baseline and resync mechanics; games do not reimplement protocol.
 - Assets are referenced by logical keys and resolved by the Host; signed URLs and credentials stay in the Host.
 - Pointer/touch positions are normalized to the logical game viewport.
+- Bridge v1 and artifact loading (ADR-0005): `postMessage` objects marked `playhoot.bridge`; the game announces its bridge versions in `ready` and the Host answers `start` with the newest common one; the Host sends whole projections and translates acks into the game's own sample ids; command tokens and connection sequences never reach the game. The Host fetches the artifact without credentials, verifies its SHA-256, caches it by hash, and runs it in a `sandbox="allow-scripts"` iframe through `srcdoc` with a no-network Content-Security-Policy placed first in its head. Platform containers live in each app (web: `apps/web/src/platform/iframeGameContainer.ts`).
 
 ## Errors And Observability (§17)
 

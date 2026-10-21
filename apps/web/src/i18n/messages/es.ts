@@ -49,6 +49,17 @@ export const es: Messages = {
   'started.body': 'Eres el jugador <b>{seat}</b> de {total}. Cargando el juego…',
   'started.bodyNamed': '{name}, eres el jugador <b>{seat}</b> de {total}. Cargando el juego…',
 
+  'play.seat': 'Jugador {seat} de {total}',
+  'play.reconnecting': 'Se perdió la conexión. Reconectando…',
+  'play.leave': 'Salir',
+  'play.gameFrame': 'Juego',
+  'play.failed.title': 'No pudimos cargar el juego',
+  'play.failed.unreachable': 'Revisa tu conexión e inténtalo de nuevo.',
+  'play.failed.broken': 'Este juego tiene un problema y no puede arrancar.',
+  'play.failed.outdated':
+    'Este juego necesita una versión más nueva de Playhoot. Recarga la página.',
+  'play.failed.retry': 'Intentar de nuevo',
+
   'outcome.unreachable.title': 'No encontramos esa partida',
   'outcome.unreachable.body':
     'Puede que el código esté mal escrito o haya expirado, o que la partida ya haya empezado. Confírmalo con tu anfitrión.',

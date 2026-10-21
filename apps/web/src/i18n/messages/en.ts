@@ -48,6 +48,16 @@ export const en = {
   'started.body': "You're player <b>{seat}</b> of {total}. Loading the game…",
   'started.bodyNamed': "{name}, you're player <b>{seat}</b> of {total}. Loading the game…",
 
+  'play.seat': 'Player {seat} of {total}',
+  'play.reconnecting': 'Connection lost. Reconnecting…',
+  'play.leave': 'Leave',
+  'play.gameFrame': 'Game',
+  'play.failed.title': "We couldn't load the game",
+  'play.failed.unreachable': 'Check your connection and try again.',
+  'play.failed.broken': "This game has a problem and can't start.",
+  'play.failed.outdated': 'This game needs a newer Playhoot. Reload the page.',
+  'play.failed.retry': 'Try again',
+
   'outcome.unreachable.title': "We couldn't find that game",
   'outcome.unreachable.body':
     'The code may be mistyped or expired, or the game already started. Check it with your host.',

@@ -39,7 +39,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [x] Join opens the backend join flow through communication (`/v1/play/join/{joinCode}`) — the realtime connection IS the join (2026-10-20: `SessionConnector` in communication; the feature never touches the socket; unit tests and end to end in headless Edge against the real backend through the dev proxy)
 - [x] Rejections rendered as typed reasons with a next action: invalid/expired code, `lobby_full`, `session_started`, `session_unavailable`, auth errors, rate limits, `server_busy` (2026-10-20: every admission reason and terminal outcome has copy and actions, shown in `/design`; refusals before the upgrade (wrong code, auth, limits) cannot be told apart by a browser and share one "couldn't find that game" outcome, see Z10)
 - [x] Lobby state shown while waiting for start (`lobby_update`), including `lobby_closed` (2026-10-20: unit tests and end to end in headless Edge against the real backend through the dev proxy)
-- [ ] Code join replaces its URL with `/sessions/:sessionUUID/play` as soon as the Session UUID is known, and Session Play runs there (ADR-0002; depends on Z2) (2026-10-20: the URL replacement works end to end and keeps the connection; Session Play itself is step 6)
+- [x] Code join replaces its URL with `/sessions/:sessionUUID/play` as soon as the Session UUID is known, and Session Play runs there (ADR-0002; depends on Z2) (2026-10-20: the URL replacement works end to end and keeps the connection; Session Play runs there: 2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database)
 - [x] Leaving the lobby (`leave`) and navigating away dispose the feature state (2026-10-20: unit tests; the route disposes on unmount and keeps the instance only while the URL points at the same Session)
 - [ ] Backend `401/403` respected even when the local snapshot said authenticated (§14) (2026-10-20: done for HTTP, where `token_invalid` forgets the credential; a WebSocket handshake refused for auth is invisible to the browser, Z10)
 
@@ -53,40 +53,40 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [x] View application: FULL replaces; patch applied with backend merge semantics (objects recursive, arrays/scalars replaced, `null` is a value); revision gap → `resync`; ack-only views advance ack only (2026-10-20: unit tests with a fake socket and clock, and against the real backend: 66 patches reproduced exactly the state of the FULL view sent on resync)
 - [x] Ack (`consumed_through_sample_sequence`) exposed for prediction/reconciliation (§15) (2026-10-20: every view update carries `ack`, and `sample-sent` events carry each sent sequence)
 - [x] Transient errors/events delivered once, never re-emitted on resync (2026-10-20: delivered with the view that carries them, also when that view is a gap; nothing is replayed; unit tests)
-- [ ] Reconnect: transport loss → `reconnecting`; reattach within grace via the session player endpoint; after reattach send current full SAMPLE immediately; `session_started` + FULL view on reattach treated as a resync baseline (§13.7)
-- [ ] Rejoin after grace; `participant_disconnected` / `rejoin_rejected` → terminal for this player
+- [x] Reconnect: transport loss → `reconnecting`; reattach within grace via the session player endpoint; after reattach send current full SAMPLE immediately; `session_started` + FULL view on reattach treated as a resync baseline (§13.7) (2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database: the connection cut mid-game, the game stayed with a "reconnecting" banner, reattached by Session UUID, the FULL view became the baseline and the last inputs were sent again (a held key kept steering); unit tests in the GameHost and Join)
+- [ ] Rejoin after grace; `participant_disconnected` / `rejoin_rejected` → terminal for this player (2026-10-20: the same reconnection by Session UUID; a refused rejoin closes with the reason (`participant_disconnected`, `rejoin_rejected`) as a rejection outcome, unit-tested; not exercised end to end after the 3 s grace)
 - [ ] Close-code handling (2026-10-20: every close is classified, unit-tested; Join reconnects by Session UUID up to 3 times (1 s, 2 s, 4 s) and never after `replaced`; pending: reconnection with resync during a running game, step 3): 1000 reasons (`replaced` = do not reconnect, `left`, `session_ended`, `disconnected`), 1001/1006/1011/1012 → reconnect with backoff respecting handshake rate limits (5/s, 30/min per user), 1007/1008 → protocol error, not retried blindly
 - [x] Terminal: `session_ended` / `lobby_closed` with status and end cause → terminal state (2026-10-20: unit tests; host cancellation seen end to end)
 - [ ] Explicit leave vs navigate-away semantics (§13.8) (decision: does navigating away send `leave`, or only close the socket?)
 
 ## D. WebGameHost minimal (§10, §13.3, §16, §18 step 4)
 
-- [ ] `GameHost` abstraction used by Session Play; WebGameHost is its iframe implementation (2026-10-20: `startGameHost` with a `GameContainer` port, iframe container in `apps/web/src/platform`; pending: use by Session Play, step 6)
-- [ ] Artifact obtained by the Host (signed URL from `session_started`), SHA-256 verified, cached by hash; URL/credentials never given to the game (fetch + hash + cache + `srcdoc` chosen by the human 2026-10-20, ADR-0005) (2026-10-20: unit tests; in headless Edge the fixture loaded from the dev server, a wrong hash failed as `artifact-hash-mismatch`, the verified HTML was in Cache Storage; fake-gcs answers CORS `*`. Pending: a real `session_started` URL, step 6)
+- [x] `GameHost` abstraction used by Session Play; WebGameHost is its iframe implementation (2026-10-20: `startGameHost` with a `GameContainer` port, iframe container in `apps/web/src/platform`; used by `createSessionPlay`; 2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database)
+- [x] Artifact obtained by the Host (signed URL from `session_started`), SHA-256 verified, cached by hash; URL/credentials never given to the game (fetch + hash + cache + `srcdoc` chosen by the human 2026-10-20, ADR-0005) (2026-10-20: unit tests; in headless Edge the fixture loaded from the dev server, a wrong hash failed as `artifact-hash-mismatch`, the verified HTML was in Cache Storage; fake-gcs answers CORS `*`. 2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database: the signed URL from `session_started` fetched from the storage emulator, verified, cached; a refresh loaded it from the cache)
 - [x] Sandboxed iframe with a minimal sandbox (`allow-scripts` only unless explicitly needed) and restrictive CSP/origin strategy (2026-10-20, headless Edge: the game's origin is `null`; `localStorage`, `document.cookie`, `fetch` and `window.parent.document` all blocked from inside; the CSP `<meta>` is the head's first element; the parent cannot reach the game's document. Hardening review stays in I)
 - [x] Versioned bridge established (protocol version negotiated) + READY handshake with timeout (2026-10-20: unit tests incl. no common version and timeout; `running (bridge v1)` in headless Edge)
 - [x] After READY: initial platform context + current FULL projection sent to the game (2026-10-20: unit tests; the fixture rendered its first projection in headless Edge)
-- [ ] Container disposed on route/session end; no leaked listeners (2026-10-20: `dispose` removes the iframe and its listener and unsubscribes from the Session, unit tests and headless Edge (0 iframes after Dispose and after failures); pending: route/session end, step 6)
+- [x] Container disposed on route/session end; no leaked listeners (2026-10-20: `dispose` removes the iframe and its listener and unsubscribes from the Session, unit tests and headless Edge (0 iframes after Dispose and after failures); 2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database: leaving disposed the game and went to Enter a code; the screen disposes Session Play with it)
 - [x] Artifact failure states: not loading, hash mismatch, READY timeout, unsupported bridge version → typed GameHost errors (2026-10-20: `artifact-unreachable`, `artifact-hash-mismatch`, `ready-timeout`, `unsupported-bridge-version`, plus `container-violation` when the game navigates its frame; unit tests, hash mismatch also in headless Edge)
 
 ## E. Playhoot Game SDK minimal (§9, §11, §18 step 5)
 
-- [ ] Bridge protocol defined in `@playhoot/protocol/bridge`, versioned, with runtime validation on the Host side (decision: message catalog and names, §19) (2026-10-20: v1 implemented and tested as ADR-0005 PROPOSED; ticks when the human accepts the catalog)
+- [x] Bridge protocol defined in `@playhoot/protocol/bridge`, versioned, with runtime validation on the Host side (catalog and names accepted by the human 2026-10-20, ADR-0005) (2026-10-20: v1 implemented, unit tests and headless Edge)
 - [x] SDK API: projection updates, events, command responses, `sample`, `command`, `requestAsset` (minimal), READY (2026-10-20: `createPlayhoot`; unit tests through the real Host; the fixture used all of it in headless Edge)
 - [x] SDK has no Host/framework dependency (lint) and works with any game framework (2026-10-20: lint rule verified with temporary violating imports, incl. the Host's validation subpath; the fixture is plain canvas TypeScript; its artifact has no zod)
 - [x] Host validates every inbound bridge message (type, payload, context/role) even from the official SDK; invalid messages rejected and recorded (2026-10-20: exact shapes, size, growing sample ids, nothing before READY, one READY; refused messages emitted as `bridge-rejected`; unit tests)
 - [ ] Host validates SAMPLE/COMMAND against the GameVersion contract before sending (needs the manifest or its frontend-relevant part on the client: Z6)
-- [ ] A small real game built as an artifact with the SDK (`fixtures/games`), matching a backend game (e.g. Space Drift), used end to end (2026-10-20: `fixtures/games/space-drift`, played in the GameHost lab in headless Edge against a fake Session: samples, teleport command, asset; pending: end to end with the real backend, which needs the artifact stored there (Z4), step 6)
-- [ ] Game build pipeline produces a single artifact the backend can store/serve (depends on Z4) (2026-10-20: the fixture's `build.mjs` produces one self-contained HTML + its SHA-256 with Vite; not stored in the backend yet)
+- [x] A small real game built as an artifact with the SDK (`fixtures/games`), matching a backend game (e.g. Space Drift), used end to end (2026-10-20: `fixtures/games/space-drift`, played in the GameHost lab in headless Edge against a fake Session: samples, teleport command, asset; 2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database)
+- [x] Game build pipeline produces a single artifact the backend can store/serve (depends on Z4) (2026-10-20: the fixture's `build.mjs` produces one self-contained HTML + its SHA-256 with Vite; stored and served by the backend as Space Drift's seed version `...c2`; the real artifact format (bundles, assets) stays Z4)
 
 ## F. Session Play vertical slice (§12, §13, §18 step 6)
 
-- [ ] SessionPlayState: lifecycle (loading/lobby/running/terminal), connection (connecting/connected/reconnecting/disconnected), identity + role (`participant_id`, roster), current projection + revision baseline, platform messages/errors, artifact metadata, GameHost readiness
-- [ ] `/sessions/:sessionUUID/play` reconstructs Session Play from URL + backend after refresh (ADR-0002)
-- [ ] Real Session: join, start (by admin via API/dev tool), load GameVersion, see projection, send SAMPLE/COMMAND, receive events/responses, end
-- [ ] Short disconnection tolerated: reconnect + resync, game receives an authoritative full resync
-- [ ] Leaving the route disposes subscriptions, GameHost and connection; returning rebuilds (§13.8)
-- [ ] Terminal states shown with status/cause
+- [x] SessionPlayState: lifecycle (loading/lobby/running/terminal), connection (connecting/connected/reconnecting/disconnected), identity + role (`participant_id`, roster), current projection + revision baseline, platform messages/errors, artifact metadata, GameHost readiness (2026-10-20: split between Join Session (lifecycle, connection, identity, artifact metadata) and Session Play (GameHost readiness and errors); the projection and its baseline live in the connection, reached through Join's live link; see `packages/features/session-play/README.md`)
+- [x] `/sessions/:sessionUUID/play` reconstructs Session Play from URL + backend after refresh (ADR-0002) (2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database: a refresh mid-game came back to the game at the same state)
+- [x] Real Session: join, start (by admin via API/dev tool), load GameVersion, see projection, send SAMPLE/COMMAND, receive events/responses, end (2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database: joined by link, host started from a script, the game loaded, projection rendered, SAMPLEs moved the ship (x 800 → 969), the `teleport` COMMAND moved it to (200, 199) with its cooldown, leaving ended the Session (`ALL_PLAYERS_LEFT`); events reach the game in unit tests and the lab (none fired in the run))
+- [x] Short disconnection tolerated: reconnect + resync, game receives an authoritative full resync (2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database)
+- [x] Leaving the route disposes subscriptions, GameHost and connection; returning rebuilds (§13.8) (2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database; unit tests for Session Play detach/dispose)
+- [x] Terminal states shown with status/cause (2026-10-20: the game screen gives way to the Join outcome screens (ended with status and cause, rejected, connection lost), which already existed and were verified with host cancellation)
 
 ## G. Fixed-aspect game viewport (§8, §18 step 7)
 
@@ -112,12 +112,12 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## J. Completion gate (§18)
 
-- [ ] A user opens a join link directly, resolves identity, establishes the Session, loads the isolated GameVersion artifact, plays via SAMPLE/COMMAND, receives projections/events, tolerates a short disconnection, and rebuilds from route/backend without relying on page memory — demonstrated end to end against the real backend
+- [x] A user opens a join link directly, resolves identity, establishes the Session, loads the isolated GameVersion artifact, plays via SAMPLE/COMMAND, receives projections/events, tolerates a short disconnection, and rebuilds from route/backend without relying on page memory — demonstrated end to end against the real backend (2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database; identity resolution by guest name was verified in step 2)
 
 ## K. Observability (§17)
 
-- [ ] Errors classified by origin: presentation, bridge/contract, transport, backend logical rejection, artifact/GameHost
-- [ ] Metrics/events captured: artifact load time, time to GameHost READY, reconnect count, bridge validation failures, WS disconnects, resync count, artifact errors (decision: where they are sent; console/dev sink acceptable initially)
+- [ ] Errors classified by origin: presentation, bridge/contract, transport, backend logical rejection, artifact/GameHost (2026-10-20: GameHost errors are typed (artifact/GameHost), refused game messages are recorded (bridge/contract), transport and backend rejections are typed by Join; no single classification sink yet)
+- [ ] Metrics/events captured: artifact load time, time to GameHost READY, reconnect count, bridge validation failures, WS disconnects, resync count, artifact errors (decision: where they are sent; console/dev sink acceptable initially) (2026-10-20: artifact load time, time to READY, refused game messages and game failures go to a development console sink; reconnect, disconnect and resync counts not yet)
 
 ## L. Global bootstrap and visibility (§14, §18 step 10)
 
@@ -125,10 +125,10 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## M. Invariants verification (ARCHITECTURE.md "Invariants")
 
-- [ ] Game never receives tokens, the real WebSocket, signed URLs or backend access (test/inspection) (2026-10-20: GameHost unit tests check no command token reaches the game; headless Edge: no storage, cookies, network or parent access from the game; pending: with a real Session, step 6)
+- [x] Game never receives tokens, the real WebSocket, signed URLs or backend access (test/inspection) (2026-10-20: GameHost unit tests check no command token reaches the game; headless Edge: no storage, cookies, network or parent access from the game; 2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database: inside the real game frame origin `null`, no storage, no network)
 - [ ] Same artifact contract usable by a future WebView host (no web-host-only assumptions in SDK/bridge)
-- [ ] Feature state discarded on route exit; rebuild from URL + backend (test)
-- [ ] Feature state knows semantic operations only (no WebSocket/iframe types in feature packages)
+- [x] Feature state discarded on route exit; rebuild from URL + backend (test) (2026-10-20: Join and Session Play dispose on route exit (unit tests) and rebuild after a refresh (end to end))
+- [x] Feature state knows semantic operations only (no WebSocket/iframe types in feature packages) (2026-10-20, inspection: `session-join` and `session-play` use `SessionConnector`/`LiveSession` and the `GameContainer` abstraction; no WebSocket or iframe types)
 
 ---
 
@@ -137,10 +137,10 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [ ] Z1. Local development across origins: REST CORS or documented same-origin proxy; `WEBSOCKET_ALLOWED_ORIGINS` for the dev origin (G1, G2) (2026-10-20: solved without a backend change for development by the same-origin proxy (A); a deployment on separate origins would still need CORS and allowed origins)
 - [x] Z2. A player who joined by code learns the Session UUID, so the frontend can compose `/sessions/:sessionUUID/play` (ADR-0002) and reconnect after start (G4) (2026-10-20, directed by the human: backend `lobby_update` and `session_started` carry `session_uuid` for players and admins; backend `api/play` tests and full `go test ./...` pass; backend commit `e4f0d85`; used end to end by Join Session)
 - [ ] Z3. Frontend artifact access survives reconnects after 15 min: re-sign on reattach/rejoin/attach, or the frontend caches by hash (G5) (decision)
-- [ ] Z4. Game frontend artifact format and assets: what a package is (single HTML vs bundle), how assets are stored, referenced by logical key and resolved through the Host (G6, plan §9, §13.3) (backend, decision)
+- [ ] Z4. Game frontend artifact format and assets: what a package is (single HTML vs bundle), how assets are stored, referenced by logical key and resolved through the Host (G6, plan §9, §13.3) (backend, decision) (2026-10-20, directed by the human: Space Drift's real frontend stored as a new seed version in the backend (one HTML file, embedded by a seed migration); bundles and assets remain open)
 - [ ] Z5. GameVersion frontend metadata: logical viewport / aspect ratio, bridge/SDK version, entry (G6, plan §8) (backend, decision)
 - [ ] Z6. The client gets what it needs to validate SAMPLE/COMMAND before sending (frontend-relevant manifest part) or validation stays backend-only (G6) (decision)
-- [ ] Z7. Signed artifact URL readable by the Host (bucket/emulator CORS) if the Host fetches it (G7)
+- [ ] Z7. Signed artifact URL readable by the Host (bucket/emulator CORS) if the Host fetches it (G7) (2026-10-20: dev emulator answers CORS `*`, the GameHost fetch works end to end; production bucket CORS recorded for the backend at the human's request (backend Engineering Radar SOON, `play/CURRENT_STATE.md`))
 - [ ] Z8. `leave` during a Start attempt answered instead of closing with 1011 (G8)
 - [ ] Z9. Real identity enough for multiple distinct guests in one session, and display names returned in the lobby and roster so players see each other's names (G3) (backend; may stay out of scope for this project by human decision)
 - [ ] Z10. The client can tell why a WebSocket handshake was refused (unknown/expired code, auth, rate limit, Session not joinable): browsers cannot read pre-upgrade HTTP errors (backend, decision: e.g. a REST pre-check of a join code, or accepting then rejecting with a reason)
@@ -149,7 +149,5 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 Every frontend stub/stand-in that pretends to do something gets a line here and in `CURRENT_STATE.md`.
 
-- "Game on! Loading the game…" screen after `session_started`: stands in for Session Play (step 6); nothing loads.
-- `/dev/game-host` fake Space Drift Session (`apps/web/src/dev/fakeSpaceDriftSession.ts`): stands in for a live Session until step 6.
 - Other players appear as "Player N": the backend returns no names (Z9).
 - `scripts/dev-host.mjs`: development stand-in for the host experience (create and start a Session).

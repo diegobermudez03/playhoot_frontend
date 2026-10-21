@@ -82,3 +82,8 @@
   border-radius: var(--radius-lg);
   background: var(--color-bg);
 }
+
+.playFrame {
+  display: flex;
+  height: 420px;
+}

@@ -24,7 +24,7 @@ This is a machine-facing routing document. It does not explain Playhoot. It tell
 | Images, sounds, music the app uses; which are missing | `docs/design/ASSETS.md`, registry `apps/web/src/assets/assets.json`, `npm run assets` | AVAILABLE |
 | Languages, message catalogs, how to write user-facing text | `docs/engineering/standards/user-facing-text.md`, catalogs in `apps/web/src/i18n/messages/` | AVAILABLE |
 | A package's responsibility and boundaries | `<package>/README.md` (`apps/*`, `packages/*`, `packages/features/*`) | AVAILABLE |
-| Game <-> Host bridge (message catalog, versioning, artifact loading, sandbox) | `docs/decisions/architecture/ADR-0005-game-host-bridge-protocol-v1.md`, code in `packages/protocol/src/bridge/` | PROPOSED |
+| Game <-> Host bridge (message catalog, versioning, artifact loading, sandbox) | `docs/decisions/architecture/ADR-0005-game-host-bridge-protocol-v1.md`, code in `packages/protocol/src/bridge/` | AVAILABLE |
 | Fixture games for end-to-end work, GameHost lab | `fixtures/games/<game>/README.md`, `/dev/game-host` (`apps/web/README.md`) | AVAILABLE |
 | Backend client-facing contract (HTTP, WS, auth, limits, gaps) | `docs/architecture/BACKEND_CONTRACT.md`, verified against backend code | REFERENCE SNAPSHOT |
 | Frontend architecture decision rationale | `docs/decisions/architecture/INDEX.md` and referenced ADRs | AVAILABLE |

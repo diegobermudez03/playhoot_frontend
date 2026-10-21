@@ -1,8 +1,10 @@
 import type { AppState } from '@playhoot/app-core';
 import type {
+  CommandResult,
   ConnectionCloseKind,
   IdentityClient,
   SessionConnection,
+  SessionConnectionEvent,
   SessionConnector,
   SessionTarget,
 } from '@playhoot/communication';
@@ -48,7 +50,9 @@ export type JoinView =
   | { phase: 'identity'; submitting: boolean; error: IdentityError | null }
   | { phase: 'connecting'; reconnectAttempt: number }
   | { phase: 'lobby'; members: LobbyMember[] }
-  | { phase: 'started'; session: StartedSession }
+  // The game is running. While the connection is lost and being re-established the phase stays
+  // `started` (the game is not torn down), with `connection: 'reconnecting'`.
+  | { phase: 'started'; session: StartedSession; connection: 'connected' | 'reconnecting' }
   | { phase: 'leaving' }
   | { phase: 'closed'; outcome: JoinOutcome };
 
@@ -69,8 +73,16 @@ export interface JoinSessionDeps {
   schedule?: (run: () => void, delayMs: number) => () => void;
 }
 
+// The player's connection as whoever plays the game needs it: it always talks to the current
+// connection and survives reconnections. Each new connection announces itself with an `open` event.
+export type LiveSession = Pick<
+  SessionConnection,
+  'subscribe' | 'sample' | 'command' | 'currentView'
+>;
+
 export interface JoinSession {
   store: StoreApi<JoinSessionState>;
+  live: LiveSession;
   // Begins: asks for an identity when there is none, otherwise connects.
   start(): void;
   submitDisplayName(displayName: string): Promise<void>;
@@ -102,6 +114,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
   let disposed = false;
   // One idempotency key per submitted name, reused when the same name is submitted again.
   let pendingGuest: { displayName: string; key: string } | null = null;
+  const liveListeners = new Set<(event: SessionConnectionEvent) => void>();
 
   const setView = (view: JoinView) => store.setState({ view });
   const myUserUUID = () => {
@@ -125,12 +138,17 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
       setView({ phase: 'identity', submitting: false, error: null });
       return;
     }
-    setView({ phase: 'connecting', reconnectAttempt });
+    const view = store.getState().view;
+    if (view.phase === 'started') setView({ ...view, connection: 'reconnecting' });
+    else setView({ phase: 'connecting', reconnectAttempt });
     const current = result.value;
     connection = current;
     let opened = false;
     current.subscribe((event) => {
       if (disposed || connection !== current) return;
+      if (event.type === 'open' || event.type === 'view' || event.type === 'sample-sent') {
+        liveListeners.forEach((listener) => listener(event));
+      }
       switch (event.type) {
         case 'open':
           opened = true;
@@ -183,6 +201,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
                 expiresAt: message.frontend.expires_at,
               },
             },
+            connection: 'connected',
           },
         });
         return;
@@ -253,7 +272,8 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
           setView({ phase: 'closed', outcome: { kind: 'connection-lost' } });
           return;
         }
-        setView({ phase: 'connecting', reconnectAttempt: next });
+        if (view.phase === 'started') setView({ ...view, connection: 'reconnecting' });
+        else setView({ phase: 'connecting', reconnectAttempt: next });
         cancelReconnect = schedule(() => {
           cancelReconnect = null;
           connect(next);
@@ -269,8 +289,25 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
     else setView({ phase: 'identity', submitting: false, error: null });
   };
 
+  const live: LiveSession = {
+    subscribe(listener) {
+      liveListeners.add(listener);
+      return () => liveListeners.delete(listener);
+    },
+    sample: (inputs) => connection?.sample(inputs),
+    command: (name, payload, options) =>
+      connection
+        ? connection.command(name, payload, options)
+        : Promise.resolve<CommandResult>({
+            token: options?.token ?? '',
+            outcome: 'connection-closed',
+          }),
+    currentView: () => connection?.currentView(),
+  };
+
   return {
     store,
+    live,
     start: begin,
     async submitDisplayName(raw) {
       const displayName = raw.trim();
@@ -319,6 +356,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
     },
     dispose() {
       disposed = true;
+      liveListeners.clear();
       dropConnection();
     },
   };

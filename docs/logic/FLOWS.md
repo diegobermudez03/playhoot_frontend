@@ -1,6 +1,6 @@
 # Frontend Flows
 
-Status: MIRRORS THE CODE (2026-10-20) — see [README.md](README.md) for how it is kept in sync
+Status: MIRRORS THE CODE (2026-10-20, Session Play) — see [README.md](README.md) for how it is kept in sync
 
 What happens, step by step, in every flow built so far: external calls, what is done with each answer, global vs. feature state, and navigation. The same logic as Go-style pseudocode, to trace by hand: start at [mirror/routes.go](mirror/routes.go).
 
@@ -10,7 +10,8 @@ What happens, step by step, in every flow built so far: external calls, what is 
 | --- | --- | --- | --- |
 | **Browser storage** (localStorage) | `playhoot.credential.v1` (token, userUUID, kind, displayName) · `playhoot.locale.v1` (chosen language) · `playhoot.sound.v1` (on/off) | Until the person clears site data | [state_app.go](mirror/state_app.go) |
 | **Global state** | `Auth` (unknown / none / guest / authenticated + userUUID + displayName) · `Locale` | The open tab | [state_app.go](mirror/state_app.go) |
-| **Feature state** (Join Session) | `Target` (from the URL) · `SessionUUID` (learned) · `View` (the current phase) | While a Session route is open; discarded when leaving it | [state_joinsession.go](mirror/state_joinsession.go) |
+| **Feature state** (Join Session) | `Target` (from the URL) · `SessionUUID` (learned) · `View` (the current phase; during a game also `Connection`: connected / reconnecting) · the live link to the current connection | While a Session route is open; discarded when leaving it | [state_joinsession.go](mirror/state_joinsession.go) |
+| **Feature state** (Session Play) | the game's GameHost status · refused game messages | One started game (kept across reconnections); discarded when the game screen goes away | [state_sessionplay.go](mirror/state_sessionplay.go) |
 | **Browser Cache Storage** | `playhoot-game-artifacts-v1`: verified game artifacts by SHA-256 | Until the person clears site data (content never changes for a hash) | [state_gamehost.go](mirror/state_gamehost.go) |
 | **GameHost state** | phase (loading / starting / running / failed / disposed) · the iframe · game sample ids ↔ connection sequences | One game run; disposed with its screen | [state_gamehost.go](mirror/state_gamehost.go) |
 | **Connection state** | sample sequence · the player's game state rebuilt from views · pending commands | One WebSocket; a reconnection starts a new one from zero | [state_connection.go](mirror/state_connection.go) |
@@ -25,9 +26,9 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | Name submitted (no identity yet) | `POST /v1/guests` | `display_name`, `idempotency_key` | `user_uuid` + `token` → stored as the credential |
 | Joining, by code | WebSocket `/v1/play/join/{joinCode}` | token in subprotocol | Opening it IS joining; then server messages |
 | Joining / reconnecting, by Session | WebSocket `/v1/play/join/sessions/{sessionUUID}/player` | token in subprotocol | Same |
-| A game is about to run (not yet wired to a screen) | `GET` the signed artifact URL from `session_started` (storage, not the backend API) | no credentials | The game's HTML, accepted only if its SHA-256 matches; cached by hash so later loads skip the network |
+| The game screen opens (only when the artifact is not cached yet) | `GET` the signed artifact URL from `session_started` (storage, not the backend API) | no credentials | The game's HTML, accepted only if its SHA-256 matches; cached by hash so later loads skip the network |
 | Leaving | `{"type":"leave"}` on the WebSocket | — | Server answers `leave_result` and closes as `left` |
-| Playing (ready, not used by any screen yet) | `sample` / `command` / `resync` on the WebSocket | inputs / name+payload+token | views, `command_result` |
+| Playing (the game asks through the GameHost) | `sample` / `command` / `resync` on the WebSocket | inputs / name+payload+token | views → the game; `command_result` → the game |
 
 ---
 
@@ -96,7 +97,7 @@ Errors of `POST /v1/guests` stay in the name step: `400` → "that name can't be
 
 ## 5. The game starts
 
-`session_started` → `View = started`, `SessionUUID` confirmed. From here the connection also delivers `player_view` messages; the Join feature ignores them. The realtime client already rebuilds the player's state from them (flow 11); the game screen that uses it is a later step.
+`session_started` → `View = started` (`Connection = connected`), `SessionUUID` confirmed. The game screen opens and creates Session Play, which runs the game (flow 12): it loads the frontend named in `session_started`, starts it in its sandboxed iframe, and from then on the views go to the game and the game's inputs and commands go to the backend. Verified end to end against the real backend on 2026-10-20 with Space Drift.
 
 ## 6. Connection lost (any phase)
 
@@ -119,13 +120,15 @@ sequenceDiagram
 
 Reconnection always uses the Session UUID once it is known (the code stops working when the game starts). It never reconnects after `replaced` (the same player opened the game elsewhere).
 
+**During a game** the phase stays `started` instead of `connecting`: the game stays on screen with a "Se perdió la conexión. Reconectando…" banner, and is NOT reloaded. When the new connection opens, the GameHost forgets the old sample numbers; the backend's `session_started` + FULL view become the game's new baseline, and the game's last inputs are sent again (the backend reset them when the connection dropped). Verified end to end on 2026-10-20 by cutting the connection mid-game: the banner came and went, the game kept its frame, and a held key kept steering the ship after the reconnection.
+
 ## 7. Refreshing the page
 
-The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity from storage) then flow 3 by Session UUID: the backend reattaches the player (or rejoins, or rejects if the game no longer allows them).
+The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity from storage) then flow 3 by Session UUID: the backend reattaches the player (or rejoins, or rejects if the game no longer allows them). In a running game, `session_started` comes again and the game screen loads the game from the browser's artifact cache (no download, so an expired signed URL does not matter), then the FULL view. Verified end to end on 2026-10-20.
 
 ## 8. Leaving
 
-"Leave game" → `View = leaving`, sends `{"type":"leave"}` → server closes as `left` → `View = closed(left)` → navigation to `/join` (**push**). Navigating away without pressing it only closes the socket (in a lobby that also removes the player).
+"Leave game" (lobby) or "Salir" / "Leave" (game screen) → `View = leaving`, sends `{"type":"leave"}` → server closes as `left` → `View = closed(left)` → navigation to `/join` (**push**). Navigating away without pressing it only closes the socket (in a lobby that also removes the player).
 
 ## 9. How a join can end
 
@@ -144,17 +147,17 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 
 Any HTTP call that carried a token and gets `401 token_invalid` → `SignOut()`: credential removed from storage, `Auth = none`. The next join asks for a name again. (A refused WebSocket handshake is invisible to the browser, so it shows as "unreachable".)
 
-## 11. Playing (client ready, no screen yet)
+## 11. Playing: what the connection does
 
-Built into the connection, waiting for the game screen (plan steps 4–6):
+What the connection does with what the game sends and receives (the game reaches it through the GameHost, flow 12):
 
 - **Inputs**: `Sample(inputs)` → `{"type":"sample","sequence":n,"inputs"}`, numbered 1, 2, 3… per connection, at most 60 per second (faster calls keep only the latest snapshot).
 - **Views**: `player_view` FULL replaces the state; a patch is merged into it; a view with the same revision only brings a new ack/events/errors; a missing revision → the state is untrusted and one `resync` is sent; the next FULL repairs it. Verified against the real backend.
 - **Commands**: `Command(name, payload)` → `{"type":"command","token",...}` → waits for `command_result` with that token. `rate_limited` → resent with the same token (250 ms, 500 ms, 1 s). Connection closed first → `connection-closed`, retryable later with the same token (never runs twice).
 
-## 12. Running a game (GameHost, not yet on a screen)
+## 12. Running a game (GameHost)
 
-Built and verified in the dev lab `/dev/game-host` (fake Session); Session Play (plan step 6) will start it after `session_started`. Bridge contract: ADR-0005 (PROPOSED). Pseudocode: [state_gamehost.go](mirror/state_gamehost.go).
+Session Play starts it on the game screen after `session_started` ([state_sessionplay.go](mirror/state_sessionplay.go)); the dev lab `/dev/game-host` also runs it against a fake Session. Bridge contract: ADR-0005. Pseudocode: [state_gamehost.go](mirror/state_gamehost.go). If it fails, the game screen shows why and offers "Intentar de nuevo" (load it again) or leaving.
 
 ```mermaid
 sequenceDiagram

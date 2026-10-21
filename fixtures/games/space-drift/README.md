@@ -16,4 +16,4 @@ The frontend of the backend's seed game Space Drift (`../playhoot/play/session/i
 ## Use
 
 - Development lab: `npm run dev`, then http://localhost:5173/dev/game-host runs it in the real WebGameHost against a fake local Session.
-- Against the real backend: not yet. The backend's seed stores a placeholder HTML for Space Drift; storing this artifact there is a backend change (CHECKLIST Z4), done when the human directs it for Session Play (step 6).
+- Against the real backend: the backend embeds this artifact as Space Drift's frontend package in its seed version `33333333-3333-4333-8333-0000000000c2` (`../playhoot/play/session/internal/migrations/seeddata/`, added 2026-10-20 at the human's direction). After changing the game, rebuild it, copy `dist/index.html` there and add a NEW seed version in the backend (its README says how): a GameVersion's frontend never changes in place.

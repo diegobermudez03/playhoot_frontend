@@ -16,7 +16,7 @@ It is pseudocode with Go syntax: it does not compile and never runs, it only mir
 1. **[mirror/routes.go](mirror/routes.go)** — start here. Every URL and the view it runs. Navigating anywhere is just a call to `Router(url)`, so you can keep following.
 2. **`view_*.go`** — one per screen. The view function only lists what can happen on that screen; each call has a comment saying WHEN (a click, a submit, a message from the server). The Session route (`view_session.go`) picks one of its screens (`view_session_identity.go`, `_connecting`, `_lobby`, `_started`, `_outcome`) by the feature's phase.
 3. **Event functions** (`EnterCodeOnJoinPressed`, `IdentityOnSubmitted`, `LobbyOnLeave`…) — right below each view. They call the logic, and `Navigate(...)` when the screen changes.
-4. **`state_*.go`** — what the events do to state: `state_app.go` (global state and browser storage), `state_joinsession.go` (the Session route's feature: phases, transitions, rules), `state_connection.go` (one live WebSocket), `state_gamehost.go` (a game running in its sandboxed iframe; not on a screen yet).
+4. **`state_*.go`** — what the events do to state: `state_app.go` (global state and browser storage), `state_joinsession.go` (the Session route's feature: phases, transitions, rules), `state_connection.go` (one live WebSocket), `state_sessionplay.go` (the started game's feature), `state_gamehost.go` (a game running in its sandboxed iframe).
 5. **[mirror/external.go](mirror/external.go)** — every backend call as a bare function: endpoint in the comment, inputs in, DTO out.
 
 ## Where is each button?
@@ -35,6 +35,9 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Session: name step (dev only) | Test user 1 / Test user 2 | `IdentityOnDevAccountPicked` | [view_session_identity.go](mirror/view_session_identity.go) |
 | Session: lobby | **Copiar enlace de invitación** / Copy invite link / Copiar link de convite | `LobbyOnCopyInvite` | [view_session_lobby.go](mirror/view_session_lobby.go) |
 | Session: lobby | **Salir de la partida** / Leave game / Sair da partida | `LobbyOnLeave` | [view_session_lobby.go](mirror/view_session_lobby.go) |
+| Session: game | **Salir** / Leave / Sair | `join.Leave()` | [view_session_started.go](mirror/view_session_started.go) |
+| Session: game, failed to load | **Intentar de nuevo** / Try again / Tentar de novo | `play.Reload()` | [view_session_started.go](mirror/view_session_started.go) |
+| Session: game, failed to load | **Salir de la partida** / Leave game / Sair da partida | `join.Leave()` | [view_session_started.go](mirror/view_session_started.go) |
 | Session: ending | **Intentar de nuevo** / Try again · **Jugar aquí** / Play here | `OutcomeOnRetry` | [view_session_outcome.go](mirror/view_session_outcome.go) |
 | Session: ending | **Ingresar un código** / Enter a code / Digitar um código | `OutcomeOnEnterAnotherCode` | [view_session_outcome.go](mirror/view_session_outcome.go) |
 | Not found / error | **Ir al inicio** / Go home / Ir para o início | `Navigate("/")` (redirects to `/join` for now) | [view_not_found.go](mirror/view_not_found.go) |

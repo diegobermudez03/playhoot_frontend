@@ -1,8 +1,10 @@
 import type { JoinSessionState, JoinView } from '@playhoot/feature-session-join';
+import type { GameHostStatus } from '@playhoot/game-host';
 import { joinCodeAlphabet } from '@playhoot/protocol';
 import { useState, type ReactNode } from 'react';
 
 import { SessionScreen } from '../features/session-join/SessionScreen';
+import { PlayScreen } from '../features/session-play/PlayScreen';
 import { silentSoundPlayer, SoundProvider, useSound, type SoundId } from '../sound';
 import { AppShell, Avatar, Button, Card, CodeInput, CodeTiles, Logo, Owl, TextField } from '../ui';
 import styles from './DesignRoute.module.css';
@@ -103,6 +105,28 @@ export function DesignRoute() {
                   displayName="Night Owl"
                   actions={noActions}
                 />
+              </Frame>
+            ))}
+          </SoundProvider>
+        </Section>
+        <Section title="Session Play screens">
+          <p className={styles.caption}>
+            The game itself runs in the dark area (see /dev/game-host)
+          </p>
+          <SoundProvider player={silentSoundPlayer}>
+            {playScreens.map(([label, game, reconnecting]) => (
+              <Frame key={label} label={label}>
+                <div className={styles.playFrame}>
+                  <PlayScreen
+                    seat={2}
+                    total={4}
+                    displayName="Night Owl"
+                    game={game}
+                    reconnecting={reconnecting}
+                    onRetry={() => undefined}
+                    onLeave={() => undefined}
+                  />
+                </div>
               </Frame>
             ))}
           </SoundProvider>
@@ -227,6 +251,7 @@ const screens: [string, JoinView, string | null][] = [
         })),
         frontend: { url: '', sha256: '', expiresAt: '' },
       },
+      connection: 'connected',
     },
     null,
   ],
@@ -247,6 +272,18 @@ const screens: [string, JoinView, string | null][] = [
   ],
   ['Opened elsewhere', { phase: 'closed', outcome: { kind: 'replaced' } }, null],
   ['Connection lost', { phase: 'closed', outcome: { kind: 'connection-lost' } }, null],
+];
+
+const playScreens: [string, GameHostStatus, boolean][] = [
+  ['Loading the game', { phase: 'starting' }, false],
+  ['Playing', { phase: 'running', version: 1 }, false],
+  ['Playing · reconnecting', { phase: 'running', version: 1 }, true],
+  [
+    'Game failed · unreachable',
+    { phase: 'failed', error: { kind: 'artifact-unreachable', detail: '' } },
+    false,
+  ],
+  ['Game failed · broken', { phase: 'failed', error: { kind: 'ready-timeout' } }, false],
 ];
 
 function fakeState(view: JoinView): JoinSessionState {

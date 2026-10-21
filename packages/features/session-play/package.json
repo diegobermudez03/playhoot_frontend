@@ -8,5 +8,13 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@playhoot/game-host": "*",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@playhoot/communication": "*",
+    "@playhoot/game-sdk": "*"
   }
 }

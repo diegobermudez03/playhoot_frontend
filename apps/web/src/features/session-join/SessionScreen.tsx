@@ -42,6 +42,8 @@ export interface SessionScreenProps {
   actions: SessionScreenActions;
   // Development-only identity shortcuts rendered under the name form.
   devIdentity?: ReactNode;
+  // The running game (Session Play). Without it, the started phase shows the "game on" screen.
+  renderPlay?: (view: Extract<JoinView, { phase: 'started' }>) => ReactNode;
 }
 
 // Web presentation of the Join Session feature: one screen per phase of the feature state.
@@ -58,7 +60,11 @@ export function SessionScreen(props: SessionScreenProps) {
     case 'leaving':
       return <ConnectingStep reconnectAttempt={0} joinCode={null} leaving />;
     case 'started':
-      return <StartedStep view={view} displayName={props.displayName} />;
+      return props.renderPlay ? (
+        props.renderPlay(view)
+      ) : (
+        <StartedStep view={view} displayName={props.displayName} />
+      );
     case 'closed':
       return <OutcomeStep view={view} actions={props.actions} />;
   }

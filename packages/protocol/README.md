@@ -2,7 +2,7 @@
 
 Shared wire and bridge contracts.
 
-Status: PLAYER PROTOCOL: HTTP error body and codes, `POST /v1/guests`, every player realtime message both ways, client limits. Game <-> Host bridge v1 (ADR-0005 PROPOSED). The admin messages are not modeled yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: PLAYER PROTOCOL: HTTP error body and codes, `POST /v1/guests`, every player realtime message both ways, client limits. Game <-> Host bridge v1 (ADR-0005, which owns the catalog). The admin messages are not modeled yet. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

@@ -79,6 +79,10 @@ func (c *ConnectionState) Command(name string, payload map[string]any, token str
 	return <-c.PendingCommands[token].Reply // resolved by OnCommandResult or OnClose
 }
 
+// CurrentView: the player's state and the ack of the last view, or nothing before the first FULL
+// view and while a gap waits for one. Session Play's GameHost starts the game with it.
+func (c *ConnectionState) CurrentView() (state any, ack int, ok bool) { return nil, 0, false }
+
 func (c *ConnectionState) Resync() { SendResync(c.Socket) }
 func (c *ConnectionState) Leave()  { SendLeave(c.Socket) } // the server answers and closes as "left"
 

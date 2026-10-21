@@ -34,15 +34,12 @@ export interface OpenContainer {
   dispose(): void;
 }
 
-// What the Host needs of the player's live Session connection. A `SessionConnection` provides all
-// of it except `currentView`, which the owner of the connection keeps (Session Play).
-export interface GameSessionPort extends Pick<
+// What the Host needs of the player's live Session connection: one `SessionConnection`, or a link
+// that follows the current one across reconnections (an `open` event marks each new connection).
+export type GameSessionPort = Pick<
   SessionConnection,
-  'subscribe' | 'sample' | 'command'
-> {
-  // The player's current trustworthy state and ack (a connection sample sequence), if any.
-  currentView(): { state: unknown; ack: number } | undefined;
-}
+  'subscribe' | 'sample' | 'command' | 'currentView'
+>;
 
 // Game assets by logical key (plan §9). The bytes go to the game; where they came from never does.
 export interface AssetResolver {
@@ -111,6 +108,10 @@ export function startGameHost(options: GameHostOptions): GameHost {
   let readyTimer: unknown = null;
   let unsubscribeSession: (() => void) | null = null;
   const acks = createAckTranslator();
+  // The game's last input snapshot, sent again on a new connection (plan §13.7): the backend
+  // resets a participant's inputs when its connection drops.
+  let lastInputs: Record<string, unknown> | null = null;
+  let resendInputs = false;
 
   const emit = (event: GameHostEvent) => listeners.forEach((listener) => listener(event));
   const setStatus = (next: GameHostStatus) => {
@@ -139,12 +140,23 @@ export function startGameHost(options: GameHostOptions): GameHost {
 
   const onSessionEvent = (event: SessionConnectionEvent) => {
     if (status.phase !== 'running') return;
+    if (event.type === 'open') {
+      // A new connection numbers its samples from 1 again.
+      acks.reset();
+      resendInputs = true;
+      return;
+    }
     if (event.type === 'sample-sent') {
       acks.sent(event.sequence);
       return;
     }
     if (event.type !== 'view') return;
     const update = event.update;
+    // The first FULL view means the new connection is attached to the running game.
+    if (resendInputs && update.kind === 'state' && update.full) {
+      resendInputs = false;
+      if (lastInputs) options.session.sample(lastInputs);
+    }
     const ack = acks.translate(update.ack);
     send({
       bridge: bridgeMarker,
@@ -203,6 +215,7 @@ export function startGameHost(options: GameHostOptions): GameHost {
           reject('sample id not increasing');
           return;
         }
+        lastInputs = message.inputs;
         options.session.sample(message.inputs);
         return;
       case 'command': {
@@ -318,6 +331,10 @@ export function createAckTranslator() {
       return true;
     },
     // The connection sent `sequence` carrying the latest sample (it coalesces older ones away).
+    // A new connection: its sequences start again and nothing sent before can be acknowledged.
+    reset() {
+      sent = [];
+    },
     sent(sequence: number) {
       sent.push({ sequence, gameId: latestGameId });
     },

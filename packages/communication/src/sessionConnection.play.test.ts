@@ -189,6 +189,16 @@ describe('SessionConnection views', () => {
     expect(t.socket.sent).toEqual([{ type: 'resync' }, { type: 'resync' }]);
   });
 
+  it('keeps the current view and ack, and none while a gap waits for a FULL view', () => {
+    const t = setup();
+    expect(t.connection.currentView()).toBeUndefined();
+    t.socket.receive(view({ full: true, revision: 1, state: { a: 1 } }));
+    t.socket.receive(view({ revision: 2, state: { a: 2 }, consumed_through_sample_sequence: 3 }));
+    expect(t.connection.currentView()).toEqual({ state: { a: 2 }, ack: 3 });
+    t.socket.receive(view({ revision: 4, state: { a: 4 } }));
+    expect(t.connection.currentView()).toBeUndefined();
+  });
+
   it('passes lobby and lifecycle messages through untouched', () => {
     const t = setup();
     t.socket.receive({ type: 'lobby_update', session_uuid: 's', members: [] });

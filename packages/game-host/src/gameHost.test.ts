@@ -194,6 +194,31 @@ describe('startGameHost', () => {
     ]);
   });
 
+  it('on a new connection, sends the last inputs again once attached and keeps acks in game ids', async () => {
+    const { box, session } = await setup();
+    const game = box.game();
+    const updates: Array<{ ack: number; projection?: { full: boolean } }> = [];
+    game.onUpdate((update) => updates.push(update));
+    await game.ready();
+    game.sample({ move: [1, 0] });
+    await flush();
+    session.emit({ type: 'sample-sent', sequence: 1 });
+    session.emit({ type: 'view', update: stateUpdate({ x: 1 }, 1) });
+    // The connection drops and a new one opens: its sequences start at 1 again.
+    session.emit({ type: 'open' });
+    expect(session.samples).toHaveLength(1);
+    session.emit({ type: 'view', update: stateUpdate({ x: 1 }, 0, true) });
+    expect(session.samples).toEqual([{ move: [1, 0] }, { move: [1, 0] }]);
+    session.emit({ type: 'sample-sent', sequence: 1 });
+    session.emit({ type: 'view', update: stateUpdate({ x: 2 }, 1) });
+    await flush();
+    expect(updates.map((u) => [u.ack, u.projection?.full])).toEqual([
+      [1, false],
+      [1, true],
+      [1, false],
+    ]);
+  });
+
   it('delivers events and errors once, also when the view is a gap', async () => {
     const { box, session } = await setup();
     const game = box.game();

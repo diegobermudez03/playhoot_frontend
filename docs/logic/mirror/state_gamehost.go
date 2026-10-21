@@ -1,11 +1,11 @@
 // PSEUDOCODE — Go syntax, not compiled.
 // STATE: the GameHost — one game artifact running for one player, isolated, talking to the
-// Session only through the Host. Not used by a screen yet: Session Play (plan step 6) will start it
-// after "session_started". Today only the dev lab /dev/game-host starts it, against a fake Session.
+// Session only through the Host. Started by Session Play (state_sessionplay.go) on the game screen,
+// and by the dev lab /dev/game-host against a fake Session.
 //
 // The game is UNTRUSTED code. It runs in a sandboxed iframe with no network, no storage and no
 // access to this page. It never sees the token, the WebSocket, the signed URL, command tokens or
-// connection sample numbers. Bridge contract: ADR-0005 (PROPOSED).
+// connection sample numbers. Bridge contract: ADR-0005.
 //
 // code: packages/game-host/src/gameHost.ts, packages/game-host/src/artifact.ts,
 //       apps/web/src/platform/iframeGameContainer.ts, apps/web/src/platform/browserArtifactCache.ts
@@ -24,7 +24,7 @@ type GameHostError struct {
 	//             "unsupported-bridge-version" | "container-violation" (the game navigated its frame)
 }
 
-// What the Host needs from the player's live connection (state_connection.go) plus the current view.
+// What the Host needs from the player's live connection: Join's Live link (state_joinsession.go).
 type GameSessionPort interface {
 	CurrentView() (state any, ack int, ok bool)
 	Sample(inputs map[string]any)
@@ -90,6 +90,11 @@ func (h *GameHost) OnGameReady(offeredVersions []int) {
 
 // OnSessionEvent forwards what the backend produced for this player.
 func (h *GameHost) OnSessionEvent(e any) {
+	// open                   -> a NEW connection (after a reconnection): h.Acks forgets the old
+	//                           sequences (they restart at 1), and the game's last inputs are sent
+	//                           again with the next FULL view (the backend reset them when the old
+	//                           connection dropped; plan §13.7). That FULL view reaches the game as a
+	//                           new baseline (full = true).
 	// sample-sent(sequence)  -> h.Acks remembers which game sample that sequence carried
 	// view(state)            -> send "update" {projection: {state, full, ack}, ack, events, errors}
 	// view(ack only / gap)   -> send "update" {ack, events, errors} (no projection)
@@ -102,7 +107,8 @@ func (h *GameHost) OnSessionEvent(e any) {
 // A refused message is recorded (bridge-rejected) and dropped; the game keeps running.
 func (h *GameHost) OnGameMessage(m any, session GameSessionPort) {
 	// "sample" {id, inputs}
-	//     rule: id must grow (the game's own numbering) -> session.Sample(inputs)
+	//     rule: id must grow (the game's own numbering) -> remembered as the last inputs
+	//     -> session.Sample(inputs)
 	// "command" {id, name, payload}
 	//     -> session.Command(name, payload) (the connection makes and hides the idempotency token)
 	//     -> send "command_result" {id, outcome, response}
