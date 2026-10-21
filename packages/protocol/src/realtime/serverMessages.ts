@@ -50,10 +50,19 @@ const rosterUpdateSchema = z.object({
   members: z.array(participantSchema.extend({ status: z.string() })),
 });
 
+// The GameVersion's fixed logical viewport: an aspect ratio from the backend's catalog and its
+// logical resolution. The catalog is the backend's; the client only needs a usable size.
+const viewportSchema = z.object({
+  aspect_ratio: z.string().min(1),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+});
+
 const frontendSchema = z.object({
   url: z.string().min(1),
   sha256: z.string().min(1),
   expires_at: z.string().min(1),
+  viewport: viewportSchema,
 });
 
 const playerSessionStartedSchema = z.object({

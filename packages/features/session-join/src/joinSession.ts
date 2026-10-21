@@ -38,7 +38,13 @@ export interface Participant {
 export interface StartedSession {
   participantId: string;
   participants: Participant[];
-  frontend: { url: string; sha256: string; expiresAt: string };
+  frontend: {
+    url: string;
+    sha256: string;
+    expiresAt: string;
+    // The game's fixed shape: an aspect ratio and its logical resolution (plan §8).
+    viewport: { aspectRatio: string; width: number; height: number };
+  };
 }
 
 // Why a name was not accepted. Presentation turns each into text in the person's language.
@@ -215,6 +221,11 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
                 url: message.frontend.url,
                 sha256: message.frontend.sha256,
                 expiresAt: message.frontend.expires_at,
+                viewport: {
+                  aspectRatio: message.frontend.viewport.aspect_ratio,
+                  width: message.frontend.viewport.width,
+                  height: message.frontend.viewport.height,
+                },
               },
             },
             connection: 'connected',

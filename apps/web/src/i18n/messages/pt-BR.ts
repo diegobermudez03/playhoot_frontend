@@ -50,6 +50,8 @@ export const ptBR: Messages = {
 
   'play.seat': 'Jogador {seat} de {total}',
   'play.reconnecting': 'A conexão caiu. Reconectando…',
+  'play.rotate.hint': 'Gire o aparelho para ver o jogo maior',
+  'play.rotate.dismiss': 'Entendi',
   'play.leave': 'Sair',
   'play.gameFrame': 'Jogo',
   'play.failed.title': 'Não conseguimos carregar o jogo',

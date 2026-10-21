@@ -51,6 +51,7 @@ export function GameHostLabRoute() {
     const host = startGameHost({
       artifact: { url: `${fixture}/index.html`, sha256: run.wrongHash ? '0'.repeat(64) : sha256 },
       loader: services.gameArtifacts,
+      viewport: { aspectRatio: '16:9', width: 1920, height: 1080 },
       container: createIframeGameContainer(parent, 'Space Drift'),
       session: fake,
       context: { participantId: me, participants: [me, bot], locale: 'es' },

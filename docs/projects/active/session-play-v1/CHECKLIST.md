@@ -90,11 +90,11 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## G. Fixed-aspect game viewport (§8, §18 step 7)
 
-- [ ] GameVersion declares a logical viewport/aspect ratio (backend, Z5) and the Host reads it
-- [ ] Host fits, centers, letterboxes/pillarboxes; never stretches
-- [ ] Resize/orientation change changes host space, not the game's logical coordinate system
-- [ ] Pointer/touch positions normalized to the logical viewport
-- [ ] Safe areas and browser chrome handled by the Host around the viewport
+- [x] GameVersion declares a logical viewport/aspect ratio (backend, Z5) and the Host reads it (2026-10-20: backend Z5; `session_started.frontend.viewport` parsed in `protocol`, carried by Join and Session Play into the GameHost option `viewport`; unit tests in join, session-play and game-host)
+- [x] Host fits, centers, letterboxes/pillarboxes; never stretches (2026-10-20: `fitGameViewport` unit-tested; the iframe container keeps the iframe at the logical size scaled by one factor; seen in headless Edge at 390x844, 844x390 and 1280x800: a 16:9 game whole and centered with bars)
+- [x] Resize/orientation change changes host space, not the game's logical coordinate system (2026-10-20: a ResizeObserver rescales only; headless Edge: `innerWidth` x `innerHeight` inside the game is 1920 x 1080 at every size)
+- [x] Pointer/touch positions normalized to the logical viewport (2026-10-20: the browser maps input through the scale; headless Edge: clicks at the game's center and quarter point arrived at (960, ~540) and (480, ~270) on phone and desktop sizes. Rendering cost on high-density phones (a game drawing logical size x devicePixelRatio) left as is by the human ("no importa la definición"); telling games their display scale would be a bridge change)
+- [x] Safe areas and browser chrome handled by the Host around the viewport (2026-10-20: the app shell pads with `env(safe-area-inset-*)` and `viewport-fit=cover`; the game area sits inside it. Not checked on a real notched phone)
 
 ## H. Adaptive presentation (§6, §18 step 8)
 
@@ -138,7 +138,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [x] Z2. A player who joined by code learns the Session UUID, so the frontend can compose `/sessions/:sessionUUID/play` (ADR-0002) and reconnect after start (G4) (2026-10-20, directed by the human: backend `lobby_update` and `session_started` carry `session_uuid` for players and admins; backend `api/play` tests and full `go test ./...` pass; backend commit `e4f0d85`; used end to end by Join Session)
 - [x] Z3. Frontend artifact access survives reconnects after 15 min: re-sign on reattach/rejoin/attach, or the frontend caches by hash (G5) (both, 2026-10-20: the GameHost caches by hash (ADR-0005) and, decided by the human, the backend signs the access again for every connection attaching to a running game; backend tests and a run against the storage emulator: a reconnection got a later-expiring URL that downloads the verified package)
 - [ ] Z4. Game frontend artifact format and assets: what a package is (single HTML vs bundle), how assets are stored, referenced by logical key and resolved through the Host (G6, plan §9, §13.3) (backend, decision) (2026-10-20, directed by the human: Space Drift's real frontend stored as a new seed version in the backend (one HTML file, embedded by a seed migration); bundles and assets remain open)
-- [ ] Z5. GameVersion frontend metadata: logical viewport / aspect ratio, bridge/SDK version, entry (G6, plan §8) (backend, decision)
+- [ ] Z5. GameVersion frontend metadata: logical viewport / aspect ratio, bridge/SDK version, entry (G6, plan §8) (backend, decision) (2026-10-20, decided by the human: a closed catalog of aspect ratios (16:9, 9:16, 4:3, 3:4, 1:1), each with a logical resolution of 1080 on the short side; a game version picks one in a new `play_game_versions.aspect_ratio` column (DB check on the values; required for EXECUTABLE, enforced by the service as broken data), sent as `session_started.frontend.viewport: {aspect_ratio, width, height}`; seed: Space Drift 16:9, Parqués 1:1; how a game writes it is out of scope for now. Verified by backend unit, API and Postgres integration tests and end to end on a fresh database (Space Drift 16:9 1920x1080, Parqués 1:1 1080x1080). Uncommitted in the backend. Bridge/SDK version and entry stay open)
 - [ ] Z6. The client gets what it needs to validate SAMPLE/COMMAND before sending (frontend-relevant manifest part) or validation stays backend-only (G6) (decision)
 - [ ] Z7. Signed artifact URL readable by the Host (bucket/emulator CORS) if the Host fetches it (G7) (2026-10-20: dev emulator answers CORS `*`, the GameHost fetch works end to end; production bucket CORS recorded for the backend at the human's request (backend Engineering Radar SOON, `play/CURRENT_STATE.md`))
 - [ ] Z8. `leave` during a Start attempt answered instead of closing with 1011 (G8)

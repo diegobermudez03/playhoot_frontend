@@ -41,7 +41,10 @@ type StartedSession struct {
 		IsYou                                bool
 		Status                               string // "active" at the start; then from roster_update ("unknown" for a status this code does not know)
 	}
-	Frontend struct{ URL, SHA256, ExpiresAt string } // the game's frontend, run by Session Play
+	Frontend struct { // the game's frontend, run by Session Play
+		URL, SHA256, ExpiresAt string
+		Viewport               Viewport // external.go: the game's fixed shape and logical size
+	}
 }
 
 type IdentityError struct {

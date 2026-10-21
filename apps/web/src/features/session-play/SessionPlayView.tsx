@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useStore } from 'zustand';
 
-import { useServices } from '../../app/ServicesContext';
+import { useDeviceCapabilities, useServices } from '../../app/ServicesContext';
 import { createIframeGameContainer } from '../../platform/iframeGameContainer';
 import { PlayScreen, type RosterPlayer } from './PlayScreen';
+import { suggestsRotation } from './rotation';
 
 type StartedView = Extract<JoinView, { phase: 'started' }>;
 
@@ -54,6 +55,8 @@ function Screen({
     onRetry?: () => void;
   }) {
   const intl = useIntl();
+  const viewport = view.session.frontend.viewport;
+  const suggestRotation = useDeviceCapabilities((device) => suggestsRotation(device, viewport));
   // Names come from the backend's Identity; the name typed on this device wins for its owner,
   // since every guest is the same placeholder user in the backend today.
   const players: RosterPlayer[] = view.session.participants.map((p, index) => {
@@ -74,6 +77,7 @@ function Screen({
       players={players}
       game={game}
       reconnecting={view.connection === 'reconnecting'}
+      suggestRotation={suggestRotation}
       {...(frameRef && { frameRef })}
       onRetry={onRetry}
       onLeave={onLeave}

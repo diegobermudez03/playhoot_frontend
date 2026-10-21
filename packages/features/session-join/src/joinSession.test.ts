@@ -10,6 +10,14 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createJoinSession } from './joinSession';
 
+// The game frontend of every session_started below, as the backend sends it.
+const frontend = {
+  url: 'u',
+  sha256: 'h',
+  expires_at: 'x',
+  viewport: { aspect_ratio: '16:9', width: 1920, height: 1080 },
+};
+
 const me = 'user-me';
 
 function memoryStore(initial: Credential | null): CredentialStore {
@@ -103,7 +111,7 @@ const started = {
   session_uuid: 's-1',
   participant_id: 'P1',
   participants: [{ participant_id: 'P1', user_uuid: me }],
-  frontend: { url: 'u', sha256: 'h', expires_at: 'x' },
+  frontend,
 };
 
 describe('createJoinSession', () => {
@@ -165,9 +173,15 @@ describe('createJoinSession', () => {
         { participant_id: 'P1', user_uuid: 'other', display_name: 'Bruno' },
         { participant_id: 'P2', user_uuid: me, display_name: 'Ana' },
       ],
-      frontend: { url: 'u', sha256: 'h', expires_at: 'x' },
+      frontend,
     });
     const view = t.view();
+    expect(view.phase === 'started' && view.session.frontend).toEqual({
+      url: 'u',
+      sha256: 'h',
+      expiresAt: 'x',
+      viewport: { aspectRatio: '16:9', width: 1920, height: 1080 },
+    });
     expect(view.phase === 'started' && view.session.participants[1]).toEqual({
       participantId: 'P2',
       userUUID: me,
@@ -188,7 +202,7 @@ describe('createJoinSession', () => {
         { participant_id: 'P1', user_uuid: me, display_name: 'Ana' },
         { participant_id: 'P2', user_uuid: 'other', display_name: 'Bruno' },
       ],
-      frontend: { url: 'u', sha256: 'h', expires_at: 'x' },
+      frontend,
     });
     t.last().message({
       type: 'roster_update',

@@ -16,6 +16,7 @@ import {
   type GameHostEvent,
   type GameSessionPort,
 } from './gameHost';
+import type { GameViewport } from './viewport';
 
 const html = '<!doctype html><title>game</title>';
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -73,9 +74,11 @@ function sdkContainer() {
   let violation: ((detail: string) => void) | null = null;
   let disposed = false;
   let openedWith: string | null = null;
+  let openedAt: GameViewport | null = null;
   const container: GameContainer = {
-    open(content, handlers) {
+    open(content, viewport, handlers) {
       openedWith = content;
+      openedAt = viewport;
       toHost = handlers.onMessage;
       violation = handlers.onViolation;
       game = createPlayhoot({
@@ -109,6 +112,9 @@ function sdkContainer() {
     get openedWith() {
       return openedWith;
     },
+    get openedAt() {
+      return openedAt;
+    },
   };
 }
 
@@ -129,6 +135,7 @@ async function setup(options: { initial?: { state: unknown; ack: number } } = {}
   const host = startGameHost({
     artifact: { url: 'https://storage/game?sig=1', sha256 },
     loader,
+    viewport: { aspectRatio: '16:9', width: 1920, height: 1080 },
     container: box.container,
     session: session.port,
     context: { participantId: 'p1', participants: ['p1', 'p2'], locale: 'es' },
@@ -155,6 +162,7 @@ describe('startGameHost', () => {
   it('loads the verified artifact into the container and waits for READY', async () => {
     const { host, box } = await setup();
     expect(box.openedWith).toBe(html);
+    expect(box.openedAt).toEqual({ aspectRatio: '16:9', width: 1920, height: 1080 });
     expect(host.status).toEqual({ phase: 'starting' });
   });
 

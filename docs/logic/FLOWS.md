@@ -171,7 +171,7 @@ sequenceDiagram
     H->>S: GET artifact (only if not cached)
     S-->>H: HTML
     H->>H: SHA-256 must match, else fail
-    H->>G: open iframe (allow-scripts, CSP: no network)
+    H->>G: open iframe (allow-scripts, CSP: no network) at the game's logical size, scaled to fit
     G->>H: ready {versions}
     H->>G: start {version, context, projection}
     loop while running
@@ -184,6 +184,7 @@ sequenceDiagram
     end
 ```
 
+- **Fixed-aspect viewport** (plan §8): `session_started` says the game's shape (`viewport`: an aspect ratio from the backend's catalog and its logical size, e.g. 16:9 = 1920 x 1080). The game is shown like a picture: whole, as big as fits, centered, never stretched, with bars where space is left. Inside, the game always measures its logical size and touches/clicks arrive in those units, on any device; resizing the window or rotating the phone changes only the scale. On a touch device that is not a wide screen and is held the other way from the game, a dismissable hint suggests turning it (never for a square game).
 - **Failures** (the game stops, its iframe is removed): artifact unreachable (network, CORS, expired URL), hash mismatch, no `ready` within 10 s, no common bridge version, the game navigating its frame.
 - **Refused game messages** (wrong shape, too big, before `ready`, sample ids not growing, a second `ready`) are dropped and recorded; the game keeps running.
 - The game never gets the token, the WebSocket, the signed URL, command tokens or connection sample numbers: its acks come back in its own sample numbering.

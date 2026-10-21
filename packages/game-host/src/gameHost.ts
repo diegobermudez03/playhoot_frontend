@@ -17,14 +17,18 @@ import {
 import { decodeGameMessage } from '@playhoot/protocol/bridge/validation';
 
 import type { ArtifactLoader, ArtifactRef } from './artifact';
+import type { GameViewport } from './viewport';
 
 // The isolated place a game runs in: a sandboxed iframe on the web, a restricted WebView on mobile.
 // Each platform implements it; everything else about hosting a game is shared and lives here.
 export interface GameContainer {
-  // Starts the artifact in a new isolated container. `onMessage` receives whatever the game posts
-  // (unvalidated); `onViolation` reports the game breaking out of its container (e.g. navigating).
+  // Starts the artifact in a new isolated container, shown at its fixed logical `viewport` scaled
+  // to fit the container's space (plan §8): the game always sees `viewport.width` x `height`.
+  // `onMessage` receives whatever the game posts (unvalidated); `onViolation` reports the game
+  // breaking out of its container (e.g. navigating).
   open(
     html: string,
+    viewport: GameViewport,
     handlers: { onMessage(raw: unknown): void; onViolation(detail: string): void },
   ): OpenContainer;
 }
@@ -76,6 +80,8 @@ export interface GameHost {
 
 export interface GameHostOptions {
   artifact: ArtifactRef;
+  // The GameVersion's fixed logical viewport (backend `session_started.frontend.viewport`).
+  viewport: GameViewport;
   loader: ArtifactLoader;
   container: GameContainer;
   session: GameSessionPort;
@@ -254,7 +260,7 @@ export function startGameHost(options: GameHostOptions): GameHost {
     if (!active()) return;
     setStatus({ phase: 'starting' });
     const openedAt = timers.now();
-    container = options.container.open(html, {
+    container = options.container.open(html, options.viewport, {
       onMessage(raw) {
         if (!active()) return;
         const decoded = decodeGameMessage(raw);

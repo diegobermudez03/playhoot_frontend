@@ -27,6 +27,8 @@ export interface PlayScreenProps {
   initialRosterOpen?: boolean;
   game: GameHostStatus;
   reconnecting: boolean;
+  // The device is held the other way from the game (plan §8): a dismissable hint to turn it.
+  suggestRotation?: boolean;
   // Where the game's isolated container goes.
   frameRef?: Ref<HTMLDivElement>;
   onRetry(): void;
@@ -44,10 +46,12 @@ export function PlayScreen({
   initialRosterOpen = false,
   game,
   reconnecting,
+  suggestRotation = false,
   frameRef,
   onRetry,
   onLeave,
 }: PlayScreenProps) {
+  const [rotationDismissed, setRotationDismissed] = useState(false);
   const sound = useSound();
   useEffect(() => sound.play('game-start'), [sound]);
   const failed = game.phase === 'failed' ? game.error : null;
@@ -107,6 +111,19 @@ export function PlayScreen({
         {reconnecting && !failed && (
           <div className={styles.banner} role="status" aria-live="polite">
             <FormattedMessage id="play.reconnecting" />
+          </div>
+        )}
+        {suggestRotation && !rotationDismissed && game.phase === 'running' && (
+          <div className={styles.rotateHint} role="status">
+            <span className={styles.rotateMessage}>
+              <span className={styles.rotateIcon} aria-hidden="true" />
+              <span className={styles.rotateText}>
+                <FormattedMessage id="play.rotate.hint" />
+              </span>
+            </span>
+            <Button variant="ghost" onClick={() => setRotationDismissed(true)}>
+              <FormattedMessage id="play.rotate.dismiss" />
+            </Button>
           </div>
         )}
       </div>

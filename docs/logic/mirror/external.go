@@ -97,7 +97,20 @@ type SessionStarted struct { // "session_started": also re-sent on every reattac
 	SessionUUID   string
 	ParticipantID string // "P1".."Pn", this player
 	Participants  []struct{ ParticipantID, UserUUID, DisplayName string }
-	Frontend      struct{ URL, SHA256, ExpiresAt string } // the game's frontend artifact (signed URL)
+	Frontend      struct {                                 // the game's frontend artifact (signed URL)
+		URL, SHA256, ExpiresAt string
+		Viewport               Viewport
+	}
+}
+
+// Viewport is the game's fixed shape: an aspect ratio from the backend's catalog ("16:9", "9:16",
+// "4:3", "3:4", "1:1"; a game picks one) and its logical size, 1080 on the short side
+// (1920x1080, 1080x1920, 1440x1080, 1080x1440, 1080x1080).
+// rule: session_started without a viewport, or with a width/height that is not a positive whole
+//       number, is not understood (like any malformed message).
+type Viewport struct {
+	AspectRatio   string
+	Width, Height int
 }
 
 type RosterUpdate struct { // "roster_update": after session_started, and whenever someone's presence changes

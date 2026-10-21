@@ -42,6 +42,7 @@ func (p *SessionPlay) run() {
 	}
 	p.host = StartGameHost(
 		struct{ URL, SHA256 string }{p.Start.Frontend.URL, p.Start.Frontend.SHA256},
+		p.Start.Frontend.Viewport,
 		p.Live, // the GameSessionPort
 		GameContext{ParticipantID: p.Start.ParticipantID, Participants: participantIDs(p.Start), Locale: p.Locale},
 	)

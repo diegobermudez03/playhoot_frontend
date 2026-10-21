@@ -7,6 +7,7 @@ import {
   type GameHostEvent,
   type GameHostStatus,
   type GameSessionPort,
+  type GameViewport,
 } from '@playhoot/game-host';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
@@ -14,7 +15,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla';
 export interface SessionPlayStart {
   participantId: string;
   participants: string[];
-  frontend: { url: string; sha256: string };
+  frontend: { url: string; sha256: string; viewport: GameViewport };
 }
 
 export interface SessionPlayState {
@@ -75,6 +76,7 @@ export function createSessionPlay(
     if (disposed || !container) return;
     const current = startGameHost({
       artifact: { url: start.frontend.url, sha256: start.frontend.sha256 },
+      viewport: start.frontend.viewport,
       loader: deps.loader,
       container,
       session: deps.live,

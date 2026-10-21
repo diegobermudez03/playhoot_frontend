@@ -1,5 +1,10 @@
 import type { SessionConnectionEvent } from '@playhoot/communication';
-import type { ArtifactLoader, GameContainer, GameSessionPort } from '@playhoot/game-host';
+import type {
+  ArtifactLoader,
+  GameContainer,
+  GameSessionPort,
+  GameViewport,
+} from '@playhoot/game-host';
 import { describe, expect, it } from 'vitest';
 
 import { createSessionPlay, type SessionPlayTelemetry } from './sessionPlay';
@@ -9,10 +14,20 @@ const flush = async () => {
 };
 
 function fakeContainer() {
-  const opened: Array<{ toHost(raw: unknown): void; sent: unknown[]; disposed: boolean }> = [];
+  const opened: Array<{
+    toHost(raw: unknown): void;
+    viewport: GameViewport;
+    sent: unknown[];
+    disposed: boolean;
+  }> = [];
   const container: GameContainer = {
-    open(_html, handlers) {
-      const entry = { toHost: handlers.onMessage, sent: [] as unknown[], disposed: false };
+    open(_html, viewport, handlers) {
+      const entry = {
+        toHost: handlers.onMessage,
+        viewport,
+        sent: [] as unknown[],
+        disposed: false,
+      };
       opened.push(entry);
       return {
         send: (message) => void entry.sent.push(message),
@@ -44,7 +59,15 @@ function setup(loads: Array<'ok' | 'mismatch'> = ['ok']) {
   };
   const telemetry: SessionPlayTelemetry[] = [];
   const play = createSessionPlay(
-    { participantId: 'P1', participants: ['P1', 'P2'], frontend: { url: 'u', sha256: 'h' } },
+    {
+      participantId: 'P1',
+      participants: ['P1', 'P2'],
+      frontend: {
+        url: 'u',
+        sha256: 'h',
+        viewport: { aspectRatio: '1:1', width: 1080, height: 1080 },
+      },
+    },
     'es',
     { live, loader, onTelemetry: (event) => telemetry.push(event) },
   );
@@ -67,6 +90,7 @@ describe('createSessionPlay', () => {
       context: { participantId: 'P1', participants: ['P1', 'P2'], locale: 'es' },
       projection: { state: { round: 1 }, full: true, ack: 0 },
     });
+    expect(box.opened[0]!.viewport).toEqual({ aspectRatio: '1:1', width: 1080, height: 1080 });
   });
 
   it('counts and reports refused game messages', async () => {

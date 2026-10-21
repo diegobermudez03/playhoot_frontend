@@ -114,7 +114,7 @@ export function DesignRoute() {
             The game itself runs in the dark area (see /dev/game-host)
           </p>
           <SoundProvider player={silentSoundPlayer}>
-            {playScreens.map(([label, game, reconnecting, rosterOpen]) => (
+            {playScreens.map(([label, game, reconnecting, rosterOpen, suggestRotation]) => (
               <Frame key={label} label={label}>
                 <div className={styles.playFrame}>
                   <PlayScreen
@@ -125,6 +125,7 @@ export function DesignRoute() {
                     initialRosterOpen={rosterOpen}
                     game={game}
                     reconnecting={reconnecting}
+                    suggestRotation={suggestRotation ?? false}
                     onRetry={() => undefined}
                     onLeave={() => undefined}
                   />
@@ -253,7 +254,12 @@ const screens: [string, JoinView, string | null][] = [
           isYou: m.isYou,
           status: 'active',
         })),
-        frontend: { url: '', sha256: '', expiresAt: '' },
+        frontend: {
+          url: '',
+          sha256: '',
+          expiresAt: '',
+          viewport: { aspectRatio: '16:9', width: 1920, height: 1080 },
+        },
       },
       connection: 'connected',
     },
@@ -278,11 +284,12 @@ const screens: [string, JoinView, string | null][] = [
   ['Connection lost', { phase: 'closed', outcome: { kind: 'connection-lost' } }, null],
 ];
 
-const playScreens: [string, GameHostStatus, boolean, boolean][] = [
+const playScreens: [string, GameHostStatus, boolean, boolean, boolean?][] = [
   ['Loading the game', { phase: 'starting' }, false, false],
   ['Playing', { phase: 'running', version: 1 }, false, false],
   ['Playing · players list open', { phase: 'running', version: 1 }, false, true],
   ['Playing · reconnecting', { phase: 'running', version: 1 }, true, false],
+  ['Playing · turn the device', { phase: 'running', version: 1 }, false, false, true],
   [
     'Game failed · unreachable',
     { phase: 'failed', error: { kind: 'artifact-unreachable', detail: '' } },

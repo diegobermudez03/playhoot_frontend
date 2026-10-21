@@ -51,6 +51,8 @@ export const es: Messages = {
 
   'play.seat': 'Jugador {seat} de {total}',
   'play.reconnecting': 'Se perdió la conexión. Reconectando…',
+  'play.rotate.hint': 'Gira tu dispositivo para ver el juego más grande',
+  'play.rotate.dismiss': 'Entendido',
   'play.leave': 'Salir',
   'play.gameFrame': 'Juego',
   'play.failed.title': 'No pudimos cargar el juego',

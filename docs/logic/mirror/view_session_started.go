@@ -19,6 +19,10 @@ func StartedScreen(join *JoinSession) {
 	//        artifact-unreachable -> check your connection; unsupported-bridge-version -> reload the
 	//        page (a newer Playhoot is needed); anything else -> the game has a problem
 	//   join.State.View.Connection == "reconnecting" -> banner "Se perdió la conexión. Reconectando…"
+	//   SuggestsRotation(device, viewport), once the game runs -> at the bottom, "Gira tu dispositivo
+	//        para ver el juego más grande" / "Turn your device to see the game bigger" / "Gire o
+	//        aparelho para ver o jogo maior" with "Entendido" / "Got it" / "Entendi", which hides it
+	//        for this game screen
 
 	// When: the game area is on screen (and again after a reload).
 	play.Attach(NewIframeContainer()) // state_sessionplay.go -> StartGameHost (state_gamehost.go)
@@ -50,3 +54,21 @@ func SessionPlayOnShown(join *JoinSession) *SessionPlay {
 }
 
 var uiLocale string
+
+// SuggestsRotation: whether to hint turning the device (apps/web/src/features/session-play/rotation.ts).
+// rule: only on a touch device that is not a wide screen (width < 1024 px), held the other way from
+//       the game (a landscape game on a portrait device, or the reverse). Never for a square game.
+//       The game is shown whole either way; turning only makes it bigger.
+func SuggestsRotation(device DeviceCapabilities, viewport Viewport) bool {
+	gameLandscape := viewport.Width > viewport.Height
+	gamePortrait := viewport.Width < viewport.Height
+	return device.Touch && device.DisplayClass != "wide" &&
+		((gameLandscape && device.Orientation == "portrait") || (gamePortrait && device.Orientation == "landscape"))
+}
+
+// DeviceCapabilities: what the device can do, kept current by the browser (packages/device).
+type DeviceCapabilities struct {
+	Touch        bool
+	Orientation  string // "portrait" | "landscape" (width >= height)
+	DisplayClass string // "compact" (< 600 px wide) | "medium" (< 1024 px) | "wide"
+}

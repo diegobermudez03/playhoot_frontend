@@ -40,7 +40,7 @@ type GameContext struct {
 
 // StartGameHost runs the artifact named by "session_started".frontend.
 // code: packages/game-host/src/gameHost.ts#startGameHost
-func StartGameHost(artifact struct{ URL, SHA256 string }, session GameSessionPort, context GameContext) *GameHost {
+func StartGameHost(artifact struct{ URL, SHA256 string }, viewport Viewport, session GameSessionPort, context GameContext) *GameHost {
 	h := &GameHost{Phase: "loading"}
 
 	html, err := LoadArtifact(artifact.URL, artifact.SHA256)
@@ -57,7 +57,13 @@ func StartGameHost(artifact struct{ URL, SHA256 string }, session GameSessionPor
 	//       no forms, no <base>.
 	// rule: messages are accepted only from that iframe's window; a second "load" of the iframe means
 	//       the game navigated away -> Fail("container-violation").
-	h.Container = OpenIframe(html)
+	// rule: fixed-aspect viewport (plan §8). The iframe is always viewport.Width x viewport.Height
+	//       (e.g. 1920 x 1080) and is scaled to fit the game area, centered, never stretched:
+	//         scale = min(areaWidth / viewport.Width, areaHeight / viewport.Height)
+	//       The space left becomes bars above/below or at the sides. Whenever the game area changes
+	//       size (window resize, rotation), only the scale and the centering change; the game keeps
+	//       seeing the same size, and touches/clicks reach it in those logical units.
+	h.Container = OpenIframe(html, viewport)
 
 	// rule: no "ready" within 10 s -> Fail("ready-timeout").
 	// -> the game's SDK sends "ready" with the bridge versions it speaks -> h.OnGameReady
@@ -133,4 +139,4 @@ func (h *GameHost) Dispose() { h.Phase = "disposed" }
 type IframeContainer struct{}
 type AckTranslator struct{}
 
-func OpenIframe(html string) *IframeContainer { return &IframeContainer{} }
+func OpenIframe(html string, viewport Viewport) *IframeContainer { return &IframeContainer{} }

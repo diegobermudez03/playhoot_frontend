@@ -50,6 +50,8 @@ export const en = {
 
   'play.seat': 'Player {seat} of {total}',
   'play.reconnecting': 'Connection lost. Reconnecting…',
+  'play.rotate.hint': 'Turn your device to see the game bigger',
+  'play.rotate.dismiss': 'Got it',
   'play.leave': 'Leave',
   'play.gameFrame': 'Game',
   'play.failed.title': "We couldn't load the game",

@@ -1,4 +1,4 @@
-import type { GameContainer } from '@playhoot/game-host';
+import { fitGameViewport, type GameContainer, type GameViewport } from '@playhoot/game-host';
 
 // What the game document may do (plan §16): run its own inline/blob scripts and styles, and use
 // images, media and fonts it was handed as blob/data URLs (assets come through the Host). No
@@ -18,15 +18,26 @@ export const gameContentSecurityPolicy = [
 // WebGameHost's container (plan §10): a sandboxed iframe with `allow-scripts` only, so the game
 // runs in an opaque origin with no access to this page, its storage or its cookies. The game's
 // HTML is placed in `srcdoc` with the policy above as the first element of its head.
+//
+// The fixed-aspect viewport (plan §8): the iframe is always the game's logical size (e.g. 1920 x
+// 1080 CSS pixels) and is scaled to fit `parent`, centered, with bars where space is left. Inside,
+// the game always sees the same size, and the browser maps touches and clicks through the scale,
+// so they arrive in logical units. A resize or rotation changes only the scale.
 export function createIframeGameContainer(parent: HTMLElement, title: string): GameContainer {
   return {
-    open(html, handlers) {
+    open(html, viewport, handlers) {
+      const stage = document.createElement('div');
+      stage.style.cssText = 'position:relative;width:100%;height:100%;overflow:hidden';
       const iframe = document.createElement('iframe');
       iframe.title = title;
       iframe.setAttribute('sandbox', 'allow-scripts');
       iframe.referrerPolicy = 'no-referrer';
       iframe.srcdoc = withContentSecurityPolicy(html);
-      iframe.style.cssText = 'display:block;width:100%;height:100%;border:0';
+      iframe.style.cssText =
+        `position:absolute;left:0;top:0;width:${viewport.width}px;height:${viewport.height}px;` +
+        'border:0;transform-origin:0 0';
+      const place = () => placeIframe(iframe, stage, viewport);
+      const resizes = new ResizeObserver(place);
 
       // Messages count only when they come from this iframe's window (its origin is "null").
       const onMessage = (event: MessageEvent) => {
@@ -42,7 +53,10 @@ export function createIframeGameContainer(parent: HTMLElement, title: string): G
       };
       window.addEventListener('message', onMessage);
       iframe.addEventListener('load', onLoad);
-      parent.append(iframe);
+      stage.append(iframe);
+      parent.append(stage);
+      place();
+      resizes.observe(stage);
 
       return {
         send(message) {
@@ -50,9 +64,10 @@ export function createIframeGameContainer(parent: HTMLElement, title: string): G
           iframe.contentWindow?.postMessage(message, '*');
         },
         dispose() {
+          resizes.disconnect();
           window.removeEventListener('message', onMessage);
           iframe.removeEventListener('load', onLoad);
-          iframe.remove();
+          stage.remove();
         },
       };
     },
@@ -68,4 +83,9 @@ function withContentSecurityPolicy(html: string): string {
   meta.content = gameContentSecurityPolicy;
   doc.head.prepend(meta);
   return '<!doctype html>\n' + doc.documentElement.outerHTML;
+}
+
+function placeIframe(iframe: HTMLIFrameElement, stage: HTMLElement, viewport: GameViewport) {
+  const fit = fitGameViewport({ width: stage.clientWidth, height: stage.clientHeight }, viewport);
+  iframe.style.transform = `translate(${fit.left}px, ${fit.top}px) scale(${fit.scale})`;
 }
