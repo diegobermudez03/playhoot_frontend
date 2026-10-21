@@ -5,6 +5,7 @@
 //
 //	"message" lobby_update     -> JoinSession.OnLobbyUpdate
 //	"message" session_started  -> JoinSession.OnSessionStarted
+//	"message" roster_update    -> JoinSession.OnRosterUpdate
 //	"message" rejected         -> JoinSession.OnRejected
 //	"message" lobby_closed     -> JoinSession.OnSessionEnd(beforeStart = true)
 //	"message" session_ended    -> JoinSession.OnSessionEnd(beforeStart = false)

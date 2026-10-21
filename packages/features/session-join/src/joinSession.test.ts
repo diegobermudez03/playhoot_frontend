@@ -138,15 +138,18 @@ describe('createJoinSession', () => {
     t.last().message({
       type: 'lobby_update',
       session_uuid: 's-1',
-      members: [{ user_uuid: 'other' }, { user_uuid: me }],
+      members: [
+        { user_uuid: 'other', display_name: 'Bruno' },
+        { user_uuid: me, display_name: 'Ana' },
+      ],
     });
 
     expect(t.join.store.getState().sessionUUID).toBe('s-1');
     expect(t.view()).toEqual({
       phase: 'lobby',
       members: [
-        { userUUID: 'other', isYou: false },
-        { userUUID: me, isYou: true },
+        { userUUID: 'other', displayName: 'Bruno', isYou: false },
+        { userUUID: me, displayName: 'Ana', isYou: true },
       ],
     });
   });
@@ -159,8 +162,8 @@ describe('createJoinSession', () => {
       session_uuid: 's-1',
       participant_id: 'P2',
       participants: [
-        { participant_id: 'P1', user_uuid: 'other' },
-        { participant_id: 'P2', user_uuid: me },
+        { participant_id: 'P1', user_uuid: 'other', display_name: 'Bruno' },
+        { participant_id: 'P2', user_uuid: me, display_name: 'Ana' },
       ],
       frontend: { url: 'u', sha256: 'h', expires_at: 'x' },
     });
@@ -168,8 +171,47 @@ describe('createJoinSession', () => {
     expect(view.phase === 'started' && view.session.participants[1]).toEqual({
       participantId: 'P2',
       userUUID: me,
+      displayName: 'Ana',
       isYou: true,
+      status: 'active',
     });
+  });
+
+  it('applies roster updates to the participants during the game', () => {
+    const t = setup();
+    t.join.start();
+    t.last().message({
+      type: 'session_started',
+      session_uuid: 's-1',
+      participant_id: 'P1',
+      participants: [
+        { participant_id: 'P1', user_uuid: me, display_name: 'Ana' },
+        { participant_id: 'P2', user_uuid: 'other', display_name: 'Bruno' },
+      ],
+      frontend: { url: 'u', sha256: 'h', expires_at: 'x' },
+    });
+    t.last().message({
+      type: 'roster_update',
+      members: [
+        { participant_id: 'P1', user_uuid: me, display_name: 'Ana', status: 'active' },
+        { participant_id: 'P2', user_uuid: 'other', display_name: 'Bruno', status: 'left' },
+      ],
+    });
+    const view = t.view();
+    expect(view.phase === 'started' && view.session.participants.map((p) => p.status)).toEqual([
+      'active',
+      'left',
+    ]);
+
+    t.last().message({
+      type: 'roster_update',
+      members: [
+        { participant_id: 'P1', user_uuid: me, display_name: 'Ana', status: 'active' },
+        { participant_id: 'P2', user_uuid: 'other', display_name: 'Bruno', status: 'away' },
+      ],
+    });
+    const later = t.view();
+    expect(later.phase === 'started' && later.session.participants[1]?.status).toBe('unknown');
   });
 
   it('keeps the game when the connection drops mid-game, and the live link follows the new one', () => {

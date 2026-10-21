@@ -57,6 +57,12 @@ export const en = {
   'play.failed.broken': "This game has a problem and can't start.",
   'play.failed.outdated': 'This game needs a newer Playhoot. Reload the page.',
   'play.failed.retry': 'Try again',
+  'play.roster.title': 'Players',
+  'play.roster.status.active': 'Playing',
+  'play.roster.status.reconnecting': 'Reconnecting…',
+  'play.roster.status.disconnected': 'Disconnected',
+  'play.roster.status.left': 'Left the game',
+  'play.roster.status.unknown': 'Unknown',
 
   'outcome.unreachable.title': "We couldn't find that game",
   'outcome.unreachable.body':

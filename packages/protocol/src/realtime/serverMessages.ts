@@ -25,15 +25,29 @@ const rejectedSchema = z.object({
   reason: z.string(),
 });
 
+// Display names come from the backend's Identity; empty when it has none for someone.
+const displayName = z.string().default('');
+
 const lobbyUpdateSchema = z.object({
   type: z.literal('lobby_update'),
   session_uuid: z.string().min(1),
-  members: z.array(z.object({ user_uuid: z.string().min(1) })),
+  members: z.array(z.object({ user_uuid: z.string().min(1), display_name: displayName })),
 });
 
 const participantSchema = z.object({
   participant_id: z.string().min(1),
   user_uuid: z.string().min(1),
+  display_name: displayName,
+});
+
+export const presenceStatuses = ['active', 'reconnecting', 'disconnected', 'left'] as const;
+export type PresenceStatus = (typeof presenceStatuses)[number];
+
+// Every participant of the running game with whether they play, sent after `session_started` and
+// whenever someone's presence changes. Unknown future statuses still decode.
+const rosterUpdateSchema = z.object({
+  type: z.literal('roster_update'),
+  members: z.array(participantSchema.extend({ status: z.string() })),
 });
 
 const frontendSchema = z.object({
@@ -99,12 +113,14 @@ export const playerServerMessageSchema = z.discriminatedUnion('type', [
   leaveResultSchema,
   playerViewSchema,
   commandResultSchema,
+  rosterUpdateSchema,
 ]);
 
 export type PlayerServerMessage = z.infer<typeof playerServerMessageSchema>;
 export type PlayerSessionStartedMessage = z.infer<typeof playerSessionStartedSchema>;
 export type PlayerViewMessage = z.infer<typeof playerViewSchema>;
 export type CommandResultMessage = z.infer<typeof commandResultSchema>;
+export type RosterUpdateMessage = z.infer<typeof rosterUpdateSchema>;
 
 export const modeledPlayerServerMessageTypes: ReadonlySet<string> = new Set([
   'rejected',
@@ -115,4 +131,5 @@ export const modeledPlayerServerMessageTypes: ReadonlySet<string> = new Set([
   'leave_result',
   'player_view',
   'command_result',
+  'roster_update',
 ]);

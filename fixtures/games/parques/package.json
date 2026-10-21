@@ -1,0 +1,16 @@
+{
+  "name": "@playhoot/fixture-parques",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@playhoot/game-sdk": "*"
+  },
+  "devDependencies": {
+    "vite": "^8.3.4"
+  }
+}

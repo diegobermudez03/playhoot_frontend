@@ -92,6 +92,34 @@ describe('decodeServerMessage', () => {
     expect(decodeServerMessage('{"type":"future_thing","x":1}')).toBeNull();
   });
 
+  it('decodes display names (empty when missing) and roster updates', () => {
+    expect(
+      decodeServerMessage(
+        '{"type":"lobby_update","session_uuid":"s","members":[{"user_uuid":"u"}]}',
+      ),
+    ).toEqual({
+      type: 'message',
+      message: {
+        type: 'lobby_update',
+        session_uuid: 's',
+        members: [{ user_uuid: 'u', display_name: '' }],
+      },
+    });
+    expect(
+      decodeServerMessage(
+        '{"type":"roster_update","members":[{"participant_id":"P1","user_uuid":"u","display_name":"Ana","status":"reconnecting"}]}',
+      ),
+    ).toEqual({
+      type: 'message',
+      message: {
+        type: 'roster_update',
+        members: [
+          { participant_id: 'P1', user_uuid: 'u', display_name: 'Ana', status: 'reconnecting' },
+        ],
+      },
+    });
+  });
+
   it('reports broken frames and broken modeled messages', () => {
     expect(decodeServerMessage('nope')).toEqual({ type: 'protocol-error', detail: 'invalid JSON' });
     expect(decodeServerMessage('{"x":1}')).toEqual({

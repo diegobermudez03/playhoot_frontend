@@ -35,6 +35,7 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Session: name step (dev only) | Test user 1 / Test user 2 | `IdentityOnDevAccountPicked` | [view_session_identity.go](mirror/view_session_identity.go) |
 | Session: lobby | **Copiar enlace de invitación** / Copy invite link / Copiar link de convite | `LobbyOnCopyInvite` | [view_session_lobby.go](mirror/view_session_lobby.go) |
 | Session: lobby | **Salir de la partida** / Leave game / Sair da partida | `LobbyOnLeave` | [view_session_lobby.go](mirror/view_session_lobby.go) |
+| Session: game | **Jugador 2 de 3** / Player 2 of 3 / Jogador 2 de 3 | opens the players list (no call) | [view_session_started.go](mirror/view_session_started.go) |
 | Session: game | **Salir** / Leave / Sair | `join.Leave()` | [view_session_started.go](mirror/view_session_started.go) |
 | Session: game, failed to load | **Intentar de nuevo** / Try again / Tentar de novo | `play.Reload()` | [view_session_started.go](mirror/view_session_started.go) |
 | Session: game, failed to load | **Salir de la partida** / Leave game / Sair da partida | `join.Leave()` | [view_session_started.go](mirror/view_session_started.go) |

@@ -4,7 +4,7 @@ import { joinCodeAlphabet } from '@playhoot/protocol';
 import { useState, type ReactNode } from 'react';
 
 import { SessionScreen } from '../features/session-join/SessionScreen';
-import { PlayScreen } from '../features/session-play/PlayScreen';
+import { PlayScreen, type RosterPlayer } from '../features/session-play/PlayScreen';
 import { silentSoundPlayer, SoundProvider, useSound, type SoundId } from '../sound';
 import { AppShell, Avatar, Button, Card, CodeInput, CodeTiles, Logo, Owl, TextField } from '../ui';
 import styles from './DesignRoute.module.css';
@@ -114,13 +114,15 @@ export function DesignRoute() {
             The game itself runs in the dark area (see /dev/game-host)
           </p>
           <SoundProvider player={silentSoundPlayer}>
-            {playScreens.map(([label, game, reconnecting]) => (
+            {playScreens.map(([label, game, reconnecting, rosterOpen]) => (
               <Frame key={label} label={label}>
                 <div className={styles.playFrame}>
                   <PlayScreen
                     seat={2}
                     total={4}
                     displayName="Night Owl"
+                    players={fakeRoster}
+                    initialRosterOpen={rosterOpen}
                     game={game}
                     reconnecting={reconnecting}
                     onRetry={() => undefined}
@@ -221,10 +223,10 @@ function CodeInputDemo() {
 
 const me = 'me';
 const members = [
-  { userUUID: 'a', isYou: false },
-  { userUUID: me, isYou: true },
-  { userUUID: 'b', isYou: false },
-  { userUUID: 'c', isYou: false },
+  { userUUID: 'a', displayName: 'Ana', isYou: false },
+  { userUUID: me, displayName: 'Guest', isYou: true },
+  { userUUID: 'b', displayName: 'Bruno', isYou: false },
+  { userUUID: 'c', displayName: '', isYou: false },
 ];
 
 const screens: [string, JoinView, string | null][] = [
@@ -247,7 +249,9 @@ const screens: [string, JoinView, string | null][] = [
         participants: members.map((m, i) => ({
           participantId: `P${i + 1}`,
           userUUID: m.userUUID,
+          displayName: m.displayName,
           isYou: m.isYou,
+          status: 'active',
         })),
         frontend: { url: '', sha256: '', expiresAt: '' },
       },
@@ -274,16 +278,25 @@ const screens: [string, JoinView, string | null][] = [
   ['Connection lost', { phase: 'closed', outcome: { kind: 'connection-lost' } }, null],
 ];
 
-const playScreens: [string, GameHostStatus, boolean][] = [
-  ['Loading the game', { phase: 'starting' }, false],
-  ['Playing', { phase: 'running', version: 1 }, false],
-  ['Playing · reconnecting', { phase: 'running', version: 1 }, true],
+const playScreens: [string, GameHostStatus, boolean, boolean][] = [
+  ['Loading the game', { phase: 'starting' }, false, false],
+  ['Playing', { phase: 'running', version: 1 }, false, false],
+  ['Playing · players list open', { phase: 'running', version: 1 }, false, true],
+  ['Playing · reconnecting', { phase: 'running', version: 1 }, true, false],
   [
     'Game failed · unreachable',
     { phase: 'failed', error: { kind: 'artifact-unreachable', detail: '' } },
     false,
+    false,
   ],
-  ['Game failed · broken', { phase: 'failed', error: { kind: 'ready-timeout' } }, false],
+  ['Game failed · broken', { phase: 'failed', error: { kind: 'ready-timeout' } }, false, false],
+];
+
+const fakeRoster: RosterPlayer[] = [
+  { seat: 1, name: 'Ana', hasName: true, isYou: false, status: 'active' },
+  { seat: 2, name: 'Night Owl', hasName: true, isYou: true, status: 'active' },
+  { seat: 3, name: 'Bruno', hasName: true, isYou: false, status: 'reconnecting' },
+  { seat: 4, name: 'Carla', hasName: true, isYou: false, status: 'left' },
 ];
 
 function fakeState(view: JoinView): JoinSessionState {

@@ -89,8 +89,8 @@ Errors of `POST /v1/guests` stay in the name step: `400` → "that name can't be
 
 | Server sends | Feature state | Screen reaction |
 | --- | --- | --- |
-| `lobby_update` (another player joined or left) | `Members` replaced by the new list | List updates; count bumps; join/leave sound |
-| `session_started` | `View = started` (roster, your participant id, the game's frontend URL) | "Game on!" (Session Play takes over in a later step) |
+| `lobby_update` (another player joined or left) | `Members` replaced by the new list (with each one's display name) | List updates with names; count bumps; join/leave sound |
+| `session_started` | `View = started` (roster with names, your participant id, the game's frontend URL) | The game screen (flow 5) |
 | `lobby_closed` / `session_ended` | `View = closed(ended, status, cause)` | Ending screen (flow 9) |
 
 "Copy invite link" copies `/join/{CODE}` when the person came with a code, else `/sessions/{uuid}/play`. No navigation, no call.
@@ -98,6 +98,8 @@ Errors of `POST /v1/guests` stay in the name step: `400` → "that name can't be
 ## 5. The game starts
 
 `session_started` → `View = started` (`Connection = connected`), `SessionUUID` confirmed. The game screen opens and creates Session Play, which runs the game (flow 12): it loads the frontend named in `session_started`, starts it in its sandboxed iframe, and from then on the views go to the game and the game's inputs and commands go to the backend. Verified end to end against the real backend on 2026-10-20 with Space Drift.
+
+**Players list during the game.** The seat chip ("Jugador 2 de 3") opens the list of players. Each one shows their name (the one typed on this device for its owner, else the backend's display name, else "Jugador N") and their status: `roster_update` arrives after `session_started` and whenever someone's presence changes, and replaces each participant's status: playing, reconnecting (lost their connection, inside the backend's 3 s grace), disconnected (the grace ran out) or left (pressed Leave). Verified 2026-10-20, end to end against the real backend in two headless Edge browsers: names in both lobbies, and the other player shown as "Salió de la partida" after leaving.
 
 ## 6. Connection lost (any phase)
 

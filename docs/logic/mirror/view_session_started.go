@@ -23,6 +23,13 @@ func StartedScreen(join *JoinSession) {
 	// When: the game area is on screen (and again after a reload).
 	play.Attach(NewIframeContainer()) // state_sessionplay.go -> StartGameHost (state_gamehost.go)
 
+	// When: the person presses "Jugador 2 de 3" / "Player 2 of 3" / "Jogador 2 de 3" (top left).
+	// Opens/closes the players list (presentation only; closes on a click outside or Escape). Each
+	// row: avatar, name (same rule as the lobby), "Tú" for this player, and the Status:
+	// "Jugando" / "Reconectando…" / "Desconectado" / "Salió de la partida".
+	// It follows join.State.View.Started.Participants, which OnRosterUpdate keeps current.
+	join.OnRosterUpdate(RosterUpdate{}) // When: the server sends roster_update.
+
 	// When: "Salir" / "Leave" / "Sair" (top right), or "Salir de la partida" on the failure overlay.
 	join.Leave() // state_joinsession.go -> backend leave -> outcome "left" -> Enter a code
 

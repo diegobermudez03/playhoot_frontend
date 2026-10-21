@@ -6,7 +6,7 @@ import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
 import { createIframeGameContainer } from '../../platform/iframeGameContainer';
-import { PlayScreen } from './PlayScreen';
+import { PlayScreen, type RosterPlayer } from './PlayScreen';
 
 type StartedView = Extract<JoinView, { phase: 'started' }>;
 
@@ -53,11 +53,25 @@ function Screen({
   Pick<Parameters<typeof PlayScreen>[0], 'game' | 'frameRef'> & {
     onRetry?: () => void;
   }) {
+  const intl = useIntl();
+  // Names come from the backend's Identity; the name typed on this device wins for its owner,
+  // since every guest is the same placeholder user in the backend today.
+  const players: RosterPlayer[] = view.session.participants.map((p, index) => {
+    const name = (p.isYou && displayName) || p.displayName;
+    return {
+      seat: index + 1,
+      name: name || intl.formatMessage({ id: 'lobby.playerName' }, { seat: index + 1 }),
+      hasName: Boolean(name),
+      isYou: p.isYou,
+      status: p.status,
+    };
+  });
   return (
     <PlayScreen
       seat={view.session.participants.findIndex((p) => p.isYou) + 1}
       total={view.session.participants.length}
       displayName={displayName}
+      players={players}
       game={game}
       reconnecting={view.connection === 'reconnecting'}
       {...(frameRef && { frameRef })}

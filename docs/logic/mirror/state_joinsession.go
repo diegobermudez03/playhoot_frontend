@@ -29,15 +29,17 @@ type JoinView struct {
 }
 
 type LobbyMember struct {
-	UserUUID string
-	IsYou    bool // computed: UserUUID == global.Auth.UserUUID
+	UserUUID    string
+	DisplayName string // from the backend's Identity; "" when it has none
+	IsYou       bool   // computed: UserUUID == global.Auth.UserUUID
 }
 
 type StartedSession struct {
 	ParticipantID string // "P2": this player
 	Participants  []struct {
-		ParticipantID, UserUUID string
-		IsYou                   bool
+		ParticipantID, UserUUID, DisplayName string
+		IsYou                                bool
+		Status                               string // "active" at the start; then from roster_update ("unknown" for a status this code does not know)
 	}
 	Frontend struct{ URL, SHA256, ExpiresAt string } // the game's frontend, run by Session Play
 }
@@ -165,6 +167,13 @@ func (j *JoinSession) OnLobbyUpdate(m LobbyUpdate) {
 func (j *JoinSession) OnSessionStarted(m SessionStarted) {
 	j.State.SessionUUID = m.SessionUUID
 	j.State.View = JoinView{Phase: "started", Started: startedOf(m), Connection: "connected"} // -> StartedScreen (the game)
+}
+
+// OnRosterUpdate: "roster_update" — during the game, someone's presence changed (or it is the first
+// one after session_started). Only in phase "started"; ignored otherwise.
+func (j *JoinSession) OnRosterUpdate(m RosterUpdate) {
+	// rule: each participant gets the Status (and DisplayName) the update gives for its ParticipantID;
+	// participants it does not mention keep theirs. -> the game screen's players list updates.
 }
 
 // OnRejected: "rejected" — the backend refused the player; the connection closes right after.

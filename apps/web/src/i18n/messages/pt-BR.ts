@@ -58,6 +58,12 @@ export const ptBR: Messages = {
   'play.failed.outdated':
     'Este jogo precisa de uma versão mais nova do Playhoot. Recarregue a página.',
   'play.failed.retry': 'Tentar de novo',
+  'play.roster.title': 'Jogadores',
+  'play.roster.status.active': 'Jogando',
+  'play.roster.status.reconnecting': 'Reconectando…',
+  'play.roster.status.disconnected': 'Desconectado',
+  'play.roster.status.left': 'Saiu da partida',
+  'play.roster.status.unknown': 'Desconhecido',
 
   'outcome.unreachable.title': 'Não encontramos essa partida',
   'outcome.unreachable.body':

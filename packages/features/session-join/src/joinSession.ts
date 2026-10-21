@@ -10,21 +10,34 @@ import type {
 } from '@playhoot/communication';
 import {
   guestDisplayNameMaxLength,
+  presenceStatuses,
   rateLimitedCode,
   rejectReasons,
   type PlayerServerMessage,
+  type PresenceStatus,
   type RejectReason,
 } from '@playhoot/protocol';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 export interface LobbyMember {
   userUUID: string;
+  // How the backend's Identity names them; empty when it has no name.
+  displayName: string;
   isYou: boolean;
+}
+
+export interface Participant {
+  participantId: string;
+  userUUID: string;
+  displayName: string;
+  isYou: boolean;
+  // Whether they are playing, as the backend reports it during the game.
+  status: PresenceStatus | 'unknown';
 }
 
 export interface StartedSession {
   participantId: string;
-  participants: { participantId: string; userUUID: string; isYou: boolean }[];
+  participants: Participant[];
   frontend: { url: string; sha256: string; expiresAt: string };
 }
 
@@ -178,6 +191,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
             phase: 'lobby',
             members: message.members.map((m) => ({
               userUUID: m.user_uuid,
+              displayName: m.display_name,
               isYou: m.user_uuid === me,
             })),
           },
@@ -193,7 +207,9 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
               participants: message.participants.map((p) => ({
                 participantId: p.participant_id,
                 userUUID: p.user_uuid,
+                displayName: p.display_name,
                 isYou: p.participant_id === message.participant_id,
+                status: 'active' as const,
               })),
               frontend: {
                 url: message.frontend.url,
@@ -223,6 +239,24 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
           },
         });
         return;
+      case 'roster_update': {
+        const view = store.getState().view;
+        if (view.phase !== 'started') return;
+        const roster = new Map(message.members.map((m) => [m.participant_id, m]));
+        setView({
+          ...view,
+          session: {
+            ...view.session,
+            participants: view.session.participants.map((p) => {
+              const member = roster.get(p.participantId);
+              return member
+                ? { ...p, displayName: member.display_name, status: asPresence(member.status) }
+                : p;
+            }),
+          },
+        });
+        return;
+      }
       case 'leave_result':
         return;
     }
@@ -360,6 +394,12 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
       dropConnection();
     },
   };
+}
+
+function asPresence(status: string): PresenceStatus | 'unknown' {
+  return (presenceStatuses as readonly string[]).includes(status)
+    ? (status as PresenceStatus)
+    : 'unknown';
 }
 
 function asRejectReason(reason: string): RejectReason | 'unknown' {

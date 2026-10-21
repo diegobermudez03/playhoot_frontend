@@ -90,14 +90,21 @@ func CloseSocket(s Socket)                                             {} // cli
 // ignored, a known type with a broken shape is a protocol error.
 type LobbyUpdate struct { // "lobby_update": the whole lobby, every time it changes
 	SessionUUID string
-	Members     []struct{ UserUUID string } // in join order
+	Members     []struct{ UserUUID, DisplayName string } // in join order; DisplayName from the backend's Identity ("" if none)
 }
 
 type SessionStarted struct { // "session_started": also re-sent on every reattach/rejoin
 	SessionUUID   string
 	ParticipantID string // "P1".."Pn", this player
-	Participants  []struct{ ParticipantID, UserUUID string }
+	Participants  []struct{ ParticipantID, UserUUID, DisplayName string }
 	Frontend      struct{ URL, SHA256, ExpiresAt string } // the game's frontend artifact (signed URL)
+}
+
+type RosterUpdate struct { // "roster_update": after session_started, and whenever someone's presence changes
+	Members []struct {
+		ParticipantID, UserUUID, DisplayName string
+		Status                               string // "active" | "reconnecting" | "disconnected" | "left"
+	}
 }
 
 type PlayerView struct { // "player_view": this player's state

@@ -15,6 +15,10 @@ func LobbyScreen(join *JoinSession) {
 	// When: someone joins or leaves the lobby (the server sends the whole list again).
 	join.OnLobbyUpdate(LobbyUpdate{}) // state_joinsession.go -> new Members
 
+	// Shown for each member: their name. rule: for the person on this device, the name they typed
+	// (every guest is the same placeholder user in the backend today); otherwise the DisplayName
+	// from the backend; with neither, "Jugador N" / "Player N" / "Jogador N".
+
 	// When: the host starts the game.
 	join.OnSessionStarted(SessionStarted{}) // -> phase "started"
 

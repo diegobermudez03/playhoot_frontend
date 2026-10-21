@@ -256,7 +256,7 @@ function LobbyStep({
                   <Avatar
                     seat={index + 1}
                     label={name}
-                    text={member.isYou && displayName ? undefined : intl.formatNumber(index + 1)}
+                    text={hasName(member, displayName) ? undefined : intl.formatNumber(index + 1)}
                     highlighted={member.isYou}
                   />
                   <span className={styles.playerName}>{name}</span>
@@ -362,15 +362,22 @@ function OutcomeStep({
   );
 }
 
-// Other players have no names yet: the backend does not return them (BACKEND_CONTRACT.md G3).
+// Names come from the backend's Identity. For the person on this device the name they typed wins:
+// every guest is the same placeholder user in the backend today (BACKEND_CONTRACT.md G3).
 function memberName(
   intl: IntlShape,
   member: LobbyMember,
   index: number,
   displayName: string | null,
 ): string {
-  if (member.isYou) return displayName ?? intl.formatMessage({ id: 'lobby.you' });
+  if (member.isYou && displayName) return displayName;
+  if (member.displayName) return member.displayName;
+  if (member.isYou) return intl.formatMessage({ id: 'lobby.you' });
   return intl.formatMessage({ id: 'lobby.playerName' }, { seat: index + 1 });
+}
+
+function hasName(member: LobbyMember, displayName: string | null): boolean {
+  return Boolean(member.displayName || (member.isYou && displayName));
 }
 
 const toneSounds: Record<OutcomeTone, SoundId> = {

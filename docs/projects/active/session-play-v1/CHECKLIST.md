@@ -142,12 +142,11 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [ ] Z6. The client gets what it needs to validate SAMPLE/COMMAND before sending (frontend-relevant manifest part) or validation stays backend-only (G6) (decision)
 - [ ] Z7. Signed artifact URL readable by the Host (bucket/emulator CORS) if the Host fetches it (G7) (2026-10-20: dev emulator answers CORS `*`, the GameHost fetch works end to end; production bucket CORS recorded for the backend at the human's request (backend Engineering Radar SOON, `play/CURRENT_STATE.md`))
 - [ ] Z8. `leave` during a Start attempt answered instead of closing with 1011 (G8)
-- [ ] Z9. Real identity enough for multiple distinct guests in one session, and display names returned in the lobby and roster so players see each other's names (G3) (backend; may stay out of scope for this project by human decision)
+- [ ] Z9. Real identity enough for multiple distinct guests in one session, and display names returned in the lobby and roster so players see each other's names (G3) (backend; may stay out of scope for this project by human decision) (2026-10-20, directed by the human: display names done without building Identity: `Authorize` returns the fixed test users with names, the backend passes them on and returns them in `lobby_update`, `session_started` and a new `roster_update` with each participant's presence; the frontend shows them in the lobby and in a players list during the game; 2026-10-20, end to end against the real backend in two headless Edge browsers. Distinct guests stay open: every guest is still one placeholder user)
 - [ ] Z10. The client can tell why a WebSocket handshake was refused (unknown/expired code, auth, rate limit, Session not joinable): browsers cannot read pre-upgrade HTTP errors (backend, decision: e.g. a REST pre-check of a join code, or accepting then rejecting with a reason)
 
 ## Placeholders Left Behind
 
 Every frontend stub/stand-in that pretends to do something gets a line here and in `CURRENT_STATE.md`.
 
-- Other players appear as "Player N": the backend returns no names (Z9).
 - `scripts/dev-host.mjs`: development stand-in for the host experience (create and start a Session).
