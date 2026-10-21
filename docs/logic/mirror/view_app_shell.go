@@ -1,5 +1,9 @@
 // PSEUDOCODE — Go syntax, not compiled.
-// VIEW: the top bar, present on every page (logo, sound button, language picker).
+// VIEW: the top bar, present on every page (logo, sound button, language picker), except during a
+// game on a "wide" display (immersive: no bar; the game screen has its own sound button).
+// rule: layout (apps/web/src/features/layout.ts) = "wide" when the display is landscape and at least
+//       600 px wide, else "compact". Presentation only: it changes how a screen is arranged, never
+//       what it does, calls or where it navigates.
 // code: apps/web/src/ui/AppShell.tsx
 package mirror
 

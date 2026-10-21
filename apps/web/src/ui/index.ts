@@ -1,5 +1,5 @@
 // Playhoot web design system (proposal): docs/design/DESIGN_SYSTEM.md.
-export { AppShell, Stage } from './AppShell';
+export { AppShell, SplitStage, Stage } from './AppShell';
 export { Avatar } from './Avatar';
 export { Button } from './Button';
 export { Card } from './Card';

@@ -7,6 +7,7 @@ import { useStore } from 'zustand';
 import { useAuth, useServices } from '../../app/ServicesContext';
 import { DevIdentityPicker } from '../../dev/DevIdentityPicker';
 import { AppShell } from '../../ui';
+import { useLayout } from '../layout';
 import { enterCodePath, joinPath, sessionPlayPath } from '../paths';
 import { SessionPlayView } from '../session-play/SessionPlayView';
 import { SessionScreen } from './SessionScreen';
@@ -25,6 +26,7 @@ export function SessionRoute() {
 function SessionView({ join }: { join: JoinSession }) {
   const state = useStore(join.store);
   const auth = useAuth();
+  const layout = useLayout();
   const navigate = useNavigate();
   const location = useLocation();
   const target = state.target;
@@ -60,10 +62,12 @@ function SessionView({ join }: { join: JoinSession }) {
   const displayName =
     auth.status === 'guest' || auth.status === 'authenticated' ? auth.displayName : null;
 
+  // The game takes the whole screen on a landscape display (plan §6, §8).
   return (
-    <AppShell>
+    <AppShell immersive={state.view.phase === 'started' && layout === 'wide'}>
       <SessionScreen
         state={state}
+        layout={layout}
         joinCode={joinCode}
         displayName={displayName}
         actions={{
@@ -79,6 +83,7 @@ function SessionView({ join }: { join: JoinSession }) {
             view={view}
             live={join.live}
             displayName={displayName}
+            layout={layout}
             onLeave={join.leave}
           />
         )}

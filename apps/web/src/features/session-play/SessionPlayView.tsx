@@ -6,6 +6,7 @@ import { useStore } from 'zustand';
 
 import { useDeviceCapabilities, useServices } from '../../app/ServicesContext';
 import { createIframeGameContainer } from '../../platform/iframeGameContainer';
+import type { Layout } from '../layout';
 import { PlayScreen, type RosterPlayer } from './PlayScreen';
 import { suggestsRotation } from './rotation';
 
@@ -15,6 +16,7 @@ interface SessionPlayViewProps {
   view: StartedView;
   live: LiveSession;
   displayName: string | null;
+  layout: Layout;
   onLeave(): void;
 }
 
@@ -45,6 +47,7 @@ function AttachedPlay(props: SessionPlayViewProps & { play: SessionPlay }) {
 
 function Screen({
   view,
+  layout,
   displayName,
   onLeave,
   game,
@@ -71,6 +74,7 @@ function Screen({
   });
   return (
     <PlayScreen
+      layout={layout}
       seat={view.session.participants.findIndex((p) => p.isYou) + 1}
       total={view.session.participants.length}
       displayName={displayName}

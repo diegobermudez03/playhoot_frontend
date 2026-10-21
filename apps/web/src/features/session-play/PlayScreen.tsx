@@ -3,6 +3,8 @@ import { useEffect, useId, useRef, useState, type Ref } from 'react';
 import { FormattedMessage } from 'react-intl';
 
 import { useSound } from '../../sound';
+import { SoundToggle } from '../../sound/SoundToggle';
+import type { Layout } from '../layout';
 import { Avatar, Button, Confetti, Owl } from '../../ui';
 import styles from './PlayScreen.module.css';
 
@@ -18,6 +20,9 @@ export interface RosterPlayer {
 }
 
 export interface PlayScreenProps {
+  // Compact: a bar above the game. Wide: a rail beside it, so the game gets the whole height
+  // (the app shell is immersive then, so the rail also has the sound toggle).
+  layout: Layout;
   // The player's seat (1-based) and how many play.
   seat: number;
   total: number;
@@ -39,6 +44,7 @@ export interface PlayScreenProps {
 // player's seat, a leave action, and overlays while the game loads, after it fails, and while the
 // connection is being re-established. Every text comes from the message catalogs.
 export function PlayScreen({
+  layout,
   seat,
   total,
   displayName,
@@ -60,14 +66,29 @@ export function PlayScreen({
   }, [failed, sound]);
   const loading = game.phase === 'loading' || game.phase === 'starting';
 
+  const roster = (
+    <Roster seat={seat} total={total} players={players} initiallyOpen={initialRosterOpen} />
+  );
+  const leave = (
+    <Button variant="ghost" onClick={onLeave} sound="leave">
+      <FormattedMessage id="play.leave" />
+    </Button>
+  );
+
   return (
-    <div className={styles.play}>
-      <div className={styles.toolbar}>
-        <Roster seat={seat} total={total} players={players} initiallyOpen={initialRosterOpen} />
-        <Button variant="ghost" onClick={onLeave} sound="leave">
-          <FormattedMessage id="play.leave" />
-        </Button>
-      </div>
+    <div className={layout === 'wide' ? `${styles.play} ${styles.playWide}` : styles.play}>
+      {layout === 'wide' ? (
+        <div className={styles.rail}>
+          {roster}
+          <SoundToggle />
+          <div className={styles.railEnd}>{leave}</div>
+        </div>
+      ) : (
+        <div className={styles.toolbar}>
+          {roster}
+          {leave}
+        </div>
+      )}
       <div className={styles.area}>
         <div className={styles.frame} ref={frameRef} />
         {loading && (

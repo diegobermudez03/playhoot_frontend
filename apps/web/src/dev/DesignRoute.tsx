@@ -3,6 +3,7 @@ import type { GameHostStatus } from '@playhoot/game-host';
 import { joinCodeAlphabet } from '@playhoot/protocol';
 import { useState, type ReactNode } from 'react';
 
+import { useLayout, type Layout } from '../features/layout';
 import { SessionScreen } from '../features/session-join/SessionScreen';
 import { PlayScreen, type RosterPlayer } from '../features/session-play/PlayScreen';
 import { silentSoundPlayer, SoundProvider, useSound, type SoundId } from '../sound';
@@ -12,6 +13,8 @@ import styles from './DesignRoute.module.css';
 // Development-only living style guide: tokens, components and every Join Session screen with
 // fake state, for reviewing the design without a backend.
 export function DesignRoute() {
+  const detected = useLayout();
+  const [layout, setLayout] = useState<Layout>(detected);
   return (
     <AppShell>
       <div className={styles.page}>
@@ -21,6 +24,19 @@ export function DesignRoute() {
             Living style guide (dev only). Rationale and open questions:
             docs/design/DESIGN_SYSTEM.md
           </p>
+          <div className={styles.row}>
+            <span>Screens layout (this display: {detected}):</span>
+            {(['compact', 'wide'] as const).map((option) => (
+              <Button
+                key={option}
+                size="md"
+                variant={layout === option ? 'primary' : 'secondary'}
+                onClick={() => setLayout(option)}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
         </header>
         <Section title="Identity">
           <div className={styles.row}>
@@ -100,6 +116,7 @@ export function DesignRoute() {
             {screens.map(([label, view, joinCode]) => (
               <Frame key={label} label={label}>
                 <SessionScreen
+                  layout={layout}
                   state={fakeState(view)}
                   joinCode={joinCode}
                   displayName="Night Owl"
@@ -118,6 +135,7 @@ export function DesignRoute() {
               <Frame key={label} label={label}>
                 <div className={styles.playFrame}>
                   <PlayScreen
+                    layout={layout}
                     seat={2}
                     total={4}
                     displayName="Night Owl"

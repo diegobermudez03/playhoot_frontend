@@ -16,7 +16,18 @@ import {
 import { FormattedMessage, useIntl, type IntlShape } from 'react-intl';
 
 import { useSound, type SoundId } from '../../sound';
-import { Avatar, Button, Card, CodeTiles, Confetti, Owl, Stage, TextField } from '../../ui';
+import {
+  Avatar,
+  Button,
+  Card,
+  CodeTiles,
+  Confetti,
+  Owl,
+  SplitStage,
+  Stage,
+  TextField,
+} from '../../ui';
+import type { Layout } from '../layout';
 import {
   outcomeActionLabels,
   outcomeCopy,
@@ -35,6 +46,8 @@ export interface SessionScreenActions {
 
 export interface SessionScreenProps {
   state: JoinSessionState;
+  // The presentation skeleton the route chose for this display (plan §6).
+  layout: Layout;
   // The code to show and share, when the person came with one.
   joinCode: string | null;
   // The local name of the person playing, if they chose one.
@@ -72,6 +85,7 @@ export function SessionScreen(props: SessionScreenProps) {
 
 function IdentityStep({
   view,
+  layout,
   joinCode,
   actions,
   devIdentity,
@@ -83,37 +97,50 @@ function IdentityStep({
     actions.submitDisplayName(name);
   };
 
-  return (
+  const hero = (
+    <div className={styles.hero}>
+      <Owl size={88} />
+      <h1 className={styles.title}>
+        <FormattedMessage id="identity.title" />
+      </h1>
+      {joinCode && (
+        <p className={styles.lead}>
+          <FormattedMessage id="identity.joining" values={{ code: joinCode }} />
+        </p>
+      )}
+    </div>
+  );
+  const form = (
+    <Card>
+      <form className={styles.form} onSubmit={submit} noValidate>
+        <TextField
+          label={intl.formatMessage({ id: 'identity.nameLabel' })}
+          placeholder={intl.formatMessage({ id: 'identity.namePlaceholder' })}
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          maxLength={guestDisplayNameMaxLength}
+          autoComplete="nickname"
+          autoFocus
+          error={view.error ? identityErrorText(intl, view.error) : null}
+          hint={intl.formatMessage({ id: 'identity.nameHint' })}
+        />
+        <Button type="submit" size="lg" block loading={view.submitting}>
+          <FormattedMessage id="identity.submit" />
+        </Button>
+      </form>
+    </Card>
+  );
+
+  // Compact: the owl above the form. Wide: beside it, so the form stays whole above a keyboard.
+  return layout === 'wide' ? (
+    <SplitStage aside={hero}>
+      {form}
+      {devIdentity}
+    </SplitStage>
+  ) : (
     <Stage>
-      <div className={styles.hero}>
-        <Owl size={88} />
-        <h1 className={styles.title}>
-          <FormattedMessage id="identity.title" />
-        </h1>
-        {joinCode && (
-          <p className={styles.lead}>
-            <FormattedMessage id="identity.joining" values={{ code: joinCode }} />
-          </p>
-        )}
-      </div>
-      <Card>
-        <form className={styles.form} onSubmit={submit} noValidate>
-          <TextField
-            label={intl.formatMessage({ id: 'identity.nameLabel' })}
-            placeholder={intl.formatMessage({ id: 'identity.namePlaceholder' })}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            maxLength={guestDisplayNameMaxLength}
-            autoComplete="nickname"
-            autoFocus
-            error={view.error ? identityErrorText(intl, view.error) : null}
-            hint={intl.formatMessage({ id: 'identity.nameHint' })}
-          />
-          <Button type="submit" size="lg" block loading={view.submitting}>
-            <FormattedMessage id="identity.submit" />
-          </Button>
-        </form>
-      </Card>
+      {hero}
+      {form}
       {devIdentity}
     </Stage>
   );
@@ -168,6 +195,7 @@ function ConnectingStep({
 
 function LobbyStep({
   members,
+  layout,
   joinCode,
   displayName,
   actions,
@@ -205,7 +233,12 @@ function LobbyStep({
           <FormattedMessage id="lobby.waiting" />
         </p>
       </div>
-      <div className={styles.lobbyGrid}>
+      {/* Compact: the invitation above the players. Wide: side by side. */}
+      <div
+        className={
+          layout === 'wide' ? `${styles.lobbyGrid} ${styles.lobbyGridWide}` : styles.lobbyGrid
+        }
+      >
         <Card className={styles.inviteCard}>
           <h2 className={styles.cardTitle}>
             <FormattedMessage id="lobby.invite.title" />

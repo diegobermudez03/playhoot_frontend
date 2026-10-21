@@ -90,7 +90,14 @@ The UI is in Spanish, English and Brazilian Portuguese (French planned), switche
 
 ## Responsive behavior
 
-Mobile first, checked at 320, 390 and 1280 px without horizontal scrolling. The lobby puts "Invite friends" and "Players" side by side from 840 px. Separate portrait/landscape variants (plan §6) are plan step 8 and not built yet.
+Mobile first, checked at 320, 390 and 1280 px without horizontal scrolling.
+
+Adaptive layouts (plan §6, step 8, 2026-10-20, the agent's proposal for the human to react to): every screen has one of two skeletons, chosen once per route by `selectLayout` (`apps/web/src/features/layout.ts`) from the device capabilities, never by scattered checks:
+
+- `compact`: a portrait display, or one narrower than 600 px. One column: the greeting (logo or owl) above the task, the invitation above the players, the game below a bar with the seat and Leave.
+- `wide`: a landscape display at least 600 px wide (a phone held sideways, a landscape tablet, a desktop window). Side by side: the greeting beside the form (`SplitStage`, so the form stays whole above a phone keyboard), the invitation beside the players, and the game immersive: no top bar, a rail beside the game with the seat, the sound button and Leave, so the game gets the whole height.
+
+Screens that are one centered message (connecting, the outcomes, "game on") have a single skeleton. Inside each skeleton, sizes still follow the responsive tokens (`clamp` type, spacing). `/design` has a compact / wide switch to review both on any display.
 
 ## Open questions for the human
 

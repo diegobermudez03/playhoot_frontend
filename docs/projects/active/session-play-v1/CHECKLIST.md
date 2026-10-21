@@ -98,9 +98,9 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## H. Adaptive presentation (§6, §18 step 8)
 
-- [ ] Join and Play have portrait/compact and landscape/wide variants consuming the same feature state
-- [ ] Variant selector lives at the presentation edge; no scattered device conditionals
-- [ ] Responsive behavior inside each variant
+- [x] Join and Play have portrait/compact and landscape/wide variants consuming the same feature state (2026-10-20: Enter a code, the name step, the lobby and the game screen have both; single-message screens (connecting, outcomes) keep one skeleton on purpose; seen in headless Edge at 390x844, 844x390 and 1280x800 through `/join` and `/design`. The immersive game in a real Session was not run end to end)
+- [x] Variant selector lives at the presentation edge; no scattered device conditionals (2026-10-20: `selectLayout` / `useLayout` read once per route (`EnterCodeRoute`, `SessionRoute`) and passed down as `layout`; unit-tested)
+- [x] Responsive behavior inside each variant (2026-10-20: fluid tokens and wrapping inside each skeleton; no horizontal scroll at the sizes above)
 
 ## I. Hardening (§16, §17, §18 step 9)
 

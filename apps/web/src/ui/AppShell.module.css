@@ -46,3 +46,27 @@
 .wide {
   max-width: 960px;
 }
+
+.immersive {
+  /* The shell already keeps clear of the top and bottom safe areas. */
+  padding: var(--space-2) max(var(--space-2), env(safe-area-inset-right)) var(--space-2)
+    max(var(--space-2), env(safe-area-inset-left));
+}
+
+.split {
+  width: 100%;
+  max-width: 960px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  align-items: center;
+  gap: clamp(var(--space-5), 4vw, var(--space-8));
+}
+
+.splitAside,
+.splitMain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}

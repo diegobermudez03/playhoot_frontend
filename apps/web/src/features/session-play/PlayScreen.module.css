@@ -9,6 +9,29 @@
   min-height: 0;
 }
 
+.playWide {
+  max-width: none;
+  flex-direction: row;
+  gap: var(--space-2);
+}
+
+/* The wide variant's controls, beside the game. */
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-block: var(--space-1);
+}
+
+.railEnd {
+  margin-top: auto;
+}
+
+.playWide .area {
+  min-height: 0;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
