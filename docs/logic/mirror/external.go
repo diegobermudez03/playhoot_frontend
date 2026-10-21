@@ -93,7 +93,7 @@ type LobbyUpdate struct { // "lobby_update": the whole lobby, every time it chan
 	Members     []struct{ UserUUID, DisplayName string } // in join order; DisplayName from the backend's Identity ("" if none)
 }
 
-type SessionStarted struct { // "session_started": also re-sent on every reattach/rejoin
+type SessionStarted struct { // "session_started": also re-sent on every reattach/rejoin, with Frontend signed again then
 	SessionUUID   string
 	ParticipantID string // "P1".."Pn", this player
 	Participants  []struct{ ParticipantID, UserUUID, DisplayName string }
