@@ -318,6 +318,14 @@ describe('createJoinSession', () => {
       outcome: { kind: 'rejected', reason: 'lobby_full' },
     });
 
+    const c = setup();
+    c.join.start();
+    c.last().message({ type: 'rejected', reason: 'join_code_expired' });
+    expect(c.view()).toEqual({
+      phase: 'closed',
+      outcome: { kind: 'rejected', reason: 'join_code_expired' },
+    });
+
     const u = setup();
     u.join.start();
     u.last().message({ type: 'rejected', reason: 'brand_new' });
@@ -407,6 +415,25 @@ describe('createJoinSession', () => {
     expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'left' } });
   });
 
+  it('does not show a game that starts while the player is leaving', () => {
+    const t = setup();
+    t.join.start();
+    t.last().emit({ type: 'open' });
+    t.join.leave();
+    t.last().message({
+      type: 'session_started',
+      session_uuid: 's-1',
+      participant_id: 'P2',
+      participants: [{ participant_id: 'P2', user_uuid: me, display_name: 'Ana' }],
+      frontend,
+    });
+    t.last().message({ type: 'roster_update', members: [] });
+    expect(t.view()).toEqual({ phase: 'leaving' });
+    t.last().message({ type: 'leave_result', outcome: 'left' });
+    t.last().emit({ type: 'closed', kind: 'left', code: 1000, reason: 'left' });
+    expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'left' } });
+  });
+
   it('leaves because the game was stopped, and says so in the outcome', () => {
     const t = setup();
     t.join.start();
@@ -433,6 +460,8 @@ describe('createJoinSession', () => {
     const connection = t.last();
     t.join.dispose();
     expect(connection.closed).toBe(true);
+    // Leaving the route (or closing the tab) is a disconnection, never a leave.
+    expect(connection.left).toBe(false);
     connection.message({ type: 'lobby_update', session_uuid: 's-1', members: [] });
     expect(t.view()).toEqual({ phase: 'connecting', reconnectAttempt: 0 });
   });

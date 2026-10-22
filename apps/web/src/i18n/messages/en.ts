@@ -66,9 +66,13 @@ export const en = {
   'play.roster.status.left': 'Left the game',
   'play.roster.status.unknown': 'Unknown',
 
-  'outcome.unreachable.title': "We couldn't find that game",
-  'outcome.unreachable.body':
-    'The code may be mistyped or expired, or the game already started. Check it with your host.',
+  'outcome.unreachable.title': "We couldn't reach that game",
+  'outcome.unreachable.body': 'Check your internet connection and try again in a moment.',
+  'outcome.invalidCode.title': "We couldn't find that game",
+  'outcome.invalidCode.body':
+    'The code may be mistyped, or that game already ended. Check it with your host.',
+  'outcome.codeExpired.title': 'This game is no longer taking players',
+  'outcome.codeExpired.body': 'Its code expired. Ask your host for a new one.',
   'outcome.lobbyFull.title': 'This game is full',
   'outcome.lobbyFull.body': 'Every seat is taken. Ask your host to start another round.',
   'outcome.sessionStarted.title': 'This game already started',

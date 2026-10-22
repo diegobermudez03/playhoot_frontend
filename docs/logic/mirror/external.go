@@ -99,8 +99,10 @@ func FetchGameArtifact(signedURL string) ([]byte, *HttpFailure) {
 //	subprotocols: "playhoot.v1", "base64url.bearer.authorization.playhoot.<base64url(token)>"
 //
 // Returns NoCredential without opening anything when there is no token.
-// If the backend refuses the handshake (bad code, auth, rate limit, Session not joinable),
-// the browser only sees a close before "open": the reason is invisible (BACKEND_CONTRACT G/Z10).
+// A refused join code opens and then gets "rejected" with its reason: invalid_join_code (no such
+// code, or its Session ended), join_code_expired (the lobby still runs, the code expired) or
+// session_started. If the backend refuses the handshake itself (auth, rate limit, busy), the
+// browser only sees a close before "open": the reason is invisible (BACKEND_CONTRACT Z10).
 //
 // code: packages/communication/src/sessionConnection.ts#createSessionConnector
 func OpenPlayerConnection(target SessionTarget) (Socket, *NoCredential) {

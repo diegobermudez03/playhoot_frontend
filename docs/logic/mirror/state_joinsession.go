@@ -56,7 +56,7 @@ type IdentityError struct {
 
 type JoinOutcome struct {
 	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "game-stopped" | "replaced" | "connection-lost" | "protocol-error"
-	Reason      string // rejected: lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
+	Reason      string // rejected: invalid_join_code, join_code_expired, lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
 	Status      string // ended: FINISHED | CANCELLED | EXPIRED | ABORTED
 	EndCause    string // ended: HOST_CANCELLED, LOBBY_EXPIRED, GAME_FINISHED...
 	BeforeStart bool   // ended: the lobby closed before the game started
@@ -170,6 +170,8 @@ func (j *JoinSession) connect(attempt int) {
 // ─── Events from the server (through the connection) ───────────────────────
 
 // OnLobbyUpdate: "lobby_update" — joined the lobby, or someone joined/left. Always the whole list.
+// While "leaving", lobby updates, session_started and roster updates are ignored: a player who
+// leaves while the game starts may still be told it started before the backend applies the leave.
 func (j *JoinSession) OnLobbyUpdate(m LobbyUpdate) {
 	j.State.SessionUUID = m.SessionUUID                            // -> the view replaces the URL
 	j.State.View = JoinView{Phase: "lobby", Members: membersOf(m)} // -> LobbyScreen
@@ -224,7 +226,7 @@ func (j *JoinSession) OnConnectionClosed(kind CloseKind, attempt int, opened boo
 		j.State.View = outcome("protocol-error")
 	case "unreachable", "retryable", "disconnected":
 		if kind == "unreachable" && attempt == 0 {
-			j.State.View = outcome("unreachable") // the code/link itself is not joinable
+			j.State.View = outcome("unreachable") // network, auth, limits or a busy server (a bad code is "rejected")
 			return
 		}
 		// rule: up to 3 reconnections, waiting 1 s, 2 s, then 4 s; a connection that had opened

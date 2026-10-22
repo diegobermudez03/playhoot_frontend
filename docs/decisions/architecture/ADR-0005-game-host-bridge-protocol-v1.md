@@ -2,7 +2,7 @@
 
 Status: ACCEPTED
 Created: 2026-10-20
-Last status change: 2026-10-20
+Last status change: 2026-10-20 (amended 2026-10-21: run-time transport selection)
 Supersedes: None
 Superseded by: None
 
@@ -14,7 +14,7 @@ The human chose on 2026-10-20 to build steps 4 and 5 together against a local fi
 
 ## Decision
 
-**Transport.** On the web, `postMessage` between the Host page and a sandboxed iframe (`sandbox="allow-scripts"`, opaque origin). Every message is a plain object `{ bridge: "playhoot.bridge", type, ... }`; anything without the marker is ignored. The Host accepts messages only from the iframe it created. A WebView host will carry the same objects over its own messaging.
+**Transport.** On the web, `postMessage` between the Host page and a sandboxed iframe (`sandbox="allow-scripts"`, opaque origin). Every message is a plain object `{ bridge: "playhoot.bridge", type, ... }`; anything without the marker is ignored. The Host accepts messages only from the iframe it created. A WebView host will carry the same objects over its own messaging. Amended 2026-10-21 (approved by the human, CHECKLIST M): the SDK chooses its transport at run time so one artifact runs on every Host: in a React Native WebView (`window.ReactNativeWebView` present) it posts each message as JSON text through that channel and reads JSON text from `message` events on `window` or `document`; otherwise it uses the parent window. The message catalog is unchanged; every message except `asset` (which carries an `ArrayBuffer`) is JSON-safe, and how asset bytes cross a text-only channel is decided with asset delivery (CHECKLIST Z4).
 
 **Versioning.** The game's `ready` lists the bridge versions its SDK speaks; the Host answers with the newest common one in `start`, or `incompatible` and stops. A released version never changes; changes are new versions, so old GameVersion artifacts stay interpretable.
 

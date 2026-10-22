@@ -24,7 +24,7 @@ const url = await playhoot.requestAsset('ship');                 // a blob: URL,
 
 - `outcome` is `executed` (with the game script's `response`), `rejected` or `unavailable`.
 - `ack` is the game's own last sample id the backend consumed, for prediction/reconciliation.
-- Transport: `postMessage` to the parent window by default (`windowParentTransport`); a WebView host will provide its own `BridgeTransport`.
+- Transport: chosen at run time (`detectTransport`), so the same artifact runs on every Host: the React Native WebView channel (`window.ReactNativeWebView`, messages as JSON text, `webViewTransport`) when present, otherwise `postMessage` to the parent window (`windowParentTransport`). Asset bytes cannot cross the WebView's text channel yet: their delivery is decided with asset loading (CHECKLIST Z4).
 
 ## Does not own
 

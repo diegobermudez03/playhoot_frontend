@@ -30,6 +30,8 @@ export const telemetryErrorKinds = {
   backend_rejection: [
     'lobby_full',
     'session_started',
+    'invalid_join_code',
+    'join_code_expired',
     'session_unavailable',
     'participant_disconnected',
     'rejoin_rejected',

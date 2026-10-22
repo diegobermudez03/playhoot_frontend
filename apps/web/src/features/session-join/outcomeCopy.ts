@@ -27,7 +27,7 @@ export const outcomeActionLabels: Record<OutcomeAction, MessageId> = {
 export function outcomeCopy(outcome: JoinOutcome): OutcomeCopy {
   switch (outcome.kind) {
     case 'unreachable':
-      return copy('unreachable', 'surprised', ['enter-code', 'retry']);
+      return copy('unreachable', 'surprised', ['retry', 'enter-code']);
     case 'rejected':
       return rejectedCopy(outcome.reason);
     case 'ended':
@@ -49,6 +49,8 @@ type OutcomeKey =
   | 'unreachable'
   | 'lobbyFull'
   | 'sessionStarted'
+  | 'invalidCode'
+  | 'codeExpired'
   | 'cannotRejoin'
   | 'busy'
   | 'unavailable'
@@ -67,6 +69,8 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   unreachable: 'problem',
   lobbyFull: 'problem',
   sessionStarted: 'problem',
+  invalidCode: 'problem',
+  codeExpired: 'problem',
   cannotRejoin: 'farewell',
   busy: 'problem',
   unavailable: 'problem',
@@ -98,6 +102,10 @@ function rejectedCopy(reason: Extract<JoinOutcome, { kind: 'rejected' }>['reason
       return copy('lobbyFull', 'surprised', ['enter-code', 'retry']);
     case 'session_started':
       return copy('sessionStarted', 'surprised', ['enter-code']);
+    case 'invalid_join_code':
+      return copy('invalidCode', 'surprised', ['enter-code']);
+    case 'join_code_expired':
+      return copy('codeExpired', 'sleepy', ['enter-code']);
     case 'participant_disconnected':
     case 'rejoin_rejected':
       return copy('cannotRejoin', 'sleepy', ['enter-code']);

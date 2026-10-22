@@ -50,11 +50,56 @@ export interface Playhoot {
   requestAsset(key: string): Promise<string>;
 }
 
-// How bridge messages travel. In a browser iframe this is `postMessage` to the parent; a WebView
-// host provides its own. Tests inject a fake.
+// How bridge messages travel: `postMessage` to the parent in a browser iframe, the native channel
+// in a mobile WebView. The SDK picks one at run time, so one artifact runs on every Host. Tests
+// inject a fake.
 export interface BridgeTransport {
   post(message: GameToHostMessage): void;
   listen(handler: (message: unknown) => void): () => void;
+}
+
+// The channel a React Native WebView gives its page. It carries strings only.
+export interface WebViewChannel {
+  postMessage(message: string): void;
+}
+
+// The transport for the Host the game runs in: the WebView's channel when there is one, otherwise
+// the parent window.
+export function detectTransport(): BridgeTransport {
+  const channel = (globalThis as { ReactNativeWebView?: Partial<WebViewChannel> })
+    .ReactNativeWebView;
+  return typeof channel?.postMessage === 'function'
+    ? webViewTransport(channel as WebViewChannel)
+    : windowParentTransport();
+}
+
+// In a WebView the game is the top page: messages go out through the native channel and come in
+// as `message` events (dispatched on `window` or, on Android, `document`), both as JSON text.
+export function webViewTransport(channel: WebViewChannel): BridgeTransport {
+  return {
+    post(message) {
+      channel.postMessage(JSON.stringify(message));
+    },
+    listen(handler) {
+      const onMessage = (event: Event) => {
+        const data = (event as MessageEvent).data;
+        if (typeof data !== 'string') return;
+        let message: unknown;
+        try {
+          message = JSON.parse(data);
+        } catch {
+          return;
+        }
+        handler(message);
+      };
+      window.addEventListener('message', onMessage);
+      document.addEventListener('message', onMessage);
+      return () => {
+        window.removeEventListener('message', onMessage);
+        document.removeEventListener('message', onMessage);
+      };
+    },
+  };
 }
 
 export function windowParentTransport(): BridgeTransport {
@@ -78,7 +123,7 @@ export class PlayhootError extends Error {
   override name = 'PlayhootError';
 }
 
-export function createPlayhoot(transport: BridgeTransport = windowParentTransport()): Playhoot {
+export function createPlayhoot(transport: BridgeTransport = detectTransport()): Playhoot {
   const projectionHandlers = new Set<(projection: Projection) => void>();
   const eventHandlers = new Set<(event: unknown) => void>();
   const errorHandlers = new Set<(error: unknown) => void>();

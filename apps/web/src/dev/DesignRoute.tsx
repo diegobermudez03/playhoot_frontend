@@ -283,7 +283,17 @@ const screens: [string, JoinView, string | null][] = [
     },
     null,
   ],
-  ['Code not found', { phase: 'closed', outcome: { kind: 'unreachable' } }, null],
+  ['Unreachable', { phase: 'closed', outcome: { kind: 'unreachable' } }, null],
+  [
+    'Code not found',
+    { phase: 'closed', outcome: { kind: 'rejected', reason: 'invalid_join_code' } },
+    null,
+  ],
+  [
+    'Code expired',
+    { phase: 'closed', outcome: { kind: 'rejected', reason: 'join_code_expired' } },
+    null,
+  ],
   ['Game full', { phase: 'closed', outcome: { kind: 'rejected', reason: 'lobby_full' } }, null],
   [
     'Already started',

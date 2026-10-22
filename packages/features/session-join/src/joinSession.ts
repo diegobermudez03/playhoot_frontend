@@ -56,8 +56,8 @@ export type IdentityError =
 // Why the join is over. Each outcome maps to a message and a next action in presentation.
 export type JoinOutcome =
   | { kind: 'rejected'; reason: RejectReason | 'unknown' }
-  // The first handshake failed before the connection opened: wrong or expired code, a Session
-  // that is not joinable, or the network. Browsers do not tell these apart.
+  // The first handshake failed before the connection opened: the network, authorization, rate
+  // limits or a busy server. Browsers do not tell these apart. A refused join code is `rejected`.
   | { kind: 'unreachable' }
   | { kind: 'ended'; status: string; endCause: string; beforeStart: boolean }
   | { kind: 'left' }
@@ -217,6 +217,15 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
 
   const onMessage = (message: PlayerServerMessage) => {
     const me = myUserUUID();
+    // A player leaving while the game starts may still be told it started before the backend
+    // applies the leave: the Session goes on without them, so it is not shown.
+    if (
+      store.getState().view.phase === 'leaving' &&
+      (message.type === 'lobby_update' ||
+        message.type === 'session_started' ||
+        message.type === 'roster_update')
+    )
+      return;
     switch (message.type) {
       case 'lobby_update':
         store.setState({

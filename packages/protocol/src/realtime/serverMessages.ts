@@ -13,6 +13,10 @@ export const rejectReasons = [
   'owner_changed',
   'too_many_admins',
   'server_busy',
+  // A join by code refused before reaching the Session (`api/play/join_code_routing.go`): the
+  // code names no Session, or one that ended; or its lobby still runs but the code expired.
+  'invalid_join_code',
+  'join_code_expired',
 ] as const;
 export type RejectReason = (typeof rejectReasons)[number];
 

@@ -67,9 +67,13 @@ export const ptBR: Messages = {
   'play.roster.status.left': 'Saiu da partida',
   'play.roster.status.unknown': 'Desconhecido',
 
-  'outcome.unreachable.title': 'Não encontramos essa partida',
-  'outcome.unreachable.body':
-    'O código pode estar errado ou expirado, ou a partida já começou. Confirme com o anfitrião.',
+  'outcome.unreachable.title': 'Não conseguimos conectar a essa partida',
+  'outcome.unreachable.body': 'Verifique sua conexão com a internet e tente de novo em instantes.',
+  'outcome.invalidCode.title': 'Não encontramos essa partida',
+  'outcome.invalidCode.body':
+    'O código pode estar errado, ou essa partida já terminou. Confirme com o anfitrião.',
+  'outcome.codeExpired.title': 'Esta partida não aceita mais jogadores',
+  'outcome.codeExpired.body': 'O código expirou. Peça um novo ao anfitrião.',
   'outcome.lobbyFull.title': 'A partida está cheia',
   'outcome.lobbyFull.body':
     'Todos os lugares estão ocupados. Peça ao anfitrião para começar outra rodada.',

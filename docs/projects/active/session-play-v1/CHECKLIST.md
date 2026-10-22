@@ -57,7 +57,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [ ] Rejoin after grace; `participant_disconnected` / `rejoin_rejected` → terminal for this player (2026-10-20: the same reconnection by Session UUID; a refused rejoin closes with the reason (`participant_disconnected`, `rejoin_rejected`) as a rejection outcome, unit-tested; not exercised end to end after the 3 s grace)
 - [ ] Close-code handling (2026-10-20: every close is classified, unit-tested; Join reconnects by Session UUID up to 3 times (1 s, 2 s, 4 s) and never after `replaced`; pending: reconnection with resync during a running game, step 3): 1000 reasons (`replaced` = do not reconnect, `left`, `session_ended`, `disconnected`), 1001/1006/1011/1012 → reconnect with backoff respecting handshake rate limits (5/s, 30/min per user), 1007/1008 → protocol error, not retried blindly
 - [x] Terminal: `session_ended` / `lobby_closed` with status and end cause → terminal state (2026-10-20: unit tests; host cancellation seen end to end)
-- [ ] Explicit leave vs navigate-away semantics (§13.8) (decision: does navigating away send `leave`, or only close the socket?)
+- [x] Explicit leave vs navigate-away semantics (§13.8) (2026-10-21, decided by the human: only the leave button sends `leave`; navigating away or closing the tab only closes the socket, a disconnection: within the backend's 3 s grace, reopening the page reattaches without the disconnection flow. Already the behavior; unit test: dispose closes without leaving. The human runs the end-to-end check)
 
 ## D. WebGameHost minimal (§10, §13.3, §16, §18 step 4)
 
@@ -121,12 +121,12 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## L. Global bootstrap and visibility (§14, §18 step 10)
 
-- [ ] Bootstrap/me capabilities consumed when the backend provides them; visibility centralized, never treated as authorization (backend: no endpoint exists yet; may move out of scope by human decision)
+- [-] OUT OF SCOPE (2026-10-21, decided by the human: postponed until the Session flow and play are finished; it moves to the general platform work (plan step 12), when features whose visibility depends on the identity exist; the human already has a direction in mind). Bootstrap/me capabilities consumed when the backend provides them; visibility centralized, never treated as authorization (backend: no endpoint exists yet)
 
 ## M. Invariants verification (ARCHITECTURE.md "Invariants")
 
 - [x] Game never receives tokens, the real WebSocket, signed URLs or backend access (test/inspection) (2026-10-20: GameHost unit tests check no command token reaches the game; headless Edge: no storage, cookies, network or parent access from the game; 2026-10-20, end to end against the real backend in headless Edge: Space Drift seed version `...c2`, temporary database: inside the real game frame origin `null`, no storage, no network)
-- [ ] Same artifact contract usable by a future WebView host (no web-host-only assumptions in SDK/bridge)
+- [ ] Same artifact contract usable by a future WebView host (no web-host-only assumptions in SDK/bridge) (2026-10-21, review: the bridge messages, limits, Host-side validation, logical viewport and hash check are host-neutral. Fixed, approved by the human: the SDK hard-wired `window.parent`; it now detects the React Native WebView channel and sends JSON text there (ADR-0005 amended; unit tests). Open: `asset` carries an `ArrayBuffer`, which a text-only WebView channel cannot carry (decided with Z4). Requirements recorded for the future NativeGameHost: give the game the isolation the sandboxed iframe gives today (no storage, no network: CSP and WebView settings), inject the same guard script, and size the page to the game's logical resolution. The seeded Space Drift artifact (`...c2`) predates the detection: a WebView needs a new seed version)
 - [x] Feature state discarded on route exit; rebuild from URL + backend (test) (2026-10-20: Join and Session Play dispose on route exit (unit tests) and rebuild after a refresh (end to end))
 - [x] Feature state knows semantic operations only (no WebSocket/iframe types in feature packages) (2026-10-20, inspection: `session-join` and `session-play` use `SessionConnector`/`LiveSession` and the `GameContainer` abstraction; no WebSocket or iframe types)
 

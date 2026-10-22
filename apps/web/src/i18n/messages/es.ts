@@ -68,9 +68,13 @@ export const es: Messages = {
   'play.roster.status.left': 'Salió de la partida',
   'play.roster.status.unknown': 'Desconocido',
 
-  'outcome.unreachable.title': 'No encontramos esa partida',
-  'outcome.unreachable.body':
-    'Puede que el código esté mal escrito o haya expirado, o que la partida ya haya empezado. Confírmalo con tu anfitrión.',
+  'outcome.unreachable.title': 'No pudimos conectar con esa partida',
+  'outcome.unreachable.body': 'Revisa tu conexión a internet e inténtalo de nuevo en un momento.',
+  'outcome.invalidCode.title': 'No encontramos esa partida',
+  'outcome.invalidCode.body':
+    'Puede que el código esté mal escrito o que esa partida ya haya terminado. Confírmalo con tu anfitrión.',
+  'outcome.codeExpired.title': 'Esta partida ya no acepta más jugadores',
+  'outcome.codeExpired.body': 'Su código venció. Pídele uno nuevo a tu anfitrión.',
   'outcome.lobbyFull.title': 'La partida está llena',
   'outcome.lobbyFull.body':
     'Todos los lugares están ocupados. Pídele al anfitrión que inicie otra ronda.',

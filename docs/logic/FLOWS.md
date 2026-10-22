@@ -132,14 +132,14 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 
 ## 8. Leaving
 
-"Leave game" (lobby) or "Salir" / "Leave" (game screen) → `View = leaving`, sends `{"type":"leave"}` → server closes as `left` → `View = closed(left)` → navigation to `/join` (**push**). Navigating away without pressing it only closes the socket (in a lobby that also removes the player).
+"Leave game" (lobby) or "Salir" / "Leave" (game screen) → `View = leaving`, sends `{"type":"leave"}` → server closes as `left` → `View = closed(left)` → navigation to `/join` (**push**). Navigating away or closing the tab without pressing it only closes the socket: a disconnection, not a leave (decided by the human, 2026-10-21). In a lobby that also removes the player; in a game the backend keeps the seat for 3 s, so reopening the page in time reattaches without the game noticing. Leaving while the game is starting: the backend applies the leave once the start resolves; meanwhile the feature ignores lobby, start and roster messages, so the game is never shown.
 
 ## 9. How a join can end
 
 | Cause | Feature state | Next actions offered |
 | --- | --- | --- |
-| First handshake failed (wrong/expired code, auth, limits, Session not joinable — the browser cannot tell which) | `closed(unreachable)` | Enter a code · Try again |
-| `rejected` (`lobby_full`, `session_started`, `session_unavailable`, `participant_disconnected`, `rejoin_rejected`, `server_busy`…) | `closed(rejected, reason)` | Depends on the reason |
+| First handshake failed (network, auth, limits, busy server — the browser cannot tell which) | `closed(unreachable)` | Try again · Enter a code |
+| `rejected` (`invalid_join_code`, `join_code_expired`, `lobby_full`, `session_started`, `session_unavailable`, `participant_disconnected`, `rejoin_rejected`, `server_busy`…) | `closed(rejected, reason)` | Depends on the reason |
 | `lobby_closed` / `session_ended` | `closed(ended, status, cause)` | Enter a code |
 | Closed as `replaced` | `closed(replaced)` | Play here (reconnects, taking over) · Enter a code |
 | 3 reconnections failed | `closed(connection-lost)` | Try again · Enter a code |

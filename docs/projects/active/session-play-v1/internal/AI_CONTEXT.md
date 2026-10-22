@@ -4,9 +4,9 @@ Current stage: observability K (client telemetry to the backend, ADR-0007, Z12) 
 Current execution surface: CODEBASE AGENT
 Related durable artifacts: docs/projects/active/session-play-v1/PROJECT.md, docs/projects/active/session-play-v1/CHECKLIST.md, docs/Playhoot_Frontend_Architecture_Plan.docx, ARCHITECTURE.md, docs/architecture/BACKEND_CONTRACT.md, docs/decisions/architecture/ADR-0001-workspace-tooling-for-the-frontend-foundation.md
 Blocked by: nothing (open human decisions in PROJECT.md; a real WS upgrade check waits for the human's local DB to match the backend schema)
-Next action: wait for the human (both repos uncommitted: frontend step 9, backend game faults). Cleanup: DB `playhoot_ar_check` still exists in the local Postgres (dropping it was denied to the agent earlier; `playhoot_faults_check` was dropped). Then by the plan: K (observability), L (bootstrap/visibility)
+Next action: 2026-10-21, the human postponed plan step 10 (L, out of scope; platform work later) and asked to finish everything in the Session flow and play first. Remaining session/play items: C (semantic events, rejoin after grace e2e, close-code reconnect e2e, leave vs navigate-away decision), B/Z10 (WS refusal reasons), Z8, E/Z6 (client-side validation), I/Z4 (assets, artifact format), Z5 rest (bridge version, entry), M (WebView-ready contract). Wait for the human to pick. Cleanup: DB `playhoot_ar_check` still exists in the local Postgres
 Last durable checkpoint: Session Play; CHECKLIST B/C/D/E/F/J/K/M/Z, CURRENT_STATE, package READMEs, docs/logic (state_sessionplay.go, view_session_started.go, FLOWS 5-7, 11-12), PROJECT; backend: seed migration seed_20261020000000_space_drift_frontend + seeddata/, play/CURRENT_STATE.md, ENGINEERING_RADAR (bucket CORS), session-runtime-v1 PROJECT (2026-10-20)
-Last updated: 2026-10-20
+Last updated: 2026-10-21
 
 ## Working agreement (copied from the backend's practice; confirm with the human, PROJECT.md decision 1)
 

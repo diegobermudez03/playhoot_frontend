@@ -14,6 +14,14 @@ The trusted side of the Game <-> Host boundary (plan §10, §11, §13.3-§13.6, 
 
 The platform containers live in each app: the web one is `apps/web/src/platform/iframeGameContainer.ts`.
 
+## A future `NativeGameHost` must
+
+The same artifact runs unchanged in a React Native WebView (CHECKLIST M); its container must give the game what the sandboxed iframe gives it on the web:
+
+- Isolation: no storage, cookies or network for the game (a CSP and the WebView's settings), no navigation away, no nested frames or WebRTC (the same guard script, injected before the game's own scripts).
+- The bridge over the WebView channel: the SDK sends JSON text through `window.ReactNativeWebView.postMessage` and reads JSON text from `message` events, so the Host dispatches its messages as JSON text. Asset bytes need a text-safe form, decided with asset delivery (Z4).
+- The game's logical resolution as the page size (the viewport scaled to fit, never stretched), as the web container does with its scaled iframe.
+
 ## Does not own
 
 - The generated game's own render/state (the game is its own isolated application).
