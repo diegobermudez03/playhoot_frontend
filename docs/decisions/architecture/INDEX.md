@@ -12,5 +12,6 @@ Frontend ADRs (`ADR-NNNN`, this repository's own sequence). Process: `docs/decis
 | ADR-0004 | [Internationalization with FormatJS and ICU messages](ADR-0004-internationalization-with-formatjs-and-icu-messages.md) | ACCEPTED |
 | ADR-0005 | [Game <-> Host bridge protocol v1 and artifact loading](ADR-0005-game-host-bridge-protocol-v1.md) | ACCEPTED |
 | ADR-0006 | [Game isolation hardening, bridge limits and game fault reports](ADR-0006-game-isolation-hardening-and-fault-reports.md) | ACCEPTED |
+| ADR-0007 | [Client telemetry sent to the backend, classified in one place](ADR-0007-client-telemetry-through-the-backend.md) | ACCEPTED |
 
-Next ID: `ADR-0007`.
+Next ID: `ADR-0008`.

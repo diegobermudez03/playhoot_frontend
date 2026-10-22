@@ -18,13 +18,15 @@ interface SessionPlayViewProps {
   displayName: string | null;
   layout: Layout;
   onLeave(): void;
+  // The game was stopped for misbehaving: the player leaves the Session (ADR-0006).
+  onGameStopped(): void;
 }
 
 // Session Play on the web: one feature instance per started game, kept while the same game runs
 // (also across reconnections, which send `session_started` again) and disposed when the screen
 // goes away.
 export function SessionPlayView(props: SessionPlayViewProps) {
-  const play = useSessionPlay(props.view, props.live);
+  const play = useSessionPlay(props.view, props.live, props.onGameStopped);
   if (!play) return <Screen {...props} game={{ phase: 'loading' }} />;
   return <AttachedPlay {...props} play={play} />;
 }
@@ -89,8 +91,17 @@ function Screen({
   );
 }
 
-function useSessionPlay(view: StartedView, live: LiveSession): SessionPlay | null {
+function useSessionPlay(
+  view: StartedView,
+  live: LiveSession,
+  onGameStopped: () => void,
+): SessionPlay | null {
   const services = useServices();
+  // Read when it happens, so a new callback never recreates the game.
+  const stopped = useRef(onGameStopped);
+  useEffect(() => {
+    stopped.current = onGameStopped;
+  });
   const intl = useIntl();
   const [play, setPlay] = useState<SessionPlay | null>(null);
   const { participantId, participants, frontend } = view.session;
@@ -103,11 +114,11 @@ function useSessionPlay(view: StartedView, live: LiveSession): SessionPlay | nul
       {
         live,
         loader: services.gameArtifacts,
-        ...(import.meta.env.DEV && { onTelemetry: (event) => console.debug('[game]', event) }),
+        onGameStopped: () => stopped.current(),
+        onTelemetry: services.telemetry.play,
       },
     );
     // The instance owns a lifecycle (dispose), so it is created here and not during render.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPlay(next);
     return () => next.dispose();
     // One instance per game (key); a reconnection re-sends the same start and keeps it.

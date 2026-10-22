@@ -104,6 +104,9 @@ export const es: Messages = {
     'La partida y esta página dejaron de entenderse. Volver a intentarlo suele solucionarlo.',
   'outcome.left.title': 'Saliste de la partida',
   'outcome.left.body': 'Vuelve cuando quieras con un código.',
+  'outcome.gameStopped.title': 'El juego tuvo un problema',
+  'outcome.gameStopped.body':
+    'Empezó a comportarse de forma extraña, así que lo detuvimos para proteger tu dispositivo y avisamos a Playhoot. Saliste de la partida.',
   'outcome.action.retry': 'Intentar de nuevo',
   'outcome.action.playHere': 'Jugar aquí',
   'outcome.action.enterCode': 'Ingresar un código',

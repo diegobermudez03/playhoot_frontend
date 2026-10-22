@@ -55,7 +55,7 @@ type IdentityError struct {
 }
 
 type JoinOutcome struct {
-	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "replaced" | "connection-lost" | "protocol-error"
+	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "game-stopped" | "replaced" | "connection-lost" | "protocol-error"
 	Reason      string // rejected: lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
 	Status      string // ended: FINISHED | CANCELLED | EXPIRED | ABORTED
 	EndCause    string // ended: HOST_CANCELLED, LOBBY_EXPIRED, GAME_FINISHED...
@@ -72,6 +72,9 @@ type JoinSession struct {
 	connection *ConnectionState // state_connection.go; at most one at a time
 	attempt    int              // which connection attempt is current
 	pendingKey struct{ Name, Key string }
+	// leftOutcome is what leaving ends in: "left", or "game-stopped" when the game was stopped
+	// for misbehaving.
+	leftOutcome string
 }
 
 // ─── Lifecycle ─────────────────────────────────────────────────────────────
@@ -126,15 +129,21 @@ func (j *JoinSession) SubmitDisplayName(raw string) {
 // Retry: "Try again" / "Play here" on the outcome screen, and after a dev account is picked.
 func (j *JoinSession) Retry() { j.Start() }
 
-// Leave: "Leave game" on the lobby screen.
-func (j *JoinSession) Leave() {
+// Leave: "Leave game" on the lobby screen, "Salir" during the game, or Session Play when the game
+// was stopped for misbehaving (reason "game-stopped", see state_sessionplay.go).
+// rule: the outcome is "game-stopped" for that reason, "left" otherwise.
+func (j *JoinSession) Leave(reason string) {
+	j.leftOutcome = "left"
+	if reason == "game-stopped" {
+		j.leftOutcome = "game-stopped"
+	}
 	if j.connection != nil && j.State.View.Phase != "closed" {
 		j.State.View = JoinView{Phase: "leaving"} // -> ConnectingScreen ("Leaving the game…")
 		j.connection.Leave()                      // sends {"type":"leave"}; the server closes as "left" -> OnConnectionClosed
 		return
 	}
 	j.dropConnection()
-	j.State.View = outcome("left")
+	j.State.View = outcome(j.leftOutcome)
 }
 
 // ─── Connecting ────────────────────────────────────────────────────────────
@@ -201,12 +210,12 @@ func (j *JoinSession) OnConnectionClosed(kind CloseKind, attempt int, opened boo
 		return // a rejection or an end message already decided the outcome
 	}
 	if j.State.View.Phase == "leaving" {
-		j.State.View = outcome("left") // -> the view navigates to Enter a code
+		j.State.View = outcome(j.leftOutcome) // "left" or "game-stopped"
 		return
 	}
 	switch kind {
 	case "left":
-		j.State.View = outcome("left")
+		j.State.View = outcome(j.leftOutcome)
 	case "replaced":
 		j.State.View = outcome("replaced") // same player connected elsewhere: never reconnect by itself
 	case "session-ended":

@@ -295,12 +295,12 @@ describe('startGameHost', () => {
     const big = 'x'.repeat(33 * 1024);
     box.postRaw({ bridge: 'playhoot.bridge', type: 'sample', id: 9, inputs: { big } });
     expect(events.filter((e) => e.type === 'bridge-rejected')).toEqual([
-      { type: 'bridge-rejected', detail: 'sample before ready' },
-      { type: 'bridge-rejected', detail: 'invalid command message' },
-      { type: 'bridge-rejected', detail: 'invalid sample message' },
-      { type: 'bridge-rejected', detail: 'sample id not increasing' },
-      { type: 'bridge-rejected', detail: 'ready after the game started' },
-      { type: 'bridge-rejected', detail: 'message over the size limit' },
+      { type: 'bridge-rejected', detail: 'sample before ready', reason: 'invalid' },
+      { type: 'bridge-rejected', detail: 'invalid command message', reason: 'invalid' },
+      { type: 'bridge-rejected', detail: 'invalid sample message', reason: 'invalid' },
+      { type: 'bridge-rejected', detail: 'sample id not increasing', reason: 'invalid' },
+      { type: 'bridge-rejected', detail: 'ready after the game started', reason: 'invalid' },
+      { type: 'bridge-rejected', detail: 'message over the size limit', reason: 'invalid' },
     ]);
     expect(session.samples).toEqual([{}]);
     expect(host.status.phase).toBe('running');
@@ -324,7 +324,7 @@ describe('startGameHost', () => {
     };
     flood();
     expect(events.filter((e) => e.type === 'bridge-rejected')).toEqual([
-      { type: 'bridge-rejected', detail: 'command over its limit' },
+      { type: 'bridge-rejected', detail: 'command over its limit', reason: 'over_limit' },
     ]);
     expect(session.commands).toHaveLength(16);
     expect(host.status.phase).toBe('running');
@@ -391,7 +391,7 @@ describe('startGameHost', () => {
     advance(250);
     await box.game().ready();
     expect(events.filter((e) => e.type === 'metric')).toEqual([
-      { type: 'metric', name: 'artifact-load-ms', valueMs: 0 },
+      { type: 'metric', name: 'artifact-load-ms', valueMs: 0, cached: false },
       { type: 'metric', name: 'ready-ms', valueMs: 250 },
     ]);
   });
@@ -412,8 +412,11 @@ describe('createArtifactLoader', () => {
         return Promise.resolve(new Response(html));
       },
     });
-    expect(await loader.load(await ref(html))).toEqual({ ok: true, value: html });
-    expect(await loader.load(await ref(html))).toEqual({ ok: true, value: html });
+    expect(await loader.load(await ref(html))).toEqual({
+      ok: true,
+      value: { html, cached: false },
+    });
+    expect(await loader.load(await ref(html))).toEqual({ ok: true, value: { html, cached: true } });
     expect(fetches).toBe(1);
   });
 

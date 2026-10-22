@@ -30,6 +30,8 @@ export interface HttpRequest<T> {
   response: Decoder<T>;
   // Attach the current credential. Defaults to true.
   authenticated?: boolean;
+  // Let the request outlive the page (sent while it unloads). Small bodies only (64 KiB in all).
+  keepalive?: boolean;
 }
 
 export interface HttpClient {
@@ -61,6 +63,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         response = await doFetch(options.baseUrl + request.path, {
           method: request.method,
           headers,
+          ...(request.keepalive && { keepalive: true }),
           ...(request.body !== undefined && { body: JSON.stringify(request.body) }),
         });
       } catch (cause) {

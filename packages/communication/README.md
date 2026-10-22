@@ -2,7 +2,7 @@
 
 HTTP/WebSocket clients and credential-aware transport.
 
-Status: REALTIME CLIENT: HTTP client, `IdentityClient`, `SessionConnector` (player connection, message validation, close classification, coalesced SAMPLEs, correlated and retried COMMANDs, reconciled views with automatic resync and `currentView()` (state + ack), leave). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: REALTIME CLIENT: HTTP client, `IdentityClient`, `SessionConnector` (player connection, message validation, close classification, coalesced SAMPLEs, correlated and retried COMMANDs, reconciled views with automatic resync and `currentView()` (state + ack), leave, game fault reports), and `createTelemetryReporter` (client telemetry in batches to the backend, ADR-0007). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
@@ -12,6 +12,7 @@ Encapsulates external operations behind semantic, typed clients (plan §4.3, §1
 
 - Feature lifecycle state: features call semantic methods and never touch the raw socket.
 - UI decisions about how to show an error.
+- Which telemetry event an app event becomes, or an error's origin: the app classifies (`apps/web/src/telemetry`).
 - Where SAMPLE sequence and COMMAND idempotency mechanics live exactly (shared with `game-host`) is decided when the realtime client is designed.
 
 ## Depends on

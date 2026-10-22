@@ -73,8 +73,10 @@ export type GameHostStatus =
 export type GameHostEvent =
   | { type: 'status'; status: GameHostStatus }
   // A message from the game was refused (plan §17 "bridge/contract error"): recorded, not fatal.
-  | { type: 'bridge-rejected'; detail: string }
-  | { type: 'metric'; name: 'artifact-load-ms' | 'ready-ms'; valueMs: number };
+  // `over_limit` is recorded once a second while the game exceeds its limits.
+  | { type: 'bridge-rejected'; detail: string; reason: 'invalid' | 'over_limit' }
+  | { type: 'metric'; name: 'artifact-load-ms'; valueMs: number; cached: boolean }
+  | { type: 'metric'; name: 'ready-ms'; valueMs: number };
 
 export interface GameHost {
   readonly status: GameHostStatus;
@@ -155,11 +157,12 @@ export function startGameHost(options: GameHostOptions): GameHost {
     );
     setStatus({ phase: 'failed', error });
   };
-  const reject = (detail: string) => emit({ type: 'bridge-rejected', detail });
+  const reject = (detail: string, reason: 'invalid' | 'over_limit' = 'invalid') =>
+    emit({ type: 'bridge-rejected', detail, reason });
   // A message dropped by the guard: recorded once a second, and the game stopped once it abuses.
   const refused = (verdict: BridgeGuardVerdict, kind: GameMessageKind) => {
     if (verdict.abusive) fail({ kind: 'bridge-abuse', refused: guard.refused() });
-    else if (verdict.firstRefusalThisSecond) reject(`${kind} over its limit`);
+    else if (verdict.firstRefusalThisSecond) reject(`${kind} over its limit`, 'over_limit');
   };
 
   const onSessionEvent = (event: SessionConnectionEvent) => {
@@ -328,8 +331,13 @@ export function startGameHost(options: GameHostOptions): GameHost {
       );
       return;
     }
-    emit({ type: 'metric', name: 'artifact-load-ms', valueMs: timers.now() - startedAt });
-    open(result.value);
+    emit({
+      type: 'metric',
+      name: 'artifact-load-ms',
+      valueMs: timers.now() - startedAt,
+      cached: result.value.cached,
+    });
+    open(result.value.html);
   });
 
   return {

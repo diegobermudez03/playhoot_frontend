@@ -84,7 +84,8 @@ function SessionView({ join }: { join: JoinSession }) {
             live={join.live}
             displayName={displayName}
             layout={layout}
-            onLeave={join.leave}
+            onLeave={() => join.leave()}
+            onGameStopped={() => join.leave('game-stopped')}
           />
         )}
       />
@@ -113,6 +114,7 @@ function useJoinSession(target: SessionTarget): JoinSession | null {
       identity: services.identity,
       connector: services.sessions,
       newIdempotencyKey: () => crypto.randomUUID(),
+      onTelemetry: services.telemetry.join,
     });
     current.current = next;
     setJoin(next);

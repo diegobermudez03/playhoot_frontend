@@ -98,6 +98,9 @@ export const en = {
     'The game and this page stopped understanding each other. Trying again usually fixes it.',
   'outcome.left.title': 'You left the game',
   'outcome.left.body': 'Come back any time with a code.',
+  'outcome.gameStopped.title': 'The game had a problem',
+  'outcome.gameStopped.body':
+    'It started misbehaving, so we stopped it to protect your device and let Playhoot know. You left the game.',
   'outcome.action.retry': 'Try again',
   'outcome.action.playHere': 'Play here',
   'outcome.action.enterCode': 'Enter a code',

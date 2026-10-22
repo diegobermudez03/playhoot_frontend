@@ -4,6 +4,7 @@ import {
   type AssetResolver,
   type GameContainer,
   type GameHost,
+  type GameHostError,
   type GameHostEvent,
   type GameHostStatus,
   type GameSessionPort,
@@ -38,6 +39,21 @@ export interface SessionPlayDeps {
   loader: ArtifactLoader;
   assets?: AssetResolver;
   onTelemetry?: (event: SessionPlayTelemetry) => void;
+  // The game was stopped for misbehaving (`endsParticipation`): the player must leave the Session.
+  // The GameHost already reported it to the backend on the same connection, before this.
+  onGameStopped?: () => void;
+}
+
+// Failures that make the game suspicious, not unlucky (ADR-0006): it abused the bridge, tried to
+// leave its container, or is not the artifact the backend pinned. The player leaves the Session
+// instead of trying again, which would run the same game. Other failures (download, no READY,
+// version) may pass and keep "Try again".
+export function endsParticipation(error: GameHostError): boolean {
+  return (
+    error.kind === 'bridge-abuse' ||
+    error.kind === 'container-violation' ||
+    error.kind === 'artifact-hash-mismatch'
+  );
 }
 
 export interface SessionPlay {
@@ -92,6 +108,7 @@ export function createSessionPlay(
           store.setState({ game: event.status });
           if (event.status.phase === 'failed') {
             deps.onTelemetry?.({ type: 'game-failed', error: event.status.error });
+            if (endsParticipation(event.status.error)) deps.onGameStopped?.();
           }
           return;
         case 'bridge-rejected':

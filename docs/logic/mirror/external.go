@@ -39,6 +39,42 @@ type HttpFailure struct {
 	RetryAfterSeconds int
 }
 
+// SendClientTelemetry sends a batch of the client's telemetry (ADR-0007). Never answered with data.
+//
+//	POST /v1/client-telemetry   (Authorization: Bearer <token>; keepalive when the page is going away)
+//	body: {"events": [ ... at most 100 ... ]}
+//
+// rule: sent at most every 30 s, sooner when 50 events wait, and once more when the tab is hidden
+//       or the page goes away; only once there is a credential (events wait until then, at most 100).
+// rule: counted events of the same kind and values are merged into one with a "count".
+// rule: a batch that fails is dropped, never retried.
+// code: packages/communication/src/telemetryReporter.ts#createTelemetryReporter
+func SendClientTelemetry(events []TelemetryEvent) {
+	// 204 -> nothing. 400 (not a batch) / network error -> dropped.
+}
+
+// TelemetryEvent is one event of the backend's closed catalog (BACKEND_CONTRACT.md). Which feature
+// event becomes which telemetry event, and which origin each error has, is decided in one place:
+// apps/web/src/telemetry/classify.ts.
+//
+//	artifact_load {duration_ms, cached}   <- Session Play: the game's frontend was loaded
+//	game_ready {duration_ms}              <- Session Play: the game answered READY
+//	connection_lost {close}               <- Join: any live connection closed (how it closed)
+//	reconnect {outcome}                   <- Join: a reconnection opened (reconnected) or the last failed (gave_up)
+//	resync                                <- the connection asked for a FULL view after missing one
+//	bridge_refusal {reason}               <- the GameHost refused a game message (invalid / over_limit)
+//	error {origin, kind}:
+//	  transport:          unreachable, connection_lost, protocol_error (join outcomes), network (guest creation)
+//	  backend_rejection:  the rejection reason of a join, rejected_unknown, rate_limited (guest creation)
+//	  artifact:           artifact_unreachable, artifact_hash_mismatch, ready_timeout, unsupported_bridge_version
+//	  bridge:             bridge_abuse, container_violation
+//	  presentation:       render_failed (the route error boundary caught a crash)
+//	Not errors: a Session that ended, leaving, being replaced, a name typed wrong.
+type TelemetryEvent struct {
+	Name   string
+	Fields map[string]any
+}
+
 // ─── Storage (not the backend API) ──────────────────────────────────────────
 
 // FetchGameArtifact downloads a game's frontend artifact (one HTML file today).

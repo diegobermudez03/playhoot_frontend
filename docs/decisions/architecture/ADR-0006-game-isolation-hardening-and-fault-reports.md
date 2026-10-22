@@ -2,7 +2,7 @@
 
 Status: ACCEPTED
 Created: 2026-10-20
-Last status change: 2026-10-20
+Last status change: 2026-10-21 (amended by the human: leaving after a suspicious stop; backend limit audit)
 Supersedes: None
 Superseded by: None
 
@@ -29,6 +29,10 @@ The human decided on 2026-10-20: block WebRTC on a best-effort basis; stop a gam
 **Bridge limits.** The Host counts every game message before decoding it, in one-second and one-minute windows (`bridgeRates` in `@playhoot/protocol/bridge`): all messages 240/s and 14,400/min; SAMPLE 120/s and 7,200/min (twice the backend's rate, for games sampling every frame on fast displays); COMMAND and asset requests 20/s and 300/min, like the backend's commands. At most 16 commands and 8 asset requests wait at once; one beyond is answered `unavailable` / not found without running. Dropped messages are counted by kind, and the first of each second is recorded as a refused message. A game with dropped messages in each of 5 consecutive seconds is stopped as `bridge-abuse` ("the game has a problem" for the player).
 
 **Fault reports.** Whenever the GameHost stops a game (artifact unreachable, hash mismatch, no READY, no common bridge version, container violation, bridge abuse), it sends `game_fault` on the player's live connection with the kind and a small detail: the failure's own facts (texts cut to 200 characters) and the messages refused so far by kind, never the artifact URL. A detail over 2 KiB is replaced by `{ "truncated": true }`. The backend keeps it only from a current participant of the running game, in `play_game_faults` (one row per Session, reporter and kind, counted), and never acts on it by itself (backend `play/docs/FLOWS.md`, Game Fault Reports).
+
+**Leaving after a suspicious stop** (amended 2026-10-21 by the human). A game stopped for abusing the bridge, a container violation or a hash mismatch is suspicious, not unlucky: after the report, the player leaves the Session (`leave` on the same connection, which the backend handles after the report, both sharing one lane), and sees "The game had a problem", without "Try again", which would run the same game again. A failure that may pass (download, no READY, bridge version) keeps "Try again" and the player in the Session.
+
+**Backend limits are audited too** (2026-10-21, backend side). Every rate or resource limit the backend enforces on a live Session's user (message lanes, connection rates, the Runtime's limits) is also persisted, best effort, in the same audit table as `SERVER_LIMIT` records, so a client's report and the traffic the platform saw can be read side by side.
 
 ## Alternatives Considered
 

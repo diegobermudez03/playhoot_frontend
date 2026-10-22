@@ -50,6 +50,8 @@ export type SessionConnectionEvent =
   | { type: 'view'; update: ViewUpdate }
   // A SAMPLE left with this sequence: views acknowledge it in `ack` (prediction/reconciliation).
   | { type: 'sample-sent'; sequence: number }
+  // A FULL view was asked for because a view was missed (observability).
+  | { type: 'resync-requested' }
   | { type: 'protocol-error'; detail: string }
   | { type: 'closed'; kind: ConnectionCloseKind; code: number; reason: string };
 
@@ -236,6 +238,7 @@ function wrap(socket: WebSocket, timers: Timers, newToken: () => string): Sessio
       lastAck = update.ack;
       if (update.kind === 'gap' && !resyncRequested) {
         resyncRequested = send({ type: 'resync' });
+        if (resyncRequested) emit({ type: 'resync-requested' });
       }
       if (update.kind === 'state' && update.full) resyncRequested = false;
       emit({ type: 'view', update });

@@ -8,7 +8,7 @@ import type {
 } from '@playhoot/communication';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createJoinSession } from './joinSession';
+import { createJoinSession, type JoinTelemetry } from './joinSession';
 
 // The game frontend of every session_started below, as the backend sends it.
 const frontend = {
@@ -89,11 +89,13 @@ function setup(options: { signedIn?: boolean; target?: SessionTarget } = {}) {
     createGuest: vi.fn(async () => ({ ok: true as const, value: { userUUID: me, token: 'g' } })),
   };
   const scheduled: { run: () => void; delayMs: number }[] = [];
+  const telemetry: JoinTelemetry[] = [];
   const join = createJoinSession(options.target ?? { kind: 'joinCode', joinCode: 'ABC234' }, {
     app,
     identity,
     connector,
     newIdempotencyKey: () => 'key-1',
+    onTelemetry: (event) => telemetry.push(event),
     schedule: (run, delayMs) => {
       scheduled.push({ run, delayMs });
       return () => undefined;
@@ -106,6 +108,7 @@ function setup(options: { signedIn?: boolean; target?: SessionTarget } = {}) {
     connections,
     identity,
     scheduled,
+    telemetry,
     last,
     view: () => join.store.getState().view,
   };
@@ -351,6 +354,36 @@ describe('createJoinSession', () => {
     expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'connection-lost' } });
   });
 
+  it('reports closes, reconnections, resyncs and the outcome for observability', () => {
+    const t = setup();
+    t.join.start();
+    t.last().emit({ type: 'open' });
+    t.last().message(started);
+    t.last().emit({ type: 'resync-requested' });
+    t.last().emit({ type: 'closed', kind: 'retryable', code: 1006, reason: '' });
+    t.scheduled[0]!.run();
+    t.last().emit({ type: 'open' });
+    t.last().emit({ type: 'closed', kind: 'retryable', code: 1006, reason: '' });
+    t.scheduled[1]!.run();
+    t.last().emit({ type: 'closed', kind: 'unreachable', code: 1006, reason: '' });
+    t.scheduled[2]!.run();
+    t.last().emit({ type: 'closed', kind: 'unreachable', code: 1006, reason: '' });
+    t.scheduled[3]!.run();
+    t.last().emit({ type: 'closed', kind: 'unreachable', code: 1006, reason: '' });
+
+    expect(t.telemetry).toEqual([
+      { type: 'resync-requested' },
+      { type: 'connection-closed', kind: 'retryable' },
+      { type: 'reconnected' },
+      { type: 'connection-closed', kind: 'retryable' },
+      { type: 'connection-closed', kind: 'unreachable' },
+      { type: 'connection-closed', kind: 'unreachable' },
+      { type: 'connection-closed', kind: 'unreachable' },
+      { type: 'gave-up' },
+      { type: 'outcome', outcome: { kind: 'connection-lost' } },
+    ]);
+  });
+
   it('keeps the terminal message as the outcome when the connection then closes', () => {
     const t = setup();
     t.join.start();
@@ -372,6 +405,17 @@ describe('createJoinSession', () => {
     expect(t.view()).toEqual({ phase: 'leaving' });
     t.last().emit({ type: 'closed', kind: 'left', code: 1000, reason: 'left' });
     expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'left' } });
+  });
+
+  it('leaves because the game was stopped, and says so in the outcome', () => {
+    const t = setup();
+    t.join.start();
+    t.last().emit({ type: 'open' });
+    t.last().message(started);
+    t.join.leave('game-stopped');
+    expect(t.last().left).toBe(true);
+    t.last().emit({ type: 'closed', kind: 'left', code: 1000, reason: 'left' });
+    expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'game-stopped' } });
   });
 
   it('is replaced, not reconnected, when the same player connects elsewhere', () => {

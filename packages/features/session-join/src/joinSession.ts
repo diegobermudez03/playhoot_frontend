@@ -61,6 +61,9 @@ export type JoinOutcome =
   | { kind: 'unreachable' }
   | { kind: 'ended'; status: string; endCause: string; beforeStart: boolean }
   | { kind: 'left' }
+  // The player left because their device stopped the game for misbehaving (ADR-0006); the backend
+  // was told why.
+  | { kind: 'game-stopped' }
   | { kind: 'replaced' }
   | { kind: 'connection-lost' }
   | { kind: 'protocol-error' };
@@ -90,7 +93,22 @@ export interface JoinSessionDeps {
   newIdempotencyKey: () => string;
   // Waits before reconnecting; returns a cancel function. Defaults to setTimeout.
   schedule?: (run: () => void, delayMs: number) => () => void;
+  // Observability (plan §17): what happened to the join, for whatever sink the app wires.
+  onTelemetry?: (event: JoinTelemetry) => void;
 }
+
+export type JoinTelemetry =
+  // A live connection closed, as the connection classified it.
+  | { type: 'connection-closed'; kind: ConnectionCloseKind }
+  // A reconnection after a lost connection opened, or the last attempt failed.
+  | { type: 'reconnected' }
+  | { type: 'gave-up' }
+  // The connection asked for a FULL view because it missed one.
+  | { type: 'resync-requested' }
+  // The join is over: every outcome, so the app can classify the errors among them.
+  | { type: 'outcome'; outcome: JoinOutcome }
+  // Creating the guest identity failed.
+  | { type: 'identity-failed'; error: IdentityError };
 
 // The player's connection as whoever plays the game needs it: it always talks to the current
 // connection and survives reconnections. Each new connection announces itself with an `open` event.
@@ -107,7 +125,9 @@ export interface JoinSession {
   submitDisplayName(displayName: string): Promise<void>;
   // Starts over after a closed outcome.
   retry(): void;
-  leave(): void;
+  // Leaves the Session. `game-stopped`: because the game was stopped for misbehaving, which the
+  // outcome then says instead of a plain leave.
+  leave(reason?: 'game-stopped'): void;
   // Releases everything (route exit). Closes the connection without leaving.
   dispose(): void;
 }
@@ -135,7 +155,10 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
   let pendingGuest: { displayName: string; key: string } | null = null;
   const liveListeners = new Set<(event: SessionConnectionEvent) => void>();
 
-  const setView = (view: JoinView) => store.setState({ view });
+  const setView = (view: JoinView) => {
+    store.setState({ view });
+    if (view.phase === 'closed') deps.onTelemetry?.({ type: 'outcome', outcome: view.outcome });
+  };
   const myUserUUID = () => {
     const auth = deps.app.store.getState().auth;
     return auth.status === 'guest' || auth.status === 'authenticated' ? auth.userUUID : null;
@@ -171,6 +194,10 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
       switch (event.type) {
         case 'open':
           opened = true;
+          if (reconnectAttempt > 0) deps.onTelemetry?.({ type: 'reconnected' });
+          return;
+        case 'resync-requested':
+          deps.onTelemetry?.({ type: 'resync-requested' });
           return;
         case 'message':
           onMessage(event.message);
@@ -181,6 +208,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
           return;
         case 'closed':
           connection = null;
+          deps.onTelemetry?.({ type: 'connection-closed', kind: event.kind });
           onClosed(event.kind, reconnectAttempt, opened);
           return;
       }
@@ -273,17 +301,20 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
     }
   };
 
+  // What leaving ends in: a plain leave, or one forced by a stopped game.
+  let leftOutcome: JoinOutcome = { kind: 'left' };
+
   const onClosed = (kind: ConnectionCloseKind, attempt: number, opened: boolean) => {
     const view = store.getState().view;
     // A rejection or a terminal message already decided the outcome.
     if (view.phase === 'closed') return;
     if (view.phase === 'leaving') {
-      setView({ phase: 'closed', outcome: { kind: 'left' } });
+      setView({ phase: 'closed', outcome: leftOutcome });
       return;
     }
     switch (kind) {
       case 'left':
-        setView({ phase: 'closed', outcome: { kind: 'left' } });
+        setView({ phase: 'closed', outcome: leftOutcome });
         return;
       case 'replaced':
         setView({ phase: 'closed', outcome: { kind: 'replaced' } });
@@ -314,6 +345,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
         const next = opened ? 1 : attempt + 1;
         const delay = reconnectDelaysMs[next - 1];
         if (delay === undefined) {
+          deps.onTelemetry?.({ type: 'gave-up' });
           setView({ phase: 'closed', outcome: { kind: 'connection-lost' } });
           return;
         }
@@ -388,17 +420,19 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
           : failure.kind === 'http' && failure.code === rateLimitedCode
             ? { kind: 'rate-limited', retryAfterSeconds: failure.retryAfterSeconds }
             : { kind: 'unavailable' };
+      deps.onTelemetry?.({ type: 'identity-failed', error });
       setView({ phase: 'identity', submitting: false, error });
     },
     retry: begin,
-    leave() {
+    leave(reason) {
+      leftOutcome = reason === 'game-stopped' ? { kind: 'game-stopped' } : { kind: 'left' };
       if (connection && store.getState().view.phase !== 'closed') {
         setView({ phase: 'leaving' });
         connection.leave();
         return;
       }
       dropConnection();
-      setView({ phase: 'closed', outcome: { kind: 'left' } });
+      setView({ phase: 'closed', outcome: leftOutcome });
     },
     dispose() {
       disposed = true;

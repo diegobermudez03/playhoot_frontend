@@ -1,2 +1,3 @@
+export * from './clientTelemetry';
 export * from './errorBody';
 export * from './guests';

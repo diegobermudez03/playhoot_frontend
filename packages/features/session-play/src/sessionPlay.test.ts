@@ -38,7 +38,7 @@ function fakeContainer() {
   return { container, opened };
 }
 
-function setup(loads: Array<'ok' | 'mismatch'> = ['ok']) {
+function setup(loads: Array<'ok' | 'mismatch'> = ['ok'], onGameStopped?: () => void) {
   const listeners = new Set<(event: SessionConnectionEvent) => void>();
   const live: GameSessionPort = {
     subscribe(listener) {
@@ -55,7 +55,7 @@ function setup(loads: Array<'ok' | 'mismatch'> = ['ok']) {
       Promise.resolve(
         loads.shift() === 'mismatch'
           ? { ok: false, error: { kind: 'hash-mismatch' } }
-          : { ok: true, value: '<html></html>' },
+          : { ok: true, value: { html: '<html></html>', cached: false } },
       ),
   };
   const telemetry: SessionPlayTelemetry[] = [];
@@ -70,7 +70,12 @@ function setup(loads: Array<'ok' | 'mismatch'> = ['ok']) {
       },
     },
     'es',
-    { live, loader, onTelemetry: (event) => telemetry.push(event) },
+    {
+      live,
+      loader,
+      onTelemetry: (event) => telemetry.push(event),
+      ...(onGameStopped && { onGameStopped }),
+    },
   );
   return { play, telemetry, listeners };
 }
@@ -101,7 +106,34 @@ describe('createSessionPlay', () => {
     await flush();
     box.opened[0]!.toHost({ bridge: 'playhoot.bridge', type: 'sample', id: 1, inputs: {} });
     expect(t.play.store.getState().refusedGameMessages).toBe(1);
-    expect(t.telemetry).toContainEqual({ type: 'bridge-rejected', detail: 'sample before ready' });
+    expect(t.telemetry).toContainEqual({
+      type: 'bridge-rejected',
+      detail: 'sample before ready',
+      reason: 'invalid',
+    });
+  });
+
+  it('makes the player leave when the game is stopped for misbehaving', async () => {
+    let stopped = 0;
+    const t = setup(['mismatch'], () => (stopped += 1));
+    t.play.attach(fakeContainer().container);
+    await flush();
+    expect(t.play.store.getState().game).toMatchObject({ phase: 'failed' });
+    expect(stopped).toBe(1);
+  });
+
+  it('keeps the player for a failure that may pass, so they can try again', async () => {
+    let stopped = 0;
+    const t = setup(['ok'], () => (stopped += 1));
+    const box = fakeContainer();
+    t.play.attach(box.container);
+    await flush();
+    box.opened[0]!.toHost({ bridge: 'playhoot.bridge', type: 'ready', versions: [99] });
+    expect(t.play.store.getState().game).toMatchObject({
+      phase: 'failed',
+      error: { kind: 'unsupported-bridge-version' },
+    });
+    expect(stopped).toBe(0);
   });
 
   it('reports a failure and loads the game again on reload', async () => {

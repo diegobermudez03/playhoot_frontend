@@ -47,6 +47,11 @@ func (p *SessionPlay) run() {
 		GameContext{ParticipantID: p.Start.ParticipantID, Participants: participantIDs(p.Start), Locale: p.Locale},
 	)
 	// Every GameHost status change -> p.State.Game.
+	// rule: the GameHost failed with "bridge-abuse", "container-violation" or
+	//       "artifact-hash-mismatch" (a suspicious game, ADR-0006) -> the player leaves the Session:
+	//       join.Leave("game-stopped") (state_joinsession.go). The GameHost already sent game_fault
+	//       on the same connection, and the backend handles it before the leave. Other failures keep
+	//       the player in the Session with "Try again".
 	// Every refused game message -> p.State.RefusedGameMessages++.
 	// Development builds also print load/READY times and refusals to the browser console ("[game]").
 }

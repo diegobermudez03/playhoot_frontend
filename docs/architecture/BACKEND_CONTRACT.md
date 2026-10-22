@@ -36,6 +36,11 @@ Every route: observability -> authorization -> rate limit -> route (`api/server.
 - Request `{"display_name": string (1..64 runes), "idempotency_key": UUID}`, body <= 4 KiB.
 - `201 {"user_uuid", "token"}`; `400` invalid body/key/name; `409` idempotency conflict; `500`.
 
+### `POST /v1/client-telemetry` (Bearer, `REPORT_CLIENT_TELEMETRY`, guests too)
+
+- Body `{"events":[...]}`: at most 100 events, 16 KiB. `204` whatever the events held; `400` for a body that is not a batch or too many events. General per-user limits apply (5/s, 30/min).
+- Closed catalog (`api/clienttelemetry/catalog.go`): `artifact_load {duration_ms, cached}`, `game_ready {duration_ms}`, `connection_lost {close, count?}`, `reconnect {outcome, count?}`, `resync {count?}`, `bridge_refusal {reason, count?}`, `error {origin, kind, count?}`; durations 0..600000 ms, counts 1..10000. Anything else is dropped and counted by the backend. Mirrored in `@playhoot/protocol` (`clientTelemetry.ts`). Recorded as `client_*` metrics, which today reach the backend's logs only (2026-10-21, ADR-0007).
+
 ### `POST /v1/sessions` (Bearer, `CREATE_SESSION`, accounts only)
 
 - Request `{"game_uuid": UUID, "idempotency_key": string 1..128}`.
@@ -147,7 +152,7 @@ Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` +
 
 - HTTP: per user 5/s and 30/min per route (WS handshakes included: back off reconnect loops); per address 20/s, 300/min; 429 `rate_limited` + `Retry-After`.
 - Per connection: 120 msg/s, 6000/min, 256 KiB/s, 4 MiB/min -> close 1008.
-- `sample` 60/s (excess silently dropped); `command` 20/s (-> `rate_limited`); `resync` 2/s, 30/min; `leave` 1/s; `game_fault` 1/s, 10/min (excess silently dropped).
+- `sample` 60/s (excess silently dropped); `command` 20/s (-> `rate_limited`); `resync` 2/s, 30/min; `leave` and `game_fault` share one lane, handled in order: 2/s, 20/min, 3 waiting (excess silently dropped). Every limit hit is also recorded by the backend for the Session's audit (`SERVER_LIMIT`), without changing the answer.
 - Runtime: 120 distinct input transitions/s per participant; commands 10/s, 120/min per participant, 60/s per session, 4 pending per participant; 1000 tokens remembered per participant (retry soon).
 
 ## 7. Running the backend locally

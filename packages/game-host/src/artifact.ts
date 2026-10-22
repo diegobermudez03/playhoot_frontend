@@ -20,9 +20,15 @@ export interface ArtifactCache {
   put(sha256: string, html: string): Promise<void>;
 }
 
+// A verified artifact, and whether it came from the cache (no download).
+export interface LoadedArtifact {
+  html: string;
+  cached: boolean;
+}
+
 export interface ArtifactLoader {
   // The artifact's HTML, verified against its hash. Never throws.
-  load(ref: ArtifactRef): Promise<Result<string, ArtifactFailure>>;
+  load(ref: ArtifactRef): Promise<Result<LoadedArtifact, ArtifactFailure>>;
 }
 
 export interface ArtifactLoaderOptions {
@@ -41,7 +47,7 @@ export function createArtifactLoader(options: ArtifactLoaderOptions): ArtifactLo
         cached !== undefined &&
         (await sha256Hex(new TextEncoder().encode(cached))) === expected
       ) {
-        return ok(cached);
+        return ok({ html: cached, cached: true });
       }
       let bytes: Uint8Array;
       try {
@@ -55,7 +61,7 @@ export function createArtifactLoader(options: ArtifactLoaderOptions): ArtifactLo
       if ((await sha256Hex(bytes)) !== expected) return err({ kind: 'hash-mismatch' });
       const html = new TextDecoder().decode(bytes);
       await options.cache.put(expected, html).catch(() => undefined);
-      return ok(html);
+      return ok({ html, cached: false });
     },
   };
 }

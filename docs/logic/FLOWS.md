@@ -30,6 +30,7 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | Leaving | `{"type":"leave"}` on the WebSocket | — | Server answers `leave_result` and closes as `left` |
 | Playing (the game asks through the GameHost) | `sample` / `command` / `resync` on the WebSocket | inputs / name+payload+token | views → the game; `command_result` → the game |
 | The GameHost stops the game (any failure, flow 12) | `{"type":"game_fault"}` on the WebSocket | kind + evidence (≤ 2 KiB) | Nothing: never answered; the backend stores it for auditing |
+| Every 30 s while there is telemetry, and when the tab is hidden or closed (flow 14) | `POST /v1/client-telemetry` | the classified events, in one batch | Nothing (`204`); the backend records them as metrics |
 
 ---
 
@@ -143,6 +144,7 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 | Closed as `replaced` | `closed(replaced)` | Play here (reconnects, taking over) · Enter a code |
 | 3 reconnections failed | `closed(connection-lost)` | Try again · Enter a code |
 | A message breaks the protocol | `closed(protocol-error)` | Try again · Enter a code |
+| The game was stopped for misbehaving (abuse, leaving its container, wrong hash; flow 12) | `closed(game-stopped)`, after reporting it and leaving | Enter a code |
 
 "Try again" / "Play here" = `Retry()` → `Start()` again (same URL). "Enter a code" navigates to `/join`.
 
@@ -190,7 +192,8 @@ sequenceDiagram
 - **Refused game messages** (wrong shape, too big, before `ready`, sample ids not growing, a second `ready`) are dropped and recorded; the game keeps running.
 - **Message limits** (ADR-0006): the GameHost counts every game message before reading it (all 240/s, samples 120/s, commands and asset requests 20/s, at most 16 commands and 8 asset requests waiting). Extra messages are dropped; a game still over its limits after 5 seconds in a row is stopped ("the game has a problem").
 - **Isolation** (ADR-0006): the game cannot navigate its frame anywhere (the page forbids it), has no WebRTC, and any frame it tries to open is removed and stops it. Best effort against leaking the player's own view.
-- **Reported to the backend**: every stop (any failure above) sends `game_fault` with the kind and its evidence, so the backend can audit games with problems and tell a bad game from a lying client.
+- **Reported to the backend**: every stop (any failure above) sends `game_fault` with the kind and its evidence, so the backend can audit games with problems and tell a bad game from a lying client. The backend also records every limit its own side enforced on the player, next to it.
+- **Suspicious stops end the player's game** (abuse, leaving its container, wrong hash): after the report the player leaves the Session and sees "El juego tuvo un problema" / "The game had a problem" / "O jogo teve um problema", with only "Enter a code". Other failures keep "Try again".
 - The game never gets the token, the WebSocket, the signed URL, command tokens or connection sample numbers: its acks come back in its own sample numbering.
 
 ## 13. Preferences
@@ -199,3 +202,7 @@ sequenceDiagram
 | --- | --- | --- |
 | Language picker | none | `Locale` (global) + browser storage; every text switches at once |
 | Sound button | none | mute flag + browser storage (presentation only) |
+
+## 14. Telemetry (what the platform sees)
+
+ADR-0007. While the app runs, the features say what happened (connections closing, reconnections, resyncs, how a join ended, load and READY times of the game, game messages refused, GameHost failures) and the route error boundary says when a screen crashed. One module classifies them into the backend's catalog, every error with its origin (presentation, bridge, transport, backend rejection, artifact): [external.go](mirror/external.go) `TelemetryEvent`. They wait in a queue, the same ones merged with a count, and leave in one batch every 30 s (sooner when 50 wait, and once more when the tab is hidden or closed), only once the person has an identity. Nothing on screen changes; a batch that fails is lost. In development every event is also printed to the console (`[telemetry]`).

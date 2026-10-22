@@ -300,6 +300,7 @@ const screens: [string, JoinView, string | null][] = [
   ],
   ['Opened elsewhere', { phase: 'closed', outcome: { kind: 'replaced' } }, null],
   ['Connection lost', { phase: 'closed', outcome: { kind: 'connection-lost' } }, null],
+  ['Game stopped for misbehaving', { phase: 'closed', outcome: { kind: 'game-stopped' } }, null],
 ];
 
 const playScreens: [string, GameHostStatus, boolean, boolean, boolean?][] = [

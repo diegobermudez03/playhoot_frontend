@@ -102,6 +102,9 @@ export const ptBR: Messages = {
     'A partida e esta página pararam de se entender. Tentar de novo geralmente resolve.',
   'outcome.left.title': 'Você saiu da partida',
   'outcome.left.body': 'Volte quando quiser com um código.',
+  'outcome.gameStopped.title': 'O jogo teve um problema',
+  'outcome.gameStopped.body':
+    'Ele começou a se comportar de forma estranha, então o paramos para proteger seu aparelho e avisamos a Playhoot. Você saiu da partida.',
   'outcome.action.retry': 'Tentar de novo',
   'outcome.action.playHere': 'Jogar aqui',
   'outcome.action.enterCode': 'Digitar um código',
