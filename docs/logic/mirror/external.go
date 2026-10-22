@@ -84,6 +84,12 @@ func SendSample(s Socket, sequence int, inputs map[string]any)         {} // {"t
 func SendCommand(s Socket, token, name string, payload map[string]any) {} // {"type":"command","token","name","payload"}
 func SendResync(s Socket)                                              {} // {"type":"resync"}
 func SendLeave(s Socket)                                               {} // {"type":"leave"}
+// SendGameFault tells the backend the game frontend failed or misbehaved and was stopped; the
+// backend stores it for auditing (one record per Session, player and kind) and never answers.
+// kind: artifact_unreachable | artifact_hash_mismatch | ready_timeout | unsupported_bridge_version
+//       | container_violation | bridge_abuse. rule: a detail over 2 KiB is sent as {"truncated": true}.
+// code: packages/communication/src/sessionConnection.ts#reportGameFault
+func SendGameFault(s Socket, kind string, detail map[string]any) {} // {"type":"game_fault","kind","detail"}
 func CloseSocket(s Socket)                                             {} // client closes (code 1000), no leave
 
 // Server -> client messages, as DTOs. The connection validates each one; an unknown type is

@@ -49,6 +49,11 @@ class FakeConnection implements SessionConnection {
     return this.view;
   }
   resync() {}
+  faults: Array<{ kind: string; detail: Record<string, unknown> }> = [];
+  reportGameFault(kind: string, detail: Record<string, unknown>) {
+    this.faults.push({ kind, detail });
+    return true;
+  }
   command(name: string) {
     return Promise.resolve({ token: name, outcome: 'connection-closed' as const });
   }
@@ -253,6 +258,43 @@ describe('createJoinSession', () => {
     expect(t.last().samples).toEqual([{ move: [0, 1] }]);
     // Lobby and lifecycle messages are the join's business, not the game's.
     expect(events).toEqual(['open', 'open']);
+  });
+
+  it('reconnects mid-game when the Session moves to another instance (1012)', () => {
+    const t = setup();
+    t.join.start();
+    t.last().emit({ type: 'open' });
+    t.last().message(started);
+    t.last().emit({ type: 'closed', kind: 'retryable', code: 1012, reason: 'owner_changed' });
+    expect(t.view()).toMatchObject({ phase: 'started', connection: 'reconnecting' });
+    t.scheduled[0]!.run();
+    expect(t.connections[1]!.target).toEqual({ kind: 'session', sessionUUID: 's-1' });
+    t.last().emit({ type: 'open' });
+    t.last().message(started);
+    expect(t.view()).toMatchObject({ phase: 'started', connection: 'connected' });
+  });
+
+  it('ends for this player when the game refuses them back after the grace', () => {
+    for (const reason of ['participant_disconnected', 'rejoin_rejected'] as const) {
+      const t = setup();
+      t.join.start();
+      t.last().emit({ type: 'open' });
+      t.last().message(started);
+      t.last().emit({ type: 'closed', kind: 'retryable', code: 1006, reason: '' });
+      t.scheduled[0]!.run();
+      t.last().message({ type: 'rejected', reason });
+      t.last().emit({ type: 'closed', kind: 'protocol', code: 1008, reason: 'admission rejected' });
+      expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'rejected', reason } });
+      expect(t.scheduled).toHaveLength(1);
+    }
+  });
+
+  it('reports game faults on the current connection, and not without one', () => {
+    const t = setup();
+    expect(t.join.live.reportGameFault('ready_timeout', {})).toBe(false);
+    t.join.start();
+    expect(t.join.live.reportGameFault('ready_timeout', { refused: {} })).toBe(true);
+    expect(t.last().faults).toEqual([{ kind: 'ready_timeout', detail: { refused: {} } }]);
   });
 
   it('answers commands on the live link as connection-closed while there is no connection', async () => {

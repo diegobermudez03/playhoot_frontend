@@ -10,6 +10,7 @@ import {
   realtimeSubprotocol,
   tokenSubprotocolPrefix,
   type CommandOutcome,
+  type GameFaultKind,
   type PlayerClientMessage,
   type PlayerServerMessage,
 } from '@playhoot/protocol';
@@ -77,6 +78,9 @@ export interface SessionConnection {
   currentView(): { state: unknown; ack: number } | undefined;
   // Asks for a FULL view. Gaps already trigger one; this is for the caller's own reasons.
   resync(): void;
+  // Tells the backend the game frontend failed or misbehaved, for its audit. Never answered; a
+  // detail over the server's limit is replaced by a note saying so. False when not sent.
+  reportGameFault(kind: GameFaultKind, detail: Record<string, unknown>): boolean;
   // Asks to leave the Session. The server answers and closes the connection as `left`.
   leave(): void;
   // Closes the transport without leaving (navigating away). No event follows.
@@ -296,6 +300,13 @@ function wrap(socket: WebSocket, timers: Timers, newToken: () => string): Sessio
     currentView() {
       const state = views.state;
       return state === undefined ? undefined : { state, ack: lastAck };
+    },
+    reportGameFault(kind, detail) {
+      if (closed) return false;
+      const fits =
+        new TextEncoder().encode(JSON.stringify(detail)).length <=
+        realtimeLimits.maxGameFaultDetailBytes;
+      return send({ type: 'game_fault', kind, detail: fits ? detail : { truncated: true } });
     },
     resync() {
       send({ type: 'resync' });

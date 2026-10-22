@@ -21,6 +21,21 @@ export const bridgeLimits = {
   maxRequestId: Number.MAX_SAFE_INTEGER,
 } as const;
 
+// Rates the Host allows game -> host messages at (ADR-0006), as a short and a long window like the
+// backend's own limits. `message` counts every bridge message, valid or not, before it is even
+// decoded. Messages beyond a limit are dropped; a game still over its limits after
+// `abuseSeconds` seconds in a row is stopped and reported as abusing the bridge.
+export const bridgeRates = {
+  message: { perSecond: 240, perMinute: 14_400 },
+  // Twice the backend's SAMPLE rate, so a game sampling every frame on a fast display is fine.
+  sample: { perSecond: 120, perMinute: 7_200 },
+  command: { perSecond: 20, perMinute: 300 },
+  request_asset: { perSecond: 20, perMinute: 300 },
+  maxPendingCommands: 16,
+  maxPendingAssets: 8,
+  abuseSeconds: 5,
+} as const;
+
 // ─── Game -> Host ──────────────────────────────────────────────────────────
 
 // The game is listening and wants to start. Sent once, after the game registered its handlers.

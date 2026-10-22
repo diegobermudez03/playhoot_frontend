@@ -56,7 +56,12 @@ func StartGameHost(artifact struct{ URL, SHA256 string }, viewport Viewport, ses
 	//       first in its head: no network at all (no fetch/WebSocket, no external images/media/fonts),
 	//       no forms, no <base>.
 	// rule: messages are accepted only from that iframe's window; a second "load" of the iframe means
-	//       the game navigated away -> Fail("container-violation").
+	//       the game navigated away -> Fail("container-violation"). The page itself allows no frame
+	//       to navigate anywhere (frame-src 'none'), so the navigation never leaves the browser.
+	// rule: before the game's HTML runs, nested frames (iframe, frame, object, embed...) and
+	//       declarative shadow roots are removed from it, and a guard script runs first: it removes
+	//       WebRTC from the game's window and removes any frame the game inserts later (also inside
+	//       shadow roots) -> Fail("container-violation"). Best effort (ADR-0006).
 	// rule: fixed-aspect viewport (plan §8). The iframe is always viewport.Width x viewport.Height
 	//       (e.g. 1920 x 1080) and is scaled to fit the game area, centered, never stretched:
 	//         scale = min(areaWidth / viewport.Width, areaHeight / viewport.Height)
@@ -108,7 +113,13 @@ func (h *GameHost) OnSessionEvent(e any) {
 	// rule: state is the WHOLE current state (patches already applied by the connection).
 }
 
-// OnGameMessage handles what the game posts. Every message is validated first:
+// OnGameMessage handles what the game posts (ADR-0005, ADR-0006).
+// rule: rates first, before reading the message (packages/game-host/src/bridgeGuard.ts):
+//       every message 240/s and 14,400/min; "sample" 120/s and 7,200/min; "command" and
+//       "request_asset" 20/s and 300/min each. Over a limit -> dropped and counted by kind (the
+//       first of each second is recorded as bridge-rejected).
+// rule: messages dropped in each of 5 seconds in a row -> Fail("bridge-abuse").
+// Then every message is validated:
 // rule: exact shape (unknown fields refused), at most 32 KiB, nothing but "ready" before "running".
 // A refused message is recorded (bridge-rejected) and dropped; the game keeps running.
 func (h *GameHost) OnGameMessage(m any, session GameSessionPort) {
@@ -116,18 +127,24 @@ func (h *GameHost) OnGameMessage(m any, session GameSessionPort) {
 	//     rule: id must grow (the game's own numbering) -> remembered as the last inputs
 	//     -> session.Sample(inputs)
 	// "command" {id, name, payload}
+	//     rule: 16 commands already waiting -> answer "unavailable" without running it (counts as
+	//           a dropped message)
 	//     -> session.Command(name, payload) (the connection makes and hides the idempotency token)
 	//     -> send "command_result" {id, outcome, response}
 	//        outcome: executed (also already_processed) | rejected (invalid, too large)
 	//                 | unavailable (not running, connection closed, rate limited)
 	// "request_asset" {id, key}
+	//     rule: 8 already waiting -> answer found = false (counts as a dropped message)
 	//     -> AssetResolver(key): bytes + mime type, or none (no asset source exists outside the dev
 	//        lab until the backend stores assets) -> send "asset" {id, key, found, mimeType, bytes}
 }
 
-// Fail stops everything and keeps the reason.
+// Fail stops everything, tells the backend and keeps the reason.
 func (h *GameHost) Fail(kind string) {
 	h.Dispose()
+	// -> SendGameFault (external.go) with the kind and its evidence: the failure's own facts (texts
+	//    cut to 200 characters) and the messages dropped so far by kind. Never the artifact URL.
+	//    Shown to the player as before: "bridge-abuse" is "the game has a problem".
 	h.Phase = "failed"
 	h.Error = &GameHostError{Kind: kind}
 }

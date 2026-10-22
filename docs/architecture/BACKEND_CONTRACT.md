@@ -1,7 +1,7 @@
 # Backend Contract (frontend reference)
 
 Status: REFERENCE SNAPSHOT — the backend code is the authority
-Backend ref inspected: `../playhoot` at `36d0c9d` (2026-10-19), plus `e4f0d85` (2026-10-20, `session_uuid` on lobby/start messages, G4), plus the uncommitted aspect-ratio change (2026-10-20, `frontend.viewport`, G6)
+Backend ref inspected: `../playhoot` at `36d0c9d` (2026-10-19), plus `e4f0d85` (2026-10-20, `session_uuid` on lobby/start messages, G4), plus the aspect-ratio change (`552ce77`, `frontend.viewport`, G6), plus the uncommitted game fault reports (2026-10-20, `game_fault`, ADR-0006)
 
 This document records the client-facing contract that the backend ACTUALLY implements, as the frontend needs it. It does not define the contract; the backend owns it (`../playhoot/api/README.md`, `../playhoot/play/CURRENT_STATE.md`, and the code). Paths below are relative to the backend repository.
 
@@ -95,6 +95,7 @@ Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` +
 | `command` | `token` string 1..128, `name`, `payload?` object/null | Answered by `command_result`. |
 | `resync` | — | A FULL `player_view` follows. |
 | `leave` | — | `leave_result{outcome:"left"}` then close 1000 `left`. Lobby: leaves the lobby. Running: immediate disconnect (only rejoin brings the player back). |
+| `game_fault` | `kind` one of `artifact_unreachable`, `artifact_hash_mismatch`, `ready_timeout`, `unsupported_bridge_version`, `container_violation`, `bridge_abuse`; `detail` object <= 2 KiB | Never answered. Kept for auditing in `play_game_faults` only from a current participant of the running game (one record per Session, player and kind, counted); otherwise dropped. Unknown kind or bad detail -> close 1007 (`api/play/player_join.go`, 2026-10-20, ADR-0006). |
 
 ### Admin -> server
 
@@ -146,7 +147,7 @@ Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` +
 
 - HTTP: per user 5/s and 30/min per route (WS handshakes included: back off reconnect loops); per address 20/s, 300/min; 429 `rate_limited` + `Retry-After`.
 - Per connection: 120 msg/s, 6000/min, 256 KiB/s, 4 MiB/min -> close 1008.
-- `sample` 60/s (excess silently dropped); `command` 20/s (-> `rate_limited`); `resync` 2/s, 30/min; `leave` 1/s.
+- `sample` 60/s (excess silently dropped); `command` 20/s (-> `rate_limited`); `resync` 2/s, 30/min; `leave` 1/s; `game_fault` 1/s, 10/min (excess silently dropped).
 - Runtime: 120 distinct input transitions/s per participant; commands 10/s, 120/min per participant, 60/s per session, 4 pending per participant; 1000 tokens remembered per participant (retry soon).
 
 ## 7. Running the backend locally

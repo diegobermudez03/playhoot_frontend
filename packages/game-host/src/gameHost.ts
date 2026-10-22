@@ -6,6 +6,7 @@ import type {
 } from '@playhoot/communication';
 import {
   bridgeMarker,
+  bridgeRates,
   bridgeVersions,
   negotiateBridgeVersion,
   type BridgeVersion,
@@ -15,8 +16,10 @@ import {
   type HostToGameMessage,
 } from '@playhoot/protocol/bridge';
 import { decodeGameMessage } from '@playhoot/protocol/bridge/validation';
+import type { GameFaultKind } from '@playhoot/protocol';
 
 import type { ArtifactLoader, ArtifactRef } from './artifact';
+import { createBridgeGuard, type BridgeGuardVerdict, type GameMessageKind } from './bridgeGuard';
 import type { GameViewport } from './viewport';
 
 // The isolated place a game runs in: a sandboxed iframe on the web, a restricted WebView on mobile.
@@ -42,7 +45,7 @@ export interface OpenContainer {
 // that follows the current one across reconnections (an `open` event marks each new connection).
 export type GameSessionPort = Pick<
   SessionConnection,
-  'subscribe' | 'sample' | 'command' | 'currentView'
+  'subscribe' | 'sample' | 'command' | 'currentView' | 'reportGameFault'
 >;
 
 // Game assets by logical key (plan §9). The bytes go to the game; where they came from never does.
@@ -56,7 +59,9 @@ export type GameHostError =
   // The game never said `ready`: it failed to load, crashed, or does not use the SDK.
   | { kind: 'ready-timeout' }
   | { kind: 'unsupported-bridge-version'; offered: number[] }
-  | { kind: 'container-violation'; detail: string };
+  | { kind: 'container-violation'; detail: string }
+  // The game stayed over its message limits (ADR-0006); `refused` counts what was dropped, by kind.
+  | { kind: 'bridge-abuse'; refused: Record<string, number> };
 
 export type GameHostStatus =
   | { phase: 'loading' }
@@ -118,6 +123,9 @@ export function startGameHost(options: GameHostOptions): GameHost {
   // resets a participant's inputs when its connection drops.
   let lastInputs: Record<string, unknown> | null = null;
   let resendInputs = false;
+  const guard = createBridgeGuard();
+  let pendingCommands = 0;
+  let pendingAssets = 0;
 
   const emit = (event: GameHostEvent) => listeners.forEach((listener) => listener(event));
   const setStatus = (next: GameHostStatus) => {
@@ -140,9 +148,19 @@ export function startGameHost(options: GameHostOptions): GameHost {
   const fail = (error: GameHostError) => {
     if (!active()) return;
     stop();
+    // The backend keeps it for its audit of games and clients (ADR-0006).
+    options.session.reportGameFault(
+      gameFaultKinds[error.kind],
+      faultDetail(error, guard.refused()),
+    );
     setStatus({ phase: 'failed', error });
   };
   const reject = (detail: string) => emit({ type: 'bridge-rejected', detail });
+  // A message dropped by the guard: recorded once a second, and the game stopped once it abuses.
+  const refused = (verdict: BridgeGuardVerdict, kind: GameMessageKind) => {
+    if (verdict.abusive) fail({ kind: 'bridge-abuse', refused: guard.refused() });
+    else if (verdict.firstRefusalThisSecond) reject(`${kind} over its limit`);
+  };
 
   const onSessionEvent = (event: SessionConnectionEvent) => {
     if (status.phase !== 'running') return;
@@ -226,7 +244,14 @@ export function startGameHost(options: GameHostOptions): GameHost {
         return;
       case 'command': {
         const id = message.id;
+        if (pendingCommands >= bridgeRates.maxPendingCommands) {
+          send({ bridge: bridgeMarker, type: 'command_result', id, outcome: 'unavailable' });
+          refused(guard.refusePending('command', timers.now()), 'command');
+          return;
+        }
+        pendingCommands += 1;
         void options.session.command(message.name, message.payload).then((result) => {
+          pendingCommands -= 1;
           const outcome = gameCommandOutcome(result);
           send({
             bridge: bridgeMarker,
@@ -241,16 +266,23 @@ export function startGameHost(options: GameHostOptions): GameHost {
       }
       case 'request_asset': {
         const { id, key } = message;
+        if (pendingAssets >= bridgeRates.maxPendingAssets) {
+          send({ bridge: bridgeMarker, type: 'asset', id, key, found: false });
+          refused(guard.refusePending('request_asset', timers.now()), 'request_asset');
+          return;
+        }
+        pendingAssets += 1;
         void assets
           .resolve(key)
           .catch(() => null)
-          .then((asset) =>
+          .then((asset) => {
+            pendingAssets -= 1;
             send(
               asset
                 ? { bridge: bridgeMarker, type: 'asset', id, key, found: true, ...asset }
                 : { bridge: bridgeMarker, type: 'asset', id, key, found: false },
-            ),
-          );
+            );
+          });
         return;
       }
     }
@@ -263,6 +295,15 @@ export function startGameHost(options: GameHostOptions): GameHost {
     container = options.container.open(html, options.viewport, {
       onMessage(raw) {
         if (!active()) return;
+        // Rate first, before any decoding work; messages of other scripts are not counted.
+        if (typeof raw !== 'object' || raw === null) return;
+        if ((raw as { bridge?: unknown }).bridge !== bridgeMarker) return;
+        const kind = messageKind((raw as { type?: unknown }).type);
+        const verdict = guard.take(kind, timers.now());
+        if (!verdict.allowed) {
+          refused(verdict, kind);
+          return;
+        }
         const decoded = decodeGameMessage(raw);
         if (decoded === null) return;
         if (!decoded.ok) reject(decoded.detail);
@@ -306,6 +347,33 @@ export function startGameHost(options: GameHostOptions): GameHost {
       listeners.clear();
     },
   };
+}
+
+function messageKind(type: unknown): GameMessageKind {
+  return type === 'sample' || type === 'command' || type === 'request_asset' ? type : 'message';
+}
+
+// How each failure is reported to the backend.
+const gameFaultKinds: Record<GameHostError['kind'], GameFaultKind> = {
+  'artifact-unreachable': 'artifact_unreachable',
+  'artifact-hash-mismatch': 'artifact_hash_mismatch',
+  'ready-timeout': 'ready_timeout',
+  'unsupported-bridge-version': 'unsupported_bridge_version',
+  'container-violation': 'container_violation',
+  'bridge-abuse': 'bridge_abuse',
+};
+
+// The evidence sent with a fault: the failure's own facts (texts cut short) and every message the
+// Host refused from the game so far, by kind. Never the artifact URL or anything of the player's.
+function faultDetail(
+  error: GameHostError,
+  refused: Record<string, number>,
+): Record<string, unknown> {
+  const facts: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(error)) {
+    if (key !== 'kind') facts[key] = typeof value === 'string' ? value.slice(0, 200) : value;
+  }
+  return { ...facts, refused };
 }
 
 function gameCommandOutcome(result: CommandResult): GameCommandOutcome {

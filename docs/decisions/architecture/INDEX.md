@@ -11,5 +11,6 @@ Frontend ADRs (`ADR-NNNN`, this repository's own sequence). Process: `docs/decis
 | ADR-0003 | [Styling with CSS Modules and design tokens](ADR-0003-styling-with-css-modules-and-design-tokens.md) | ACCEPTED |
 | ADR-0004 | [Internationalization with FormatJS and ICU messages](ADR-0004-internationalization-with-formatjs-and-icu-messages.md) | ACCEPTED |
 | ADR-0005 | [Game <-> Host bridge protocol v1 and artifact loading](ADR-0005-game-host-bridge-protocol-v1.md) | ACCEPTED |
+| ADR-0006 | [Game isolation hardening, bridge limits and game fault reports](ADR-0006-game-isolation-hardening-and-fault-reports.md) | ACCEPTED |
 
-Next ID: `ADR-0006`.
+Next ID: `ADR-0007`.

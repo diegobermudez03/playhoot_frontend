@@ -68,7 +68,7 @@ Smaller messages but every game would reimplement patch merging, which the plan 
 - Production needs CORS on the artifact bucket for the web origin (BACKEND_CONTRACT G7, CHECKLIST Z7).
 - Asset delivery exists in the bridge but no asset has a source until the backend stores them (Z4); `requestAsset` answers `found: false` outside development.
 - The Host cannot yet validate SAMPLE/COMMAND against the GameVersion's declared inputs and commands: the client does not receive the manifest (Z6). The backend still validates.
-- A game navigating its own frame can leak data in the URL before it is disposed (CSP cannot block frame navigation); the data available to it is only the player's own projection. Hardening (§16, plan step 9) revisits this, with rate limits on game messages.
+- A game navigating its own frame can leak data in the URL before it is disposed (CSP cannot block frame navigation); the data available to it is only the player's own projection. Hardening (§16, plan step 9) revisits this, with rate limits on game messages. (2026-10-20: closed by ADR-0006, which also adds the bridge limits.)
 - Reconnection (new connection, sequences from 1) needs the ack translator reset with the connection; that is Session Play's job (step 6).
 
 ## Canonical Knowledge Impact

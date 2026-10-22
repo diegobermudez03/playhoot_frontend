@@ -96,6 +96,10 @@ export function createFakeSpaceDriftSession(me: string, bot: string): FakeSessio
       return () => listeners.delete(listener);
     },
     currentView: () => ({ state: projection(), ack: consumed }),
+    reportGameFault(kind, detail) {
+      log.unshift(`game fault ${kind} ${JSON.stringify(detail)}`);
+      return true;
+    },
     sample(next) {
       sequence += 1;
       consumed = sequence;

@@ -52,6 +52,7 @@ function fakeSession(initial?: { state: unknown; ack: number }) {
   const samples: Record<string, unknown>[] = [];
   const commands: Array<{ name: string; payload: unknown; answer(result: CommandResult): void }> =
     [];
+  const faults: Array<{ kind: string; detail: Record<string, unknown> }> = [];
   const port: GameSessionPort = {
     subscribe(listener) {
       listeners.add(listener);
@@ -60,9 +61,13 @@ function fakeSession(initial?: { state: unknown; ack: number }) {
     sample: (inputs) => void samples.push(inputs),
     command: (name, payload) => new Promise((answer) => commands.push({ name, payload, answer })),
     currentView: () => initial,
+    reportGameFault: (kind, detail) => {
+      faults.push({ kind, detail });
+      return true;
+    },
   };
   const emit = (event: SessionConnectionEvent) => listeners.forEach((l) => l(event));
-  return { port, samples, commands, emit, listeners };
+  return { port, samples, commands, faults, emit, listeners };
 }
 
 // A container that runs the real SDK in the same process, wired to the Host's handlers.
@@ -301,11 +306,49 @@ describe('startGameHost', () => {
     expect(host.status.phase).toBe('running');
   });
 
-  it('fails when the game never says READY', async () => {
-    const { host, box, advance } = await setup();
+  it('fails when the game never says READY, and reports it to the backend', async () => {
+    const { host, box, session, advance } = await setup();
     advance(10_000);
     expect(host.status).toEqual({ phase: 'failed', error: { kind: 'ready-timeout' } });
     expect(box.disposed).toBe(true);
+    expect(session.faults).toEqual([{ kind: 'ready_timeout', detail: { refused: {} } }]);
+  });
+
+  it('drops messages over their rate, then stops and reports a game that keeps abusing', async () => {
+    const { host, box, session, events, advance } = await setup();
+    await box.game().ready();
+    const flood = () => {
+      for (let i = 0; i < 30; i += 1) {
+        box.postRaw({ bridge: 'playhoot.bridge', type: 'command', id: 1, name: 'x' });
+      }
+    };
+    flood();
+    expect(events.filter((e) => e.type === 'bridge-rejected')).toEqual([
+      { type: 'bridge-rejected', detail: 'command over its limit' },
+    ]);
+    expect(session.commands).toHaveLength(16);
+    expect(host.status.phase).toBe('running');
+    for (let second = 1; second < 5; second += 1) {
+      advance(1_000);
+      flood();
+    }
+    expect(host.status).toMatchObject({ phase: 'failed', error: { kind: 'bridge-abuse' } });
+    expect(box.disposed).toBe(true);
+    expect(session.faults).toHaveLength(1);
+    expect(session.faults[0]).toMatchObject({
+      kind: 'bridge_abuse',
+      detail: { refused: { command: expect.any(Number) } },
+    });
+  });
+
+  it('answers a command beyond the pending ones as unavailable without running it', async () => {
+    const { box, session } = await setup();
+    const game = box.game();
+    await game.ready();
+    const results = Array.from({ length: 17 }, () => game.command('x'));
+    await flush();
+    expect(session.commands).toHaveLength(16);
+    expect(await results[16]).toEqual({ outcome: 'unavailable' });
   });
 
   it('fails without a common bridge version and tells the game', async () => {
@@ -321,7 +364,7 @@ describe('startGameHost', () => {
   });
 
   it('fails when the game breaks out of its container', async () => {
-    const { host, box } = await setup();
+    const { host, box, session } = await setup();
     await box.game().ready();
     box.violate('the game navigated away');
     expect(host.status).toEqual({
@@ -329,6 +372,9 @@ describe('startGameHost', () => {
       error: { kind: 'container-violation', detail: 'the game navigated away' },
     });
     expect(box.disposed).toBe(true);
+    expect(session.faults).toEqual([
+      { kind: 'container_violation', detail: { detail: 'the game navigated away', refused: {} } },
+    ]);
   });
 
   it('stops forwarding and closes the container on dispose', async () => {

@@ -102,6 +102,21 @@ describe('createViewTracker', () => {
     expect(tracker.state).toEqual({ a: 5 });
   });
 
+  it('takes a FULL view mid-stream (the server collapsing a lagging connection) as the new baseline', () => {
+    const tracker = createViewTracker();
+    tracker.receive(view({ full: true, revision: 1, state: { a: 1, b: 1 } }));
+    tracker.receive(view({ revision: 2, state: { b: 2 } }));
+    expect(tracker.receive(view({ full: true, revision: 9, state: { a: 9 } }))).toMatchObject({
+      kind: 'state',
+      full: true,
+      state: { a: 9 },
+    });
+    expect(tracker.receive(view({ revision: 10, state: { b: 10 } }))).toMatchObject({
+      kind: 'state',
+      state: { a: 9, b: 10 },
+    });
+  });
+
   it('cannot apply a patch before any FULL view', () => {
     expect(createViewTracker().receive(view({ revision: 1, state: { a: 1 } })).kind).toBe('gap');
   });

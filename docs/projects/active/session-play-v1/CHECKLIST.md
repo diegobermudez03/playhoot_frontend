@@ -104,11 +104,11 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## I. Hardening (§16, §17, §18 step 9)
 
-- [ ] iframe CSP/sandbox hardened and reviewed; no `window.parent` business API; no Host objects exposed
-- [ ] Bridge validation hardened: size limits, rate protection on game → host messages
+- [x] iframe CSP/sandbox hardened and reviewed; no `window.parent` business API; no Host objects exposed (2026-10-20, ADR-0006: the app page's `frame-src 'none'` blocks the game's frame from navigating anywhere; nested frames stripped from the game's HTML and blocked at run time by a guard script, which also removes WebRTC, best effort as decided by the human; the game still only has `postMessage` to the Host. Verified in headless Edge with hostile documents through the real container: no WebRTC, nested and shadow-DOM frames removed and reported, navigation stopped, a normal game and Space Drift unaffected)
+- [x] Bridge validation hardened: size limits, rate protection on game → host messages (2026-10-20, ADR-0006: per-kind and total rates checked before decoding, pending command/asset caps, a game over its limits for 5 seconds in a row stopped as `bridge-abuse`; unit tests)
 - [ ] Asset delivery through the Host with safe handles (depends on Z4)
-- [ ] Frontend-side rate/size protections aligned with backend limits (32 KiB message, per-type rates) (2026-10-20: SAMPLE coalesced to 60/s, SAMPLE and COMMAND size-checked against 32 KiB; pending: bridge-side limits on game → host messages)
-- [ ] Reconnect/resync tests (automated) covering grace reattach, rejoin, revision gap, collapse to FULL, owner change (1012)
+- [x] Frontend-side rate/size protections aligned with backend limits (32 KiB message, per-type rates) (2026-10-20: SAMPLE coalesced to 60/s, SAMPLE and COMMAND size-checked against 32 KiB; bridge-side limits aligned with the backend's command rate, ADR-0006; `game_fault` detail kept within 2 KiB)
+- [x] Reconnect/resync tests (automated) covering grace reattach, rejoin, revision gap, collapse to FULL, owner change (1012) (2026-10-20: grace reattach keeping the game and resending inputs (join, game-host), refused rejoin (`participant_disconnected`, `rejoin_rejected`), revision gap and resync, collapse to FULL without resync (view tracker, connection), 1012 mid-game reconnect by Session UUID)
 
 ## J. Completion gate (§18)
 
@@ -117,7 +117,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 ## K. Observability (§17)
 
 - [ ] Errors classified by origin: presentation, bridge/contract, transport, backend logical rejection, artifact/GameHost (2026-10-20: GameHost errors are typed (artifact/GameHost), refused game messages are recorded (bridge/contract), transport and backend rejections are typed by Join; no single classification sink yet)
-- [ ] Metrics/events captured: artifact load time, time to GameHost READY, reconnect count, bridge validation failures, WS disconnects, resync count, artifact errors (decision: where they are sent; console/dev sink acceptable initially) (2026-10-20: artifact load time, time to READY, refused game messages and game failures go to a development console sink; reconnect, disconnect and resync counts not yet)
+- [ ] Metrics/events captured: artifact load time, time to GameHost READY, reconnect count, bridge validation failures, WS disconnects, resync count, artifact errors (decision: where they are sent; console/dev sink acceptable initially) (2026-10-20: artifact load time, time to READY, refused game messages and game failures go to a development console sink; reconnect, disconnect and resync counts not yet. Every stopped game is also reported to the backend as `game_fault` and stored for audit (ADR-0006))
 
 ## L. Global bootstrap and visibility (§14, §18 step 10)
 
@@ -144,6 +144,8 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [ ] Z8. `leave` during a Start attempt answered instead of closing with 1011 (G8)
 - [ ] Z9. Real identity enough for multiple distinct guests in one session, and display names returned in the lobby and roster so players see each other's names (G3) (backend; may stay out of scope for this project by human decision) (2026-10-20, directed by the human: display names done without building Identity: `Authorize` returns the fixed test users with names, the backend passes them on and returns them in `lobby_update`, `session_started` and a new `roster_update` with each participant's presence; the frontend shows them in the lobby and in a players list during the game; 2026-10-20, end to end against the real backend in two headless Edge browsers. Distinct guests stay open: every guest is still one placeholder user)
 - [ ] Z10. The client can tell why a WebSocket handshake was refused (unknown/expired code, auth, rate limit, Session not joinable): browsers cannot read pre-upgrade HTTP errors (backend, decision: e.g. a REST pre-check of a join code, or accepting then rejecting with a reason)
+
+- [x] Z11. The backend learns about games the client stopped, and can audit them from its database (2026-10-20, decided by the human, ADR-0006): `game_fault` on the player's live connection, stored in `play_game_faults` (one record per Session, player and kind, counted), only from a current participant of the running game; never acted on automatically (backend Engineering Radar: verification and review of reported games). Verified by backend unit, API and Postgres integration tests and end to end on a fresh database (two kinds stored with reporter, participant, version and detail). Uncommitted in the backend
 
 ## Placeholders Left Behind
 

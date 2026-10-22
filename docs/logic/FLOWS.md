@@ -29,6 +29,7 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | The game screen opens (only when the artifact is not cached yet) | `GET` the signed artifact URL from `session_started` (storage, not the backend API) | no credentials | The game's HTML, accepted only if its SHA-256 matches; cached by hash so later loads skip the network |
 | Leaving | `{"type":"leave"}` on the WebSocket | — | Server answers `leave_result` and closes as `left` |
 | Playing (the game asks through the GameHost) | `sample` / `command` / `resync` on the WebSocket | inputs / name+payload+token | views → the game; `command_result` → the game |
+| The GameHost stops the game (any failure, flow 12) | `{"type":"game_fault"}` on the WebSocket | kind + evidence (≤ 2 KiB) | Nothing: never answered; the backend stores it for auditing |
 
 ---
 
@@ -185,8 +186,11 @@ sequenceDiagram
 ```
 
 - **Fixed-aspect viewport** (plan §8): `session_started` says the game's shape (`viewport`: an aspect ratio from the backend's catalog and its logical size, e.g. 16:9 = 1920 x 1080). The game is shown like a picture: whole, as big as fits, centered, never stretched, with bars where space is left. Inside, the game always measures its logical size and touches/clicks arrive in those units, on any device; resizing the window or rotating the phone changes only the scale. On a touch device that is not a wide screen and is held the other way from the game, a dismissable hint suggests turning it (never for a square game).
-- **Failures** (the game stops, its iframe is removed): artifact unreachable (network, CORS, expired URL), hash mismatch, no `ready` within 10 s, no common bridge version, the game navigating its frame.
+- **Failures** (the game stops, its iframe is removed): artifact unreachable (network, CORS, expired URL), hash mismatch, no `ready` within 10 s, no common bridge version, the game navigating its frame or opening a frame, the game abusing the bridge.
 - **Refused game messages** (wrong shape, too big, before `ready`, sample ids not growing, a second `ready`) are dropped and recorded; the game keeps running.
+- **Message limits** (ADR-0006): the GameHost counts every game message before reading it (all 240/s, samples 120/s, commands and asset requests 20/s, at most 16 commands and 8 asset requests waiting). Extra messages are dropped; a game still over its limits after 5 seconds in a row is stopped ("the game has a problem").
+- **Isolation** (ADR-0006): the game cannot navigate its frame anywhere (the page forbids it), has no WebRTC, and any frame it tries to open is removed and stops it. Best effort against leaking the player's own view.
+- **Reported to the backend**: every stop (any failure above) sends `game_fault` with the kind and its evidence, so the backend can audit games with problems and tell a bad game from a lying client.
 - The game never gets the token, the WebSocket, the signed URL, command tokens or connection sample numbers: its acks come back in its own sample numbering.
 
 ## 13. Preferences

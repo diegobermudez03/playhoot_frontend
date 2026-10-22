@@ -96,7 +96,7 @@ export interface JoinSessionDeps {
 // connection and survives reconnections. Each new connection announces itself with an `open` event.
 export type LiveSession = Pick<
   SessionConnection,
-  'subscribe' | 'sample' | 'command' | 'currentView'
+  'subscribe' | 'sample' | 'command' | 'currentView' | 'reportGameFault'
 >;
 
 export interface JoinSession {
@@ -348,6 +348,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
             outcome: 'connection-closed',
           }),
     currentView: () => connection?.currentView(),
+    reportGameFault: (kind, detail) => connection?.reportGameFault(kind, detail) ?? false,
   };
 
   return {

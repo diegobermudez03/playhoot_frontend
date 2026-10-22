@@ -2,7 +2,7 @@
 
 GameHost abstraction and shared bridge logic.
 
-Status: MINIMAL HOST (plan step 4, ADR-0005): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings; a new connection (`open` event) resets the ack translation and sends the game's last inputs again with the first FULL view (plan §13.7). Used by Session Play. Fixed-aspect viewport (step 7, 2026-10-20): the GameVersion's logical viewport is a Host option passed to every container, with the fit math (`fitGameViewport`: whole, centered, one scale, bars) shared by every platform. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: MINIMAL HOST (plan step 4, ADR-0005): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings; a new connection (`open` event) resets the ack translation and sends the game's last inputs again with the first FULL view (plan §13.7). Bridge limits and fault reports (step 9, 2026-10-20, ADR-0006): `createBridgeGuard` rates game messages before decoding and caps pending requests; a game abusing the bridge is stopped, and every failure is reported to the backend through the Session port's `reportGameFault`. Used by Session Play. Fixed-aspect viewport (step 7, 2026-10-20): the GameVersion's logical viewport is a Host option passed to every container, with the fit math (`fitGameViewport`: whole, centered, one scale, bars) shared by every platform. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

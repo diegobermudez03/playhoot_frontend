@@ -48,6 +48,7 @@ function setup(loads: Array<'ok' | 'mismatch'> = ['ok']) {
     sample: () => undefined,
     command: () => Promise.resolve({ token: 't', outcome: 'executed' }),
     currentView: () => ({ state: { round: 1 }, ack: 0 }),
+    reportGameFault: () => true,
   };
   const loader: ArtifactLoader = {
     load: () =>

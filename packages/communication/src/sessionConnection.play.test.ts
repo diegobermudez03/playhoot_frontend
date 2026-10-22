@@ -189,6 +189,25 @@ describe('SessionConnection views', () => {
     expect(t.socket.sent).toEqual([{ type: 'resync' }, { type: 'resync' }]);
   });
 
+  it('needs no resync when the server collapses a lagging connection into a FULL view', () => {
+    const t = setup();
+    t.socket.receive(view({ full: true, revision: 1, state: { a: 1 } }));
+    t.socket.receive(view({ full: true, revision: 40, state: { a: 40 } }));
+    t.socket.receive(view({ revision: 41, state: { a: 41 } }));
+    expect(t.connection.currentView()).toEqual({ state: { a: 41 }, ack: 0 });
+    expect(t.socket.sent).toEqual([]);
+  });
+
+  it('sends a game fault unanswered, replacing a detail over the server limit', () => {
+    const t = setup();
+    expect(t.connection.reportGameFault('bridge_abuse', { refused: { sample: 900 } })).toBe(true);
+    t.connection.reportGameFault('container_violation', { detail: 'x'.repeat(3000) });
+    expect(t.socket.sent).toEqual([
+      { type: 'game_fault', kind: 'bridge_abuse', detail: { refused: { sample: 900 } } },
+      { type: 'game_fault', kind: 'container_violation', detail: { truncated: true } },
+    ]);
+  });
+
   it('keeps the current view and ack, and none while a gap waits for a FULL view', () => {
     const t = setup();
     expect(t.connection.currentView()).toBeUndefined();
