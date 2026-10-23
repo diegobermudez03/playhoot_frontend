@@ -1,7 +1,7 @@
 # Backend Contract (frontend reference)
 
 Status: REFERENCE SNAPSHOT — the backend code is the authority
-Backend ref inspected: `../playhoot` at `36d0c9d` (2026-10-19), plus `e4f0d85` (2026-10-20, `session_uuid` on lobby/start messages, G4), plus the aspect-ratio change (`552ce77`, `frontend.viewport`, G6), plus the uncommitted game fault reports (2026-10-20, `game_fault`, ADR-0006)
+Backend ref inspected: `../playhoot` at `36d0c9d` (2026-10-19), plus `e4f0d85` (2026-10-20, `session_uuid` on lobby/start messages, G4), plus the aspect-ratio change (`552ce77`, `frontend.viewport`, G6), plus the uncommitted game fault reports (2026-10-20, `game_fault`, ADR-0006), plus the uncommitted join code refusal reasons and leave during a Start attempt (2026-10-21, Z10, Z8)
 
 This document records the client-facing contract that the backend ACTUALLY implements, as the frontend needs it. It does not define the contract; the backend owns it (`../playhoot/api/README.md`, `../playhoot/play/CURRENT_STATE.md`, and the code). Paths below are relative to the backend repository.
 
@@ -22,7 +22,7 @@ Rules for this file:
 | G5 | RESOLVED 2026-10-20: the frontend URL (TTL 15 min) is signed again for every connection that attaches to a running game (reattach, rejoin, device switch, admin); a failed signing falls back to the start's | The GameHost still caches by hash, so a reload or reconnect usually needs no download at all. | `play/session/usecases/frontendaccess/service.go:36`, `step_start_session.go:404`, `step_reattach_player.go:46` |
 | G6 | Game frontend package is a single self-contained HTML file (Space Drift's seed version `...c2` holds the real one built here, `fixtures/games/space-drift`); no assets; no frontend fields in the manifest (entry, capabilities); manifest never sent to the client. Aspect ratio: solved 2026-10-20 outside the manifest (`play_game_versions.aspect_ratio`, sent as `frontend.viewport`) | Assets and the SDK contract need backend work. The game must know its own inputs/commands. | `play/session/internal/migrations/seed_objects.go`, `play/session/internal/business/manifest/manifest.go` |
 | G7 | Signed GCS URL CORS: fake-gcs in dev answers `Access-Control-Allow-Origin: *` (checked 2026-10-20); a real bucket's CORS is unknown | The GameHost fetches the artifact and checks its hash (ADR-0005), so production needs bucket CORS for the web origin. | `play/session/internal/objectstore/gcs.go:119-136` |
-| G8 | `leave` during a Start attempt closes with 1011 | Treat as a transport error. | `step_leave_player.go:20-23` |
+| G8 | RESOLVED 2026-10-21 (uncommitted in the backend): a `leave` during a Start attempt waits for the attempt and is then applied (left the running game, or left the lobby if the start failed), answered `leave_result` `left` and closed 1000. `session_started`, a view and `roster_update` may arrive before `leave_result`; if the attempt aborted the Session, `session_ended` may come first | The feature ignores lobby, start and roster messages while leaving. | `play/runtime/workflows/liveconnection/step_leave_player.go` |
 | G9 | No Game <-> Host bridge exists anywhere | Defined by this repository (it was out of the backend's scope): ADR-0005. | backend `docs/projects/active/session-runtime-v1/PROJECT.md:16` |
 
 Backend doc drift seen (code wins): `api/README.md` shows paths without `/v1` and `/play/join`, says `lobby_closed` is sent "once the Session starts" and "Bearer <jwt>" (tokens are opaque); `play/CURRENT_STATE.md` mentions a non-existent `session_aborted`.
@@ -70,7 +70,7 @@ Seed games (non-production): `11111111-1111-4111-8111-111111111111` (input `move
 | `GET /v1/play/join/sessions/{sessionUUID}/player` | player |
 | `GET /v1/play/join/sessions/{sessionUUID}/admin` | admin (creator only) |
 
-Pre-upgrade failures are HTTP responses the browser `WebSocket` cannot read (it sees an error / close 1006): auth 401/403; 429 `rate_limited`; join code 400/404; session 400/404 (only LOBBY-before-expiry or RUNNING is joinable)/503; 429 `too_many_connections` (10 per user per instance); 503 `server_busy`; 400 missing `playhoot.v1`; origin mismatch.
+Pre-upgrade failures are HTTP responses the browser `WebSocket` cannot read (it sees an error / close 1006): auth 401/403; 429 `rate_limited`; join code lookup failure 500; session 400/404 (only LOBBY-before-expiry or RUNNING is joinable)/503; 429 `too_many_connections` (10 per user per instance); 503 `server_busy`; 400 missing `playhoot.v1`; origin mismatch.
 
 Framing: text frames, JSON object with `type`. Max 32 KiB per message.
 
@@ -90,7 +90,7 @@ Framing: text frames, JSON object with `type`. Max 32 KiB per message.
 
 ### Admission
 
-Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` + close 1008. Reasons: `session_unavailable`, `not_creator`, `session_started` (non-participant of a running game), `lobby_full`, `participant_disconnected` (game without `playerRejoined`), `rejoin_rejected`, `owner_changed`, `too_many_admins` (> 8), `server_busy`. While a rejoin waits for the game, the socket receives nothing until `session_started` or `rejected`.
+Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` + close 1008. Joining by code (2026-10-21, uncommitted in the backend), the code is resolved by its newest assignment and its Session's status, and a refused code is sent the same way, without the Session UUID: `invalid_join_code` (no such code, malformed, or its Session ended), `join_code_expired` (the lobby still runs, the code expired), `session_started` (the Session left the lobby and has not ended). Reasons: `session_unavailable`, `not_creator`, `session_started` (non-participant of a running game), `lobby_full`, `participant_disconnected` (game without `playerRejoined`), `rejoin_rejected`, `owner_changed`, `too_many_admins` (> 8), `server_busy`. While a rejoin waits for the game, the socket receives nothing until `session_started` or `rejected`.
 
 ### Player -> server
 

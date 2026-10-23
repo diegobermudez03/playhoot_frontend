@@ -138,12 +138,12 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 
 | Cause | Feature state | Next actions offered |
 | --- | --- | --- |
-| First handshake failed (network, auth, limits, busy server — the browser cannot tell which) | `closed(unreachable)` | Try again · Enter a code |
-| `rejected` (`invalid_join_code`, `join_code_expired`, `lobby_full`, `session_started`, `session_unavailable`, `participant_disconnected`, `rejoin_rejected`, `server_busy`…) | `closed(rejected, reason)` | Depends on the reason |
+| First handshake failed (network, auth, limits, busy server — the browser cannot tell which) | `closed(unreachable)`, shown as the unexpected error | Try again · Enter a code |
+| `rejected` — own message only for `invalid_join_code`, `join_code_expired`, `lobby_full`, `session_started` and `participant_disconnected` / `rejoin_rejected`; every other reason (and an unknown one) shows the unexpected error (decided by the human, 2026-10-21): (`invalid_join_code`, `join_code_expired`, `lobby_full`, `session_started`, `session_unavailable`, `participant_disconnected`, `rejoin_rejected`, `server_busy`…) | `closed(rejected, reason)` | Depends on the reason |
 | `lobby_closed` / `session_ended` | `closed(ended, status, cause)` | Enter a code |
 | Closed as `replaced` | `closed(replaced)` | Play here (reconnects, taking over) · Enter a code |
 | 3 reconnections failed | `closed(connection-lost)` | Try again · Enter a code |
-| A message breaks the protocol | `closed(protocol-error)` | Try again · Enter a code |
+| A message breaks the protocol | `closed(protocol-error)`, shown as the unexpected error | Try again · Enter a code |
 | The game was stopped for misbehaving (abuse, leaving its container, wrong hash; flow 12) | `closed(game-stopped)`, after reporting it and leaving | Enter a code |
 
 "Try again" / "Play here" = `Retry()` → `Start()` again (same URL). "Enter a code" navigates to `/join`.

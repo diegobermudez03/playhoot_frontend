@@ -68,8 +68,8 @@ export const es: Messages = {
   'play.roster.status.left': 'Salió de la partida',
   'play.roster.status.unknown': 'Desconocido',
 
-  'outcome.unreachable.title': 'No pudimos conectar con esa partida',
-  'outcome.unreachable.body': 'Revisa tu conexión a internet e inténtalo de nuevo en un momento.',
+  'outcome.unexpected.title': 'Ocurrió un error inesperado',
+  'outcome.unexpected.body': 'No pudimos llevarte a la partida. Inténtalo de nuevo en un momento.',
   'outcome.invalidCode.title': 'No encontramos esa partida',
   'outcome.invalidCode.body':
     'Puede que el código esté mal escrito o que esa partida ya haya terminado. Confírmalo con tu anfitrión.',
@@ -83,11 +83,6 @@ export const es: Messages = {
     'Solo pueden jugar esta ronda quienes estaban en la sala de espera.',
   'outcome.cannotRejoin.title': 'No puedes volver a esta partida',
   'outcome.cannotRejoin.body': 'La partida siguió sin ti. ¡Únete a la próxima ronda!',
-  'outcome.busy.title': 'Playhoot está muy ocupado ahora',
-  'outcome.busy.body': 'Espera un momento e inténtalo de nuevo.',
-  'outcome.unavailable.title': 'Esta partida no está disponible',
-  'outcome.unavailable.body':
-    'Puede que haya terminado o expirado. Pídele un código nuevo a tu anfitrión.',
   'outcome.lobbyExpired.title': 'La sala de espera se cerró',
   'outcome.lobbyExpired.body': 'La partida nunca empezó y se acabó el tiempo de la sala.',
   'outcome.hostClosedLobby.title': 'El anfitrión cerró la partida',
@@ -103,9 +98,6 @@ export const es: Messages = {
   'outcome.connectionLost.title': 'Se perdió la conexión',
   'outcome.connectionLost.body':
     'No pudimos conectar con la partida. Revisa tu internet e inténtalo de nuevo.',
-  'outcome.protocolError.title': 'Algo salió mal',
-  'outcome.protocolError.body':
-    'La partida y esta página dejaron de entenderse. Volver a intentarlo suele solucionarlo.',
   'outcome.left.title': 'Saliste de la partida',
   'outcome.left.body': 'Vuelve cuando quieras con un código.',
   'outcome.gameStopped.title': 'El juego tuvo un problema',

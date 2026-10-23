@@ -66,8 +66,8 @@ export const en = {
   'play.roster.status.left': 'Left the game',
   'play.roster.status.unknown': 'Unknown',
 
-  'outcome.unreachable.title': "We couldn't reach that game",
-  'outcome.unreachable.body': 'Check your internet connection and try again in a moment.',
+  'outcome.unexpected.title': 'Something unexpected happened',
+  'outcome.unexpected.body': 'We could not get you into the game. Try again in a moment.',
   'outcome.invalidCode.title': "We couldn't find that game",
   'outcome.invalidCode.body':
     'The code may be mistyped, or that game already ended. Check it with your host.',
@@ -79,10 +79,6 @@ export const en = {
   'outcome.sessionStarted.body': 'Only people who were in the lobby can play this round.',
   'outcome.cannotRejoin.title': "You can't rejoin this game",
   'outcome.cannotRejoin.body': 'The game carried on without you. Catch the next round!',
-  'outcome.busy.title': 'Playhoot is busy right now',
-  'outcome.busy.body': 'Give it a moment and try again.',
-  'outcome.unavailable.title': "This game isn't available",
-  'outcome.unavailable.body': 'It may have ended or expired. Ask your host for a new code.',
   'outcome.lobbyExpired.title': 'The lobby closed',
   'outcome.lobbyExpired.body': 'The game never started and the lobby timed out.',
   'outcome.hostClosedLobby.title': 'The host closed the game',
@@ -97,9 +93,6 @@ export const en = {
   'outcome.replaced.body': 'This tab is no longer connected. You can keep playing here instead.',
   'outcome.connectionLost.title': 'Connection lost',
   'outcome.connectionLost.body': "We couldn't reach the game. Check your internet and try again.",
-  'outcome.protocolError.title': 'Something went wrong',
-  'outcome.protocolError.body':
-    'The game and this page stopped understanding each other. Trying again usually fixes it.',
   'outcome.left.title': 'You left the game',
   'outcome.left.body': 'Come back any time with a code.',
   'outcome.gameStopped.title': 'The game had a problem',

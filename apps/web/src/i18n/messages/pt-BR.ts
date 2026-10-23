@@ -67,8 +67,8 @@ export const ptBR: Messages = {
   'play.roster.status.left': 'Saiu da partida',
   'play.roster.status.unknown': 'Desconhecido',
 
-  'outcome.unreachable.title': 'Não conseguimos conectar a essa partida',
-  'outcome.unreachable.body': 'Verifique sua conexão com a internet e tente de novo em instantes.',
+  'outcome.unexpected.title': 'Aconteceu um erro inesperado',
+  'outcome.unexpected.body': 'Não conseguimos te levar para a partida. Tente de novo em instantes.',
   'outcome.invalidCode.title': 'Não encontramos essa partida',
   'outcome.invalidCode.body':
     'O código pode estar errado, ou essa partida já terminou. Confirme com o anfitrião.',
@@ -81,11 +81,6 @@ export const ptBR: Messages = {
   'outcome.sessionStarted.body': 'Só quem estava na sala de espera pode jogar esta rodada.',
   'outcome.cannotRejoin.title': 'Você não pode voltar para esta partida',
   'outcome.cannotRejoin.body': 'A partida continuou sem você. Entre na próxima rodada!',
-  'outcome.busy.title': 'O Playhoot está muito ocupado agora',
-  'outcome.busy.body': 'Aguarde um momento e tente de novo.',
-  'outcome.unavailable.title': 'Esta partida não está disponível',
-  'outcome.unavailable.body':
-    'Ela pode ter terminado ou expirado. Peça um novo código ao anfitrião.',
   'outcome.lobbyExpired.title': 'A sala de espera fechou',
   'outcome.lobbyExpired.body': 'A partida não começou e o tempo da sala acabou.',
   'outcome.hostClosedLobby.title': 'O anfitrião fechou a partida',
@@ -101,9 +96,6 @@ export const ptBR: Messages = {
   'outcome.connectionLost.title': 'Conexão perdida',
   'outcome.connectionLost.body':
     'Não conseguimos falar com a partida. Verifique sua internet e tente de novo.',
-  'outcome.protocolError.title': 'Algo deu errado',
-  'outcome.protocolError.body':
-    'A partida e esta página pararam de se entender. Tentar de novo geralmente resolve.',
   'outcome.left.title': 'Você saiu da partida',
   'outcome.left.body': 'Volte quando quiser com um código.',
   'outcome.gameStopped.title': 'O jogo teve um problema',

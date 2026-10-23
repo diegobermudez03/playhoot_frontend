@@ -27,7 +27,8 @@ export const outcomeActionLabels: Record<OutcomeAction, MessageId> = {
 export function outcomeCopy(outcome: JoinOutcome): OutcomeCopy {
   switch (outcome.kind) {
     case 'unreachable':
-      return copy('unreachable', 'surprised', ['retry', 'enter-code']);
+    case 'protocol-error':
+      return unexpected;
     case 'rejected':
       return rejectedCopy(outcome.reason);
     case 'ended':
@@ -36,8 +37,6 @@ export function outcomeCopy(outcome: JoinOutcome): OutcomeCopy {
       return copy('replaced', 'surprised', ['play-here', 'enter-code']);
     case 'connection-lost':
       return copy('connectionLost', 'sleepy', ['retry', 'enter-code']);
-    case 'protocol-error':
-      return copy('protocolError', 'surprised', ['retry', 'enter-code']);
     case 'left':
       return copy('left', 'sleepy', ['enter-code']);
     case 'game-stopped':
@@ -46,14 +45,12 @@ export function outcomeCopy(outcome: JoinOutcome): OutcomeCopy {
 }
 
 type OutcomeKey =
-  | 'unreachable'
+  | 'unexpected'
   | 'lobbyFull'
   | 'sessionStarted'
   | 'invalidCode'
   | 'codeExpired'
   | 'cannotRejoin'
-  | 'busy'
-  | 'unavailable'
   | 'lobbyExpired'
   | 'hostClosedLobby'
   | 'hostEnded'
@@ -61,19 +58,16 @@ type OutcomeKey =
   | 'ended'
   | 'replaced'
   | 'connectionLost'
-  | 'protocolError'
   | 'left'
   | 'gameStopped';
 
 const tones: Record<OutcomeKey, OutcomeTone> = {
-  unreachable: 'problem',
+  unexpected: 'problem',
   lobbyFull: 'problem',
   sessionStarted: 'problem',
   invalidCode: 'problem',
   codeExpired: 'problem',
   cannotRejoin: 'farewell',
-  busy: 'problem',
-  unavailable: 'problem',
   lobbyExpired: 'farewell',
   hostClosedLobby: 'farewell',
   hostEnded: 'farewell',
@@ -81,7 +75,6 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   ended: 'farewell',
   replaced: 'problem',
   connectionLost: 'problem',
-  protocolError: 'problem',
   left: 'farewell',
   gameStopped: 'problem',
 };
@@ -96,6 +89,10 @@ function copy(key: OutcomeKey, mood: OwlMood, actions: OutcomeAction[]): Outcome
   };
 }
 
+// What every failure without a case of its own shows: the handshake refused before it opened
+// (network, auth, limits), a protocol error, and the rejections a player is not expected to meet.
+const unexpected = copy('unexpected', 'surprised', ['retry', 'enter-code']);
+
 function rejectedCopy(reason: Extract<JoinOutcome, { kind: 'rejected' }>['reason']): OutcomeCopy {
   switch (reason) {
     case 'lobby_full':
@@ -109,12 +106,9 @@ function rejectedCopy(reason: Extract<JoinOutcome, { kind: 'rejected' }>['reason
     case 'participant_disconnected':
     case 'rejoin_rejected':
       return copy('cannotRejoin', 'sleepy', ['enter-code']);
-    case 'server_busy':
-    case 'owner_changed':
-      return copy('busy', 'sleepy', ['retry', 'enter-code']);
-    case 'session_unavailable':
+    // Every other refusal (and an unknown one) is unexpected for the player.
     default:
-      return copy('unavailable', 'sleepy', ['enter-code']);
+      return unexpected;
   }
 }
 
