@@ -14,7 +14,7 @@ The plan is the architectural skeleton; concrete implementation is decided step 
 
 ## Explicitly Out Of Scope
 
-- Mobile shell / NativeGameHost (plan step 11): the slice keeps shared packages portable but builds no mobile app.
+- The full mobile app (plan step 11): decided by the human on 2026-10-25, it is a separate project after this one, once the web is stable. Inside this project, right after the SDK built-ins: a short NativeGameHost prototype (CHECKLIST O). Shared packages stay portable meanwhile.
 - Marketplace, account/auth UI beyond what joining needs, authoring/publishing, spectator, replay playback (plan step 12).
 - Creating Sessions from the UI and the admin experience (start, cancel, perspective), unless the human pulls them in: the slice is the player path. For testing, Sessions are created and started through the backend API or a dev tool.
 - Real identity: the backend's Identity is a placeholder; the slice uses what exists (guest creation, fixed test tokens).

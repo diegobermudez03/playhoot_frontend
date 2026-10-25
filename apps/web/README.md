@@ -39,6 +39,15 @@ To try the GameHost and the Game SDK without a backend: `npm run fixtures` once 
 
 To play through a Session without a host UI: `node scripts/dev-host.mjs` creates one as `test-user-1`, prints the join link, and starts it when you press Enter. Every guest is the same user in the backend's placeholder Identity, so a second player on the same machine uses the dev "Test user 2" button in a private window.
 
+## Deployment
+
+`npm run build -w @playhoot/web` produces a static site in `apps/web/dist`. Requirements for whatever hosts it (decided by the human, 2026-10-25: shared join links must open directly):
+
+- **History fallback.** Every route lives inside the app (`/join/{code}`, `/sessions/{uuid}/play`, ...), not as files. A request for a path that is not a file must answer `index.html` with status 200, or opening a shared link or reloading any page gives the host's 404. Files that exist (`/assets/...`) are served as they are. Examples: Firebase Hosting `"rewrites": [{ "source": "**", "destination": "/index.html" }]`; nginx `try_files $uri $uri/ /index.html;`; a bucket behind a CDN: the 404 page set to `index.html` with status rewritten to 200. Development (`npm run dev`) and `vite preview` already do it.
+- **Caching.** `index.html` must not be cached long (it names the current build's files); `/assets/*` files have content hashes in their names and can be cached for a year.
+- **Content-Security-Policy.** `index.html` carries `frame-src 'none'` as a meta tag (ADR-0006); a host adding its own CSP header must keep that directive.
+- **Backend origin.** The backend's `CORS_ALLOWED_ORIGINS` and `WEBSOCKET_ALLOWED_ORIGINS` list this site's origin, and the storage bucket's CORS too (backend `deploy/README.md`).
+
 ## Commands
 
 From the repository root: `npm run dev` (http://localhost:5173), `npm run build`.
