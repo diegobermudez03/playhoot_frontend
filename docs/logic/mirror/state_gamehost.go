@@ -135,8 +135,10 @@ func (h *GameHost) OnGameMessage(m any, session GameSessionPort) {
 	//                 | unavailable (not running, connection closed, rate limited)
 	// "request_asset" {id, key}
 	//     rule: 8 already waiting -> answer found = false (counts as a dropped message)
-	//     -> AssetResolver(key): bytes + mime type, or none (no asset source exists outside the dev
-	//        lab until the backend stores assets) -> send "asset" {id, key, found, mimeType, bytes}
+	//     -> AssetResolver(key): only keys in session_started.frontend.assets; bytes from the
+	//        browser's asset cache by SHA-256, else external.go#FetchGameAsset (size and hash
+	//        checked, then cached) -> send "asset" {id, key, found, mimeType, bytes}, the bytes
+	//        moved (transferred) into the frame. A key not listed, or a failed download -> found: false.
 }
 
 // Fail stops everything, tells the backend and keeps the reason.

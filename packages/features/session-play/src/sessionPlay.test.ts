@@ -67,6 +67,7 @@ function setup(loads: Array<'ok' | 'mismatch'> = ['ok'], onGameStopped?: () => v
         url: 'u',
         sha256: 'h',
         viewport: { aspectRatio: '1:1', width: 1080, height: 1080 },
+        assets: [],
       },
     },
     'es',

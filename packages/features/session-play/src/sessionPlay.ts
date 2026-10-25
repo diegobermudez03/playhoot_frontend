@@ -1,7 +1,8 @@
 import {
   startGameHost,
   type ArtifactLoader,
-  type AssetResolver,
+  type AssetLoader,
+  type GameAssetRef,
   type GameContainer,
   type GameHost,
   type GameHostError,
@@ -16,7 +17,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla';
 export interface SessionPlayStart {
   participantId: string;
   participants: string[];
-  frontend: { url: string; sha256: string; viewport: GameViewport };
+  frontend: { url: string; sha256: string; viewport: GameViewport; assets: GameAssetRef[] };
 }
 
 export interface SessionPlayState {
@@ -37,7 +38,8 @@ export interface SessionPlayDeps {
   // The player's live connection, kept across reconnections by whoever owns it (Join Session).
   live: GameSessionPort;
   loader: ArtifactLoader;
-  assets?: AssetResolver;
+  // Downloads and caches the game's assets; without it the game gets none.
+  assets?: AssetLoader;
   onTelemetry?: (event: SessionPlayTelemetry) => void;
   // The game was stopped for misbehaving (`endsParticipation`): the player must leave the Session.
   // The GameHost already reported it to the backend on the same connection, before this.
@@ -97,7 +99,7 @@ export function createSessionPlay(
       container,
       session: deps.live,
       context: { participantId: start.participantId, participants: start.participants, locale },
-      ...(deps.assets && { assets: deps.assets }),
+      ...(deps.assets && { assets: deps.assets.resolverFor(start.frontend.assets) }),
     });
     host = current;
     store.setState({ game: current.status });

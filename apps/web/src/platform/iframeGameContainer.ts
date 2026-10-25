@@ -106,9 +106,9 @@ export function createIframeGameContainer(parent: HTMLElement, title: string): G
       resizes.observe(stage);
 
       return {
-        send(message) {
+        send(message, transfer) {
           // An opaque origin cannot be named; the target is this exact window.
-          iframe.contentWindow?.postMessage(message, '*');
+          iframe.contentWindow?.postMessage(message, '*', transfer);
         },
         dispose() {
           resizes.disconnect();

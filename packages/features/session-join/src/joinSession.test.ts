@@ -16,6 +16,9 @@ const frontend = {
   sha256: 'h',
   expires_at: 'x',
   viewport: { aspect_ratio: '16:9', width: 1920, height: 1080 },
+  assets: [
+    { key: 'ship', type: 'image', mime_type: 'image/png', sha256: 'a1', size: 7, url: 'su' },
+  ],
 };
 
 const me = 'user-me';
@@ -189,6 +192,9 @@ describe('createJoinSession', () => {
       sha256: 'h',
       expiresAt: 'x',
       viewport: { aspectRatio: '16:9', width: 1920, height: 1080 },
+      assets: [
+        { key: 'ship', type: 'image', mimeType: 'image/png', sha256: 'a1', size: 7, url: 'su' },
+      ],
     });
     expect(view.phase === 'started' && view.session.participants[1]).toEqual({
       participantId: 'P2',

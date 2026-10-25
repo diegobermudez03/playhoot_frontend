@@ -37,7 +37,8 @@ export interface GameContainer {
 }
 
 export interface OpenContainer {
-  send(message: HostToGameMessage): void;
+  // `transfer`: buffers in the message moved to the game instead of copied (asset bytes).
+  send(message: HostToGameMessage, transfer?: ArrayBuffer[]): void;
   dispose(): void;
 }
 
@@ -135,8 +136,8 @@ export function startGameHost(options: GameHostOptions): GameHost {
     emit({ type: 'status', status });
   };
   const active = () => status.phase !== 'failed' && status.phase !== 'disposed';
-  const send = (message: HostToGameMessage) => {
-    if (active()) container?.send(message);
+  const send = (message: HostToGameMessage, transfer?: ArrayBuffer[]) => {
+    if (active()) container?.send(message, transfer);
   };
 
   const stop = () => {
@@ -280,11 +281,13 @@ export function startGameHost(options: GameHostOptions): GameHost {
           .catch(() => null)
           .then((asset) => {
             pendingAssets -= 1;
-            send(
-              asset
-                ? { bridge: bridgeMarker, type: 'asset', id, key, found: true, ...asset }
-                : { bridge: bridgeMarker, type: 'asset', id, key, found: false },
-            );
+            if (!asset) {
+              send({ bridge: bridgeMarker, type: 'asset', id, key, found: false });
+              return;
+            }
+            send({ bridge: bridgeMarker, type: 'asset', id, key, found: true, ...asset }, [
+              asset.bytes,
+            ]);
           });
         return;
       }

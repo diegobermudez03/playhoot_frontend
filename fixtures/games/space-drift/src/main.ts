@@ -40,6 +40,8 @@ document.body.append(canvas);
 const ctx = canvas.getContext('2d')!;
 
 const playhoot = createPlayhoot();
+// Every asset the game uses, declared once (ADR-0008).
+const assets = playhoot.assets({ ship: 'image', thrust: 'audio' });
 let me = '';
 let roster: string[] = [];
 let view: View | null = null;
@@ -48,6 +50,7 @@ const drawn = new Map<string, { x: number; y: number }>();
 const flashes: Array<{ ship: string; until: number }> = [];
 let shake = 0;
 let shipImage: HTMLImageElement | null = null;
+let thrustSound: HTMLAudioElement | null = null;
 
 playhoot.onProjection((projection: Projection) => {
   view = projection.state as View;
@@ -69,13 +72,17 @@ void playhoot.ready().then((context) => {
   me = context.participantId;
   roster = context.participants;
   void playhoot
-    .requestAsset('ship')
+    .load(assets.ship)
     .then((url) => {
       const image = new Image();
       image.onload = () => (shipImage = image);
       image.src = url;
     })
     .catch(() => undefined); // No asset: ships are drawn as triangles.
+  void playhoot
+    .load(assets.thrust)
+    .then((url) => (thrustSound = new Audio(url)))
+    .catch(() => undefined); // No asset: boosting is silent.
   startInput();
 });
 
@@ -97,6 +104,10 @@ function startInput() {
     const inputs = { move, boost: keys.has('boost') || touchBoost };
     const snapshot = JSON.stringify(inputs);
     if (snapshot === last) return;
+    if (inputs.boost && !last.includes('"boost":true') && thrustSound) {
+      thrustSound.currentTime = 0;
+      void thrustSound.play().catch(() => undefined);
+    }
     last = snapshot;
     playhoot.sample(inputs);
   };

@@ -79,7 +79,8 @@ type TelemetryEvent struct {
 
 // FetchGameArtifact downloads a game's frontend artifact (one HTML file today).
 //
-//	GET <session_started.frontend.url>   (a signed storage URL, valid 15 min; no cookies sent)
+//	GET <session_started.frontend.url>   (a signed storage URL, shared by every Session of the
+//	                                    version and outliving this Session; no cookies sent)
 //
 // Only called when the browser's artifact cache has nothing for that SHA-256. The answer is
 // accepted only if its SHA-256 equals session_started.frontend.sha256. Needs CORS on the bucket
@@ -87,6 +88,20 @@ type TelemetryEvent struct {
 //
 // code: packages/game-host/src/artifact.ts#createArtifactLoader
 func FetchGameArtifact(signedURL string) ([]byte, *HttpFailure) {
+	return nil, nil
+}
+
+// FetchGameAsset downloads one game asset (image, audio or video; ADR-0008).
+//
+//	GET <session_started.frontend.assets[i].url>   (signed in one batch with the artifact; the
+//	                                                backend makes it outlive the Session; no cookies)
+//
+// Only called when the game asks for a declared asset and the browser's asset cache has nothing
+// for its SHA-256 (one download per hash at a time). Accepted only if its size and SHA-256 equal
+// the listed ones; anything else answers the game "no such asset" and the next request tries again.
+//
+// code: packages/game-host/src/assets.ts#createAssetLoader
+func FetchGameAsset(signedURL string) ([]byte, *HttpFailure) {
 	return nil, nil
 }
 

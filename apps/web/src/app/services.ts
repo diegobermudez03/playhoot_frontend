@@ -9,11 +9,19 @@ import {
   type SessionConnector,
 } from '@playhoot/communication';
 import { createDeviceCapabilitiesStore, type DeviceCapabilitiesStore } from '@playhoot/device';
-import { createArtifactLoader, type ArtifactLoader } from '@playhoot/game-host';
+import {
+  createArtifactLoader,
+  createAssetLoader,
+  type ArtifactLoader,
+  type AssetLoader,
+} from '@playhoot/game-host';
 
 import { createSoundPlayer, type SoundPlayer } from '../sound';
 import { createAppTelemetry, type AppTelemetry } from '../telemetry/appTelemetry';
-import { createBrowserArtifactCache } from '../platform/browserArtifactCache';
+import {
+  createBrowserArtifactCache,
+  createBrowserAssetCache,
+} from '../platform/browserArtifactCache';
 import { createBrowserCredentialStore } from '../platform/browserCredentialStore';
 import { loadSoundMuted, saveSoundMuted } from '../platform/browserSoundPreference';
 import {
@@ -33,6 +41,8 @@ export interface Services {
   device: DeviceCapabilitiesStore;
   // Loads GameVersion frontend artifacts, verified by hash and cached in the browser.
   gameArtifacts: ArtifactLoader;
+  // Downloads game assets for the GameHost, verified by hash and cached in the browser (ADR-0008).
+  gameAssets: AssetLoader;
   http: HttpClient;
   identity: IdentityClient;
   sessions: SessionConnector;
@@ -61,6 +71,7 @@ export function createServices(): Services {
     onMutedChange: saveSoundMuted,
   });
   const gameArtifacts = createArtifactLoader({ cache: createBrowserArtifactCache() });
+  const gameAssets = createAssetLoader({ cache: createBrowserAssetCache() });
   const telemetry = createAppTelemetry(
     createTelemetryReporter({
       http,
@@ -74,6 +85,7 @@ export function createServices(): Services {
     app,
     device,
     gameArtifacts,
+    gameAssets,
     http,
     identity: createIdentityClient(http),
     sessions,

@@ -277,6 +277,7 @@ const screens: [string, JoinView, string | null][] = [
           sha256: '',
           expiresAt: '',
           viewport: { aspectRatio: '16:9', width: 1920, height: 1080 },
+          assets: [],
         },
       },
       connection: 'connected',

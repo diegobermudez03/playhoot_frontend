@@ -114,6 +114,7 @@ function useSessionPlay(
       {
         live,
         loader: services.gameArtifacts,
+        assets: services.gameAssets,
         onGameStopped: () => stopped.current(),
         onTelemetry: services.telemetry.play,
       },

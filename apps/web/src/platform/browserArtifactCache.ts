@@ -1,4 +1,9 @@
-import { createMemoryArtifactCache, type ArtifactCache } from '@playhoot/game-host';
+import {
+  createMemoryArtifactCache,
+  createMemoryAssetCache,
+  type ArtifactCache,
+  type AssetCache,
+} from '@playhoot/game-host';
 
 const cacheName = 'playhoot-game-artifacts-v1';
 const keyFor = (sha256: string) => new Request(`/__playhoot/artifacts/${sha256}`);
@@ -30,6 +35,40 @@ export function createBrowserArtifactCache(): ArtifactCache {
         ).put(keyFor(sha256), new Response(html, { headers: { 'Content-Type': 'text/html' } }));
       } catch {
         // Memory still has it.
+      }
+    },
+  };
+}
+
+const assetCacheName = 'playhoot-game-assets-v1';
+const assetKeyFor = (sha256: string) => new Request(`/__playhoot/assets/${sha256}`);
+
+// Verified game assets in Cache Storage (ADR-0008), by hash like the artifacts. Every read gives a
+// fresh buffer, which the GameHost transfers to the game without another copy. Without Cache
+// Storage it keeps them for this page only.
+export function createBrowserAssetCache(): AssetCache {
+  const memory = createMemoryAssetCache();
+  let storage = true;
+  const open = () =>
+    storage && 'caches' in globalThis
+      ? globalThis.caches.open(assetCacheName)
+      : Promise.reject(new Error());
+  return {
+    async get(sha256) {
+      try {
+        const response = await (await open()).match(assetKeyFor(sha256));
+        if (response) return await response.arrayBuffer();
+      } catch {
+        // Falls back to memory.
+      }
+      return memory.get(sha256);
+    },
+    async put(sha256, bytes) {
+      try {
+        await (await open()).put(assetKeyFor(sha256), new Response(bytes));
+      } catch {
+        storage = false;
+        await memory.put(sha256, bytes);
       }
     },
   };

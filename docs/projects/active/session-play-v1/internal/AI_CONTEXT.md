@@ -4,9 +4,9 @@ Current stage: observability K (client telemetry to the backend, ADR-0007, Z12) 
 Current execution surface: CODEBASE AGENT
 Related durable artifacts: docs/projects/active/session-play-v1/PROJECT.md, docs/projects/active/session-play-v1/CHECKLIST.md, docs/Playhoot_Frontend_Architecture_Plan.docx, ARCHITECTURE.md, docs/architecture/BACKEND_CONTRACT.md, docs/decisions/architecture/ADR-0001-workspace-tooling-for-the-frontend-foundation.md
 Blocked by: nothing (open human decisions in PROJECT.md; a real WS upgrade check waits for the human's local DB to match the backend schema)
-Next action: 2026-10-21 done (uncommitted in both repos): leave semantics recorded, join code refusal reasons (Z10 for codes) and leave during start (Z8) in backend + frontend, SDK WebView transport (M partially; asset bytes wait for Z4). Next by the human: Z4 assets/artifact format (the human has ideas: discuss before designing), then Z5 rest / Z6 (discuss how). The human runs the e2e checks of leave/reconnect themselves. Cleanup: DB `playhoot_ar_check` still exists in the local Postgres
+Next action: 2026-10-25 done (uncommitted in both repos): game assets (Z4, ADR-0008; backend SESSION-ADR-0034, migrations 20261026000000/20261026100000, seed c3 with its own HTML `seeddata/space_drift_assets_frontend.html` = fixtures/games/space-drift dist, and placeholder ship.png/thrust.wav). Earlier the same days: join refusal reasons (Z10 for codes), leave during start (Z8), unexpected-error outcome, SDK WebView transport (M partial). Next by the human: Z5 rest / Z6 (discuss how first). Browser e2e recipe: scratchpad e2e_browser_assets.mjs (Edge headless via CDP, Runtime.queryObjects in the frame to see blob images/audio). Cleanup: DB `playhoot_ar_check` still exists in the local Postgres
 Last durable checkpoint: Session Play; CHECKLIST B/C/D/E/F/J/K/M/Z, CURRENT_STATE, package READMEs, docs/logic (state_sessionplay.go, view_session_started.go, FLOWS 5-7, 11-12), PROJECT; backend: seed migration seed_20261020000000_space_drift_frontend + seeddata/, play/CURRENT_STATE.md, ENGINEERING_RADAR (bucket CORS), session-runtime-v1 PROJECT (2026-10-20)
-Last updated: 2026-10-21
+Last updated: 2026-10-25
 
 ## Working agreement (copied from the backend's practice; confirm with the human, PROJECT.md decision 1)
 

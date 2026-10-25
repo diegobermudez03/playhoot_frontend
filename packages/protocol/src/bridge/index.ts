@@ -21,6 +21,20 @@ export const bridgeLimits = {
   maxRequestId: Number.MAX_SAFE_INTEGER,
 } as const;
 
+// Game assets (ADR-0008): what a game may declare, and the MIME types each type is delivered as.
+// The backend enforces the same catalog for a GameVersion's assets.
+export const gameAssetTypes = ['image', 'audio', 'video'] as const;
+export type GameAssetType = (typeof gameAssetTypes)[number];
+
+export const gameAssetMimeTypes: Record<GameAssetType, readonly string[]> = {
+  image: ['image/png', 'image/webp', 'image/jpeg', 'image/svg+xml'],
+  audio: ['audio/mpeg', 'audio/ogg', 'audio/wav'],
+  video: ['video/mp4', 'video/webm'],
+};
+
+// A logical key is written as a key of an object literal in the game, so it is identifier-like.
+export const gameAssetKeyPattern = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
+
 // Rates the Host allows game -> host messages at (ADR-0006), as a short and a long window like the
 // backend's own limits. `message` counts every bridge message, valid or not, before it is even
 // decoded. Messages beyond a limit are dropped; a game still over its limits after

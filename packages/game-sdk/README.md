@@ -19,9 +19,12 @@ const { participantId, participants, locale } = await playhoot.ready();
 
 playhoot.sample({ move: [1, 0], boost: false });                 // full input snapshot; returns its id
 const { outcome, response } = await playhoot.command('teleport', { x: 500, y: 500 });
-const url = await playhoot.requestAsset('ship');                 // a blob: URL, or rejects
+const assets = playhoot.assets({ ship: 'image', thrust: 'audio' }); // once, at the top (ADR-0008)
+const url = await playhoot.load(assets.ship);                    // a blob: URL, or rejects
+await playhoot.preload([assets.ship, assets.thrust]);            // optional, before it is needed
 ```
 
+- Assets: `image` (sprites included), `audio` or `video`, keys identifier-like. Only handles from the one `assets()` declaration load (a static analysis can read it; TypeScript refuses undeclared names). Loads may start before `ready()` resolves; the SDK sends them within the Host's limits (at most 8 pending, under 20/s and 300/min) and refuses bytes of another type than declared.
 - `outcome` is `executed` (with the game script's `response`), `rejected` or `unavailable`.
 - `ack` is the game's own last sample id the backend consumed, for prediction/reconciliation.
 - Transport: chosen at run time (`detectTransport`), so the same artifact runs on every Host: the React Native WebView channel (`window.ReactNativeWebView`, messages as JSON text, `webViewTransport`) when present, otherwise `postMessage` to the parent window (`windowParentTransport`). Asset bytes cannot cross the WebView's text channel yet: their delivery is decided with asset loading (CHECKLIST Z4).

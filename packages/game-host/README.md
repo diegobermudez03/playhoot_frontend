@@ -2,7 +2,7 @@
 
 GameHost abstraction and shared bridge logic.
 
-Status: MINIMAL HOST (plan step 4, ADR-0005): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings; a new connection (`open` event) resets the ack translation and sends the game's last inputs again with the first FULL view (plan §13.7). Bridge limits and fault reports (step 9, 2026-10-20, ADR-0006): `createBridgeGuard` rates game messages before decoding and caps pending requests; a game abusing the bridge is stopped, and every failure is reported to the backend through the Session port's `reportGameFault`. Used by Session Play. Fixed-aspect viewport (step 7, 2026-10-20): the GameVersion's logical viewport is a Host option passed to every container, with the fit math (`fitGameViewport`: whole, centered, one scale, bars) shared by every platform. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: MINIMAL HOST (plan step 4, ADR-0005): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings; a new connection (`open` event) resets the ack translation and sends the game's last inputs again with the first FULL view (plan §13.7). Bridge limits and fault reports (step 9, 2026-10-20, ADR-0006): `createBridgeGuard` rates game messages before decoding and caps pending requests; a game abusing the bridge is stopped, and every failure is reported to the backend through the Session port's `reportGameFault`. Used by Session Play. Fixed-aspect viewport (step 7, 2026-10-20): the GameVersion's logical viewport is a Host option passed to every container, with the fit math (`fitGameViewport`: whole, centered, one scale, bars) shared by every platform. Game assets (2026-10-25, ADR-0008): `createAssetLoader` serves only the keys the backend listed for the version, downloads without credentials, checks size and SHA-256, caches by hash (`AssetCache`, whose reads hand out a fresh buffer) and the Host transfers the bytes to the game. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
@@ -19,7 +19,7 @@ The platform containers live in each app: the web one is `apps/web/src/platform/
 The same artifact runs unchanged in a React Native WebView (CHECKLIST M); its container must give the game what the sandboxed iframe gives it on the web:
 
 - Isolation: no storage, cookies or network for the game (a CSP and the WebView's settings), no navigation away, no nested frames or WebRTC (the same guard script, injected before the game's own scripts).
-- The bridge over the WebView channel: the SDK sends JSON text through `window.ReactNativeWebView.postMessage` and reads JSON text from `message` events, so the Host dispatches its messages as JSON text. Asset bytes need a text-safe form, decided with asset delivery (Z4).
+- The bridge over the WebView channel: the SDK sends JSON text through `window.ReactNativeWebView.postMessage` and reads JSON text from `message` events, so the Host dispatches its messages as JSON text. Asset bytes (an `ArrayBuffer` in the `asset` message) need a text-safe form or a local URL scheme there; the game API (a URL) stays the same.
 - The game's logical resolution as the page size (the viewport scaled to fit, never stretched), as the web container does with its scaled iframe.
 
 ## Does not own

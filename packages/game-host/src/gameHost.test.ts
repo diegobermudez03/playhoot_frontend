@@ -277,9 +277,10 @@ describe('startGameHost', () => {
   it('resolves assets by key and refuses unknown keys', async () => {
     const { box } = await setup();
     const game = box.game();
+    const assets = game.assets({ ship: 'image', dragon: 'image', thrust: 'audio' });
     await game.ready();
-    await expect(game.requestAsset('ship')).resolves.toMatch(/^blob:/);
-    await expect(game.requestAsset('dragon')).rejects.toThrow('no asset "dragon"');
+    await expect(game.load(assets.ship)).resolves.toMatch(/^blob:/);
+    await expect(game.load(assets.dragon)).rejects.toThrow('no asset "dragon"');
   });
 
   it('rejects and records invalid messages without stopping', async () => {

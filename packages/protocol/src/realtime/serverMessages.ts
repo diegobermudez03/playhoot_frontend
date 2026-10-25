@@ -62,11 +62,23 @@ const viewportSchema = z.object({
   height: z.number().int().positive(),
 });
 
+// A game asset (ADR-0008), signed in the same batch as the frontend: same expiry.
+const frontendAssetSchema = z.object({
+  key: z.string().min(1),
+  type: z.string().min(1),
+  mime_type: z.string().min(1),
+  sha256: z.string().min(1),
+  size: z.number().int().nonnegative(),
+  url: z.string().min(1),
+});
+
 const frontendSchema = z.object({
   url: z.string().min(1),
   sha256: z.string().min(1),
   expires_at: z.string().min(1),
   viewport: viewportSchema,
+  // Absent from a backend older than game assets.
+  assets: z.array(frontendAssetSchema).default([]),
 });
 
 const playerSessionStartedSchema = z.object({
