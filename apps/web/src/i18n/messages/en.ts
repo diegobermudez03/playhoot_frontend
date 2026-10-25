@@ -71,6 +71,9 @@ export const en = {
   'outcome.invalidCode.title': "We couldn't find that game",
   'outcome.invalidCode.body':
     'The code may be mistyped, or that game already ended. Check it with your host.',
+  'outcome.invalidSession.title': "We couldn't find that game",
+  'outcome.invalidSession.body':
+    'The link may be incomplete, or that game no longer exists. Ask your host for a new code.',
   'outcome.codeExpired.title': 'This game is no longer taking players',
   'outcome.codeExpired.body': 'Its code expired. Ask your host for a new one.',
   'outcome.lobbyFull.title': 'This game is full',
@@ -101,6 +104,13 @@ export const en = {
   'outcome.gameError.title': 'Sorry, something is wrong with this game',
   'outcome.gameError.body':
     'It sent data we did not expect, so we took you out of the game. It was not your fault or your connection, and Playhoot has been told.',
+  'outcome.deviceNeedsKeyboard.title': 'This game needs a keyboard',
+  'outcome.deviceNeedsKeyboard.body': 'Play it on a computer to join this round.',
+  'outcome.deviceNeedsMouse.title': 'This game needs a mouse',
+  'outcome.deviceNeedsMouse.body':
+    'It reacts both to pointing and to clicking, which a touch screen cannot tell apart. Play it on a computer.',
+  'outcome.deviceNotSupported.title': "This game can't be played on this device",
+  'outcome.deviceNotSupported.body': 'Try joining from another device.',
   'outcome.action.retry': 'Try again',
   'outcome.action.playHere': 'Play here',
   'outcome.action.enterCode': 'Enter a code',

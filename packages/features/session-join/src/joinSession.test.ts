@@ -324,6 +324,40 @@ describe('createJoinSession', () => {
       outcome: { kind: 'rejected', reason: 'lobby_full' },
     });
 
+    const d = setup();
+    d.join.start();
+    d.last().message({
+      type: 'rejected',
+      reason: 'device_not_supported',
+      requirements: { devices: 'desktop', uses_keyboard: true, uses_pointer_press: true },
+    });
+    expect(d.view()).toEqual({
+      phase: 'closed',
+      outcome: {
+        kind: 'rejected',
+        reason: 'device_not_supported',
+        requirements: { usesKeyboard: true, usesPointerHover: false, usesPointerPress: true },
+      },
+    });
+
+    const e = setup();
+    e.join.start();
+    e.last().message({
+      type: 'rejected',
+      reason: 'session_ended',
+      status: 'CANCELLED',
+      end_cause: 'HOST_CANCELLED',
+    });
+    expect(e.view()).toEqual({
+      phase: 'closed',
+      outcome: {
+        kind: 'ended',
+        status: 'CANCELLED',
+        endCause: 'HOST_CANCELLED',
+        beforeStart: false,
+      },
+    });
+
     const c = setup();
     c.join.start();
     c.last().message({ type: 'rejected', reason: 'join_code_expired' });

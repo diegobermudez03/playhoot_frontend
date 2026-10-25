@@ -7,12 +7,18 @@ export const realtimeSubprotocol = 'playhoot.v1';
 // this prefix followed by the unpadded base64url of the token. The server never echoes it.
 export const tokenSubprotocolPrefix = 'base64url.bearer.authorization.playhoot.';
 
-export function joinByCodePath(joinCode: string): string {
-  return `/v1/play/join/${encodeURIComponent(joinCode)}`;
+// What kind of device a player joins from (backend SESSION ADR on device requirements): a desktop
+// has a keyboard and a mouse; a mobile device only touch. The backend checks it against the game
+// version's requirements on every player connection.
+export const playerDevices = ['desktop', 'mobile'] as const;
+export type PlayerDevice = (typeof playerDevices)[number];
+
+export function joinByCodePath(joinCode: string, device: PlayerDevice): string {
+  return `/v1/play/join/${encodeURIComponent(joinCode)}?device=${device}`;
 }
 
-export function playerBySessionPath(sessionUUID: string): string {
-  return `/v1/play/join/sessions/${encodeURIComponent(sessionUUID)}/player`;
+export function playerBySessionPath(sessionUUID: string, device: PlayerDevice): string {
+  return `/v1/play/join/sessions/${encodeURIComponent(sessionUUID)}/player?device=${device}`;
 }
 
 // Join codes: 6 characters from this alphabet, matched case-insensitively by the backend.

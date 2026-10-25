@@ -2,7 +2,7 @@
 
 Device capabilities and display abstraction.
 
-Status: FOUNDATION: `DeviceCapabilities`, `classifyDisplay`, capabilities store. Platform detection lives in each app. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: FOUNDATION: `DeviceCapabilities`, `classifyDisplay`, `classifyDevice` (desktop or mobile, sent to the backend on every join, 2026-10-25), capabilities store. Platform detection lives in each app. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

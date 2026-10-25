@@ -9,6 +9,23 @@ export interface DeviceCapabilities {
   viewport: { width: number; height: number };
   orientation: Orientation;
   displayClass: DisplayClass;
+  // What kind of device this is, as the backend checks games against it: a desktop has a keyboard
+  // and a mouse, a mobile device only touch. A tablet is whichever the platform says it is.
+  deviceClass: DeviceClass;
+}
+
+export type DeviceClass = 'desktop' | 'mobile';
+
+// Mobile when the platform says so, or when the primary pointer is a finger that cannot hover;
+// a laptop with a touch screen keeps a fine, hovering primary pointer and stays a desktop.
+export function classifyDevice(input: {
+  platformSaysMobile: boolean | undefined;
+  primaryPointerCoarse: boolean;
+  primaryPointerHovers: boolean;
+}): DeviceClass {
+  if (input.platformSaysMobile !== undefined)
+    return input.platformSaysMobile ? 'mobile' : 'desktop';
+  return input.primaryPointerCoarse && !input.primaryPointerHovers ? 'mobile' : 'desktop';
 }
 
 export type Orientation = 'portrait' | 'landscape';

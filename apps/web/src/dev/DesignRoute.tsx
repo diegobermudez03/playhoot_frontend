@@ -287,6 +287,35 @@ const screens: [string, JoinView, string | null][] = [
   ['Unreachable', { phase: 'closed', outcome: { kind: 'unreachable' } }, null],
   ['Game error', { phase: 'closed', outcome: { kind: 'game-error' } }, null],
   [
+    'Session not found',
+    { phase: 'closed', outcome: { kind: 'rejected', reason: 'invalid_session' } },
+    null,
+  ],
+  [
+    'Needs a keyboard',
+    {
+      phase: 'closed',
+      outcome: {
+        kind: 'rejected',
+        reason: 'device_not_supported',
+        requirements: { usesKeyboard: true, usesPointerHover: false, usesPointerPress: false },
+      },
+    },
+    null,
+  ],
+  [
+    'Needs a mouse',
+    {
+      phase: 'closed',
+      outcome: {
+        kind: 'rejected',
+        reason: 'device_not_supported',
+        requirements: { usesKeyboard: false, usesPointerHover: true, usesPointerPress: true },
+      },
+    },
+    null,
+  ],
+  [
     'Code not found',
     { phase: 'closed', outcome: { kind: 'rejected', reason: 'invalid_join_code' } },
     null,

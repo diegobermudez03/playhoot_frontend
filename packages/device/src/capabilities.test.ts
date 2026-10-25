@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { classifyDisplay } from './capabilities';
+import { classifyDevice, classifyDisplay } from './capabilities';
 
 describe('classifyDisplay', () => {
   it.each([
@@ -11,5 +11,34 @@ describe('classifyDisplay', () => {
     [{ width: 600, height: 600 }, 'landscape', 'medium'],
   ])('%o is %s / %s', (viewport, orientation, displayClass) => {
     expect(classifyDisplay(viewport)).toEqual({ orientation, displayClass });
+  });
+});
+
+describe('classifyDevice', () => {
+  it.each([
+    // The platform's own answer wins.
+    [
+      { platformSaysMobile: true, primaryPointerCoarse: false, primaryPointerHovers: true },
+      'mobile',
+    ],
+    [
+      { platformSaysMobile: false, primaryPointerCoarse: true, primaryPointerHovers: false },
+      'desktop',
+    ],
+    // Otherwise a finger that cannot hover is mobile; a laptop with a touch screen is not.
+    [
+      { platformSaysMobile: undefined, primaryPointerCoarse: true, primaryPointerHovers: false },
+      'mobile',
+    ],
+    [
+      { platformSaysMobile: undefined, primaryPointerCoarse: false, primaryPointerHovers: true },
+      'desktop',
+    ],
+    [
+      { platformSaysMobile: undefined, primaryPointerCoarse: true, primaryPointerHovers: true },
+      'desktop',
+    ],
+  ] as const)('%o is %s', (input, expected) => {
+    expect(classifyDevice(input)).toBe(expected);
   });
 });

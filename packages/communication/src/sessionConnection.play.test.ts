@@ -62,6 +62,7 @@ function setup() {
   let tokens = 0;
   const result = createSessionConnector({
     realtimeBaseUrl: 'ws://host',
+    device: () => 'mobile',
     credentials: { currentToken: () => 't' },
     WebSocket: FakeSocket as unknown as typeof WebSocket,
     timers: clock.timers,

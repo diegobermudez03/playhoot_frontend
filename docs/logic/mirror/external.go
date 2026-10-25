@@ -109,8 +109,10 @@ func FetchGameAsset(signedURL string) ([]byte, *HttpFailure) {
 
 // OpenPlayerConnection opens the realtime connection. Opening it IS joining.
 //
-//	by code:    GET ws(s)://<origin>/v1/play/join/{joinCode}
-//	by Session: GET ws(s)://<origin>/v1/play/join/sessions/{sessionUUID}/player
+//	by code:    GET ws(s)://<origin>/v1/play/join/{joinCode}?device=<desktop|mobile>
+//	by Session: GET ws(s)://<origin>/v1/play/join/sessions/{sessionUUID}/player?device=<desktop|mobile>
+//	device: the device's class at that moment (DeviceCapabilities.deviceClass), on every connection;
+//	        a game the device cannot play -> "rejected" device_not_supported with the game's requirements
 //	subprotocols: "playhoot.v1", "base64url.bearer.authorization.playhoot.<base64url(token)>"
 //
 // Returns NoCredential without opening anything when there is no token.

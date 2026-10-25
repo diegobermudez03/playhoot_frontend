@@ -17,6 +17,11 @@ export const rejectReasons = [
   // code names no Session, or one that ended; or its lobby still runs but the code expired.
   'invalid_join_code',
   'join_code_expired',
+  // The game version cannot be played on the device the player joined from (`requirements`).
+  'device_not_supported',
+  // Joining by Session UUID: no such Session, or one that already ended (`status`, `end_cause`).
+  'invalid_session',
+  'session_ended',
 ] as const;
 export type RejectReason = (typeof rejectReasons)[number];
 
@@ -27,6 +32,19 @@ const rejectedSchema = z.object({
   type: z.literal('rejected'),
   // Unknown future reasons still decode; the client treats them as generic.
   reason: z.string(),
+  // With `device_not_supported`: what the game uses. Fields may be added or missing.
+  requirements: z
+    .object({
+      devices: z.string(),
+      uses_keyboard: z.boolean(),
+      uses_pointer_hover: z.boolean(),
+      uses_pointer_press: z.boolean(),
+    })
+    .partial()
+    .optional(),
+  // With `session_ended`: how it ended, as in `session_ended` / `lobby_closed`.
+  status: z.string().optional(),
+  end_cause: z.string().optional(),
 });
 
 // Display names come from the backend's Identity; empty when it has none for someone.

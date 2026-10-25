@@ -7,6 +7,7 @@ import {
   normalCloseReasons,
   playerBySessionPath,
   playerServerMessageSchema,
+  type PlayerDevice,
   realtimeLimits,
   realtimeSubprotocol,
   tokenSubprotocolPrefix,
@@ -111,6 +112,8 @@ export interface SessionConnectorOptions {
   // Base URL of the backend for WebSockets, e.g. `ws://localhost:5173` (`ws(s)://` + host).
   realtimeBaseUrl: string;
   credentials: CredentialProvider;
+  // The kind of device joining, read for every connection (it can change between connections).
+  device: () => PlayerDevice;
   WebSocket?: typeof WebSocket;
   timers?: Timers;
   newCommandToken?: () => string;
@@ -137,8 +140,8 @@ export function createSessionConnector(options: SessionConnectorOptions): Sessio
       if (!token) return err({ kind: 'no-credential' });
       const path =
         target.kind === 'joinCode'
-          ? joinByCodePath(target.joinCode)
-          : playerBySessionPath(target.sessionUUID);
+          ? joinByCodePath(target.joinCode, options.device())
+          : playerBySessionPath(target.sessionUUID, options.device());
       const socket = new Socket(options.realtimeBaseUrl + path, [
         realtimeSubprotocol,
         tokenSubprotocolPrefix + base64UrlUnpadded(token),

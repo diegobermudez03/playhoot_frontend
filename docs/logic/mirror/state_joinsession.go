@@ -56,7 +56,7 @@ type IdentityError struct {
 
 type JoinOutcome struct {
 	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "game-stopped" | "game-error" | "replaced" | "connection-lost" | "protocol-error"
-	Reason      string // rejected: invalid_join_code, join_code_expired, lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
+	Reason      string // rejected: invalid_join_code, join_code_expired, device_not_supported (+ Requirements), invalid_session, lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
 	Status      string // ended: FINISHED | CANCELLED | EXPIRED | ABORTED
 	EndCause    string // ended: HOST_CANCELLED, LOBBY_EXPIRED, GAME_FINISHED...
 	BeforeStart bool   // ended: the lobby closed before the game started
@@ -192,6 +192,8 @@ func (j *JoinSession) OnRosterUpdate(m RosterUpdate) {
 
 // OnRejected: "rejected" — the backend refused the player; the connection closes right after.
 func (j *JoinSession) OnRejected(m Rejected) {
+	// rule: "session_ended" (joining by Session UUID a Session that already ended) is shown as the
+	// end it was: Outcome{Kind: "ended", Status, EndCause, BeforeStart: Status == "EXPIRED"}.
 	j.State.View = JoinView{Phase: "closed", Outcome: &JoinOutcome{Kind: "rejected", Reason: m.Reason}} // -> OutcomeScreen
 }
 

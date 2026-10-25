@@ -49,6 +49,13 @@ export interface StartedSession {
   };
 }
 
+// What a game uses, when the backend refused the device (`device_not_supported`).
+export interface DeviceRequirements {
+  usesKeyboard: boolean;
+  usesPointerHover: boolean;
+  usesPointerPress: boolean;
+}
+
 export interface GameAsset {
   key: string;
   type: string;
@@ -66,7 +73,7 @@ export type IdentityError =
 
 // Why the join is over. Each outcome maps to a message and a next action in presentation.
 export type JoinOutcome =
-  | { kind: 'rejected'; reason: RejectReason | 'unknown' }
+  | { kind: 'rejected'; reason: RejectReason | 'unknown'; requirements?: DeviceRequirements }
   // The first handshake failed before the connection opened: the network, authorization, rate
   // limits or a busy server. Browsers do not tell these apart. A refused join code is `rejected`.
   | { kind: 'unreachable' }
@@ -292,9 +299,33 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
         });
         return;
       case 'rejected':
+        // A Session that already ended is shown like one that ends while connected.
+        if (message.reason === 'session_ended') {
+          const status = message.status ?? 'UNKNOWN';
+          setView({
+            phase: 'closed',
+            outcome: {
+              kind: 'ended',
+              status,
+              endCause: message.end_cause ?? 'UNKNOWN',
+              beforeStart: status === 'EXPIRED',
+            },
+          });
+          return;
+        }
         setView({
           phase: 'closed',
-          outcome: { kind: 'rejected', reason: asRejectReason(message.reason) },
+          outcome: {
+            kind: 'rejected',
+            reason: asRejectReason(message.reason),
+            ...(message.requirements && {
+              requirements: {
+                usesKeyboard: message.requirements.uses_keyboard === true,
+                usesPointerHover: message.requirements.uses_pointer_hover === true,
+                usesPointerPress: message.requirements.uses_pointer_press === true,
+              },
+            }),
+          },
         });
         return;
       case 'session_ended':

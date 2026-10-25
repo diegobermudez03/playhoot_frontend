@@ -72,6 +72,9 @@ export const ptBR: Messages = {
   'outcome.invalidCode.title': 'Não encontramos essa partida',
   'outcome.invalidCode.body':
     'O código pode estar errado, ou essa partida já terminou. Confirme com o anfitrião.',
+  'outcome.invalidSession.title': 'Não encontramos essa partida',
+  'outcome.invalidSession.body':
+    'O link pode estar incompleto, ou essa partida não existe mais. Peça um código novo ao anfitrião.',
   'outcome.codeExpired.title': 'Esta partida não aceita mais jogadores',
   'outcome.codeExpired.body': 'O código expirou. Peça um novo ao anfitrião.',
   'outcome.lobbyFull.title': 'A partida está cheia',
@@ -104,6 +107,13 @@ export const ptBR: Messages = {
   'outcome.gameError.title': 'Desculpe, algo está errado com este jogo',
   'outcome.gameError.body':
     'Ele enviou dados que não esperávamos, então tiramos você da partida. Não foi sua culpa nem sua conexão, e o Playhoot já foi avisado.',
+  'outcome.deviceNeedsKeyboard.title': 'Este jogo precisa de teclado',
+  'outcome.deviceNeedsKeyboard.body': 'Jogue em um computador para entrar nesta rodada.',
+  'outcome.deviceNeedsMouse.title': 'Este jogo precisa de um mouse',
+  'outcome.deviceNeedsMouse.body':
+    'Ele reage tanto a apontar quanto a clicar, e uma tela sensível ao toque não consegue diferenciar. Jogue em um computador.',
+  'outcome.deviceNotSupported.title': 'Este jogo não pode ser jogado neste dispositivo',
+  'outcome.deviceNotSupported.body': 'Tente entrar de outro dispositivo.',
   'outcome.action.retry': 'Tentar de novo',
   'outcome.action.playHere': 'Jogar aqui',
   'outcome.action.enterCode': 'Digitar um código',

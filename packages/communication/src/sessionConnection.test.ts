@@ -33,6 +33,7 @@ class FakeSocket {
 function connect(token: string | null = 'test-user-2') {
   const connector = createSessionConnector({
     realtimeBaseUrl: 'ws://host',
+    device: () => 'mobile',
     credentials: { currentToken: () => token },
     WebSocket: FakeSocket as unknown as typeof WebSocket,
   });
@@ -42,7 +43,7 @@ function connect(token: string | null = 'test-user-2') {
 describe('createSessionConnector', () => {
   it('opens the join path with the realtime and token subprotocols', () => {
     expect(connect().ok).toBe(true);
-    expect(FakeSocket.last.url).toBe('ws://host/v1/play/join/ABC234');
+    expect(FakeSocket.last.url).toBe('ws://host/v1/play/join/ABC234?device=mobile');
     // base64url("test-user-2") without padding
     expect(FakeSocket.last.protocols).toEqual([
       'playhoot.v1',

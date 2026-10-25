@@ -30,7 +30,9 @@ export function outcomeCopy(outcome: JoinOutcome): OutcomeCopy {
     case 'protocol-error':
       return unexpected;
     case 'rejected':
-      return rejectedCopy(outcome.reason);
+      return outcome.reason === 'device_not_supported'
+        ? deviceCopy(outcome.requirements)
+        : rejectedCopy(outcome.reason);
     case 'ended':
       return endedCopy(outcome.status, outcome.endCause, outcome.beforeStart);
     case 'replaced':
@@ -51,6 +53,7 @@ type OutcomeKey =
   | 'lobbyFull'
   | 'sessionStarted'
   | 'invalidCode'
+  | 'invalidSession'
   | 'codeExpired'
   | 'cannotRejoin'
   | 'lobbyExpired'
@@ -62,13 +65,17 @@ type OutcomeKey =
   | 'connectionLost'
   | 'left'
   | 'gameStopped'
-  | 'gameError';
+  | 'gameError'
+  | 'deviceNeedsKeyboard'
+  | 'deviceNeedsMouse'
+  | 'deviceNotSupported';
 
 const tones: Record<OutcomeKey, OutcomeTone> = {
   unexpected: 'problem',
   lobbyFull: 'problem',
   sessionStarted: 'problem',
   invalidCode: 'problem',
+  invalidSession: 'problem',
   codeExpired: 'problem',
   cannotRejoin: 'farewell',
   lobbyExpired: 'farewell',
@@ -81,6 +88,9 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   left: 'farewell',
   gameStopped: 'problem',
   gameError: 'problem',
+  deviceNeedsKeyboard: 'farewell',
+  deviceNeedsMouse: 'farewell',
+  deviceNotSupported: 'farewell',
 };
 
 function copy(key: OutcomeKey, mood: OwlMood, actions: OutcomeAction[]): OutcomeCopy {
@@ -97,6 +107,17 @@ function copy(key: OutcomeKey, mood: OwlMood, actions: OutcomeAction[]): Outcome
 // (network, auth, limits), a protocol error, and the rejections a player is not expected to meet.
 const unexpected = copy('unexpected', 'surprised', ['retry', 'enter-code']);
 
+// The device cannot play this game: say what it needs when the backend told us.
+function deviceCopy(
+  requirements: Extract<JoinOutcome, { kind: 'rejected' }>['requirements'],
+): OutcomeCopy {
+  if (requirements?.usesKeyboard) return copy('deviceNeedsKeyboard', 'sleepy', ['enter-code']);
+  if (requirements?.usesPointerHover && requirements.usesPointerPress) {
+    return copy('deviceNeedsMouse', 'sleepy', ['enter-code']);
+  }
+  return copy('deviceNotSupported', 'sleepy', ['enter-code']);
+}
+
 function rejectedCopy(reason: Extract<JoinOutcome, { kind: 'rejected' }>['reason']): OutcomeCopy {
   switch (reason) {
     case 'lobby_full':
@@ -105,6 +126,11 @@ function rejectedCopy(reason: Extract<JoinOutcome, { kind: 'rejected' }>['reason
       return copy('sessionStarted', 'surprised', ['enter-code']);
     case 'invalid_join_code':
       return copy('invalidCode', 'surprised', ['enter-code']);
+    case 'invalid_session':
+      return copy('invalidSession', 'surprised', ['enter-code']);
+    // A lobby past its expiry that the backend has not closed yet (decided by the human).
+    case 'session_unavailable':
+      return copy('lobbyExpired', 'sleepy', ['enter-code']);
     case 'join_code_expired':
       return copy('codeExpired', 'sleepy', ['enter-code']);
     case 'participant_disconnected':

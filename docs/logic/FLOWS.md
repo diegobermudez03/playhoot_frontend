@@ -24,8 +24,8 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | When | Call | With | Answer used for |
 | --- | --- | --- | --- |
 | Name submitted (no identity yet) | `POST /v1/guests` | `display_name`, `idempotency_key` | `user_uuid` + `token` → stored as the credential |
-| Joining, by code | WebSocket `/v1/play/join/{joinCode}` | token in subprotocol | Opening it IS joining; then server messages |
-| Joining / reconnecting, by Session | WebSocket `/v1/play/join/sessions/{sessionUUID}/player` | token in subprotocol | Same |
+| Joining, by code | WebSocket `/v1/play/join/{joinCode}?device=desktop\|mobile` | token in subprotocol | Opening it IS joining; then server messages |
+| Joining / reconnecting, by Session | WebSocket `/v1/play/join/sessions/{sessionUUID}/player?device=desktop\|mobile` | token in subprotocol | Same |
 | The game screen opens (only when the artifact is not cached yet) | `GET` the signed artifact URL from `session_started` (storage, not the backend API) | no credentials | The game's HTML, accepted only if its SHA-256 matches; cached by hash so later loads skip the network |
 | The game loads a declared asset (only when not cached yet) | `GET` the asset's signed URL from `session_started.frontend.assets` (storage) | no credentials | The bytes, accepted only if size and SHA-256 match; cached by hash |
 | Leaving | `{"type":"leave"}` on the WebSocket | — | Server answers `leave_result` and closes as `left` |
@@ -140,7 +140,11 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 | Cause | Feature state | Next actions offered |
 | --- | --- | --- |
 | First handshake failed (network, auth, limits, busy server — the browser cannot tell which) | `closed(unreachable)`, shown as the unexpected error | Try again · Enter a code |
-| `rejected` — own message only for `invalid_join_code`, `join_code_expired`, `lobby_full`, `session_started` and `participant_disconnected` / `rejoin_rejected`; every other reason (and an unknown one) shows the unexpected error (decided by the human, 2026-10-21): (`invalid_join_code`, `join_code_expired`, `lobby_full`, `session_started`, `session_unavailable`, `participant_disconnected`, `rejoin_rejected`, `server_busy`…) | `closed(rejected, reason)` | Depends on the reason |
+| `rejected` `session_ended` (opening `/sessions/{uuid}/play` of a Session that already ended, e.g. a refresh after the end or an old link) | `closed(ended, status, cause)`, the same messages as an end while connected | Enter a code |
+| `rejected` `invalid_session` (no such Session: a wrong or incomplete link) | `closed(rejected, invalid_session)`: "No encontramos esa partida" | Enter a code |
+| `rejected` `session_unavailable` (a lobby past its expiry the backend has not closed yet, at most 5 min) | `closed(rejected, session_unavailable)`: "La sala de espera se cerró" (decided by the human, 2026-10-25) | Enter a code |
+| `rejected` `device_not_supported` (the game cannot be played on this kind of device; the backend says what it uses) | `closed(rejected, device_not_supported, requirements)`: "Este juego necesita teclado" when it uses the keyboard, "Este juego necesita un mouse" when it uses pointing and clicking both, otherwise "no se puede jugar en este dispositivo" | Enter a code |
+| `rejected` — own message only for `invalid_join_code`, `join_code_expired`, `invalid_session`, `session_unavailable`, `device_not_supported`, `lobby_full`, `session_started` and `participant_disconnected` / `rejoin_rejected`; every other reason (and an unknown one) shows the unexpected error (decided by the human, 2026-10-21): (`invalid_join_code`, `join_code_expired`, `lobby_full`, `session_started`, `session_unavailable`, `participant_disconnected`, `rejoin_rejected`, `server_busy`…) | `closed(rejected, reason)` | Depends on the reason |
 | `lobby_closed` / `session_ended` | `closed(ended, status, cause)` | Enter a code |
 | Closed as `replaced` | `closed(replaced)` | Play here (reconnects, taking over) · Enter a code |
 | 3 reconnections failed | `closed(connection-lost)` | Try again · Enter a code |

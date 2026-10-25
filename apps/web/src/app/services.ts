@@ -65,6 +65,7 @@ export function createServices(): Services {
   const sessions = createSessionConnector({
     realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
     credentials: app.credentials,
+    device: () => device.getState().deviceClass,
   });
   const sound = createSoundPlayer({
     initiallyMuted: loadSoundMuted(),
