@@ -76,6 +76,9 @@ export const es: Messages = {
   'outcome.invalidSession.title': 'No encontramos esa partida',
   'outcome.invalidSession.body':
     'Puede que el enlace esté incompleto o que la partida ya no exista. Pídele un código nuevo a tu anfitrión.',
+  'outcome.limitReached.title': 'Llegaste al límite por ahora',
+  'outcome.limitReached.body':
+    'Hubo demasiados intentos o partidas abiertas a la vez. Espera un momento e inténtalo de nuevo.',
   'outcome.codeExpired.title': 'Esta partida ya no acepta más jugadores',
   'outcome.codeExpired.body': 'Su código venció. Pídele uno nuevo a tu anfitrión.',
   'outcome.lobbyFull.title': 'La partida está llena',

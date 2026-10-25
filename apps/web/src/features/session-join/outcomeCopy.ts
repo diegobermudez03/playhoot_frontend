@@ -54,6 +54,7 @@ type OutcomeKey =
   | 'sessionStarted'
   | 'invalidCode'
   | 'invalidSession'
+  | 'limitReached'
   | 'codeExpired'
   | 'cannotRejoin'
   | 'lobbyExpired'
@@ -76,6 +77,7 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   sessionStarted: 'problem',
   invalidCode: 'problem',
   invalidSession: 'problem',
+  limitReached: 'farewell',
   codeExpired: 'problem',
   cannotRejoin: 'farewell',
   lobbyExpired: 'farewell',
@@ -128,6 +130,11 @@ function rejectedCopy(reason: Extract<JoinOutcome, { kind: 'rejected' }>['reason
       return copy('invalidCode', 'surprised', ['enter-code']);
     case 'invalid_session':
       return copy('invalidSession', 'surprised', ['enter-code']);
+    // A limit was reached: never an unexpected error, the person waits (decided by the human).
+    case 'rate_limited':
+    case 'too_many_connections':
+    case 'server_busy':
+      return copy('limitReached', 'sleepy', ['retry', 'enter-code']);
     // A lobby past its expiry that the backend has not closed yet (decided by the human).
     case 'session_unavailable':
       return copy('lobbyExpired', 'sleepy', ['enter-code']);

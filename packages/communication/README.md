@@ -15,6 +15,8 @@ Encapsulates external operations behind semantic, typed clients (plan §4.3, §1
 - Which telemetry event an app event becomes, or an error's origin: the app classifies (`apps/web/src/telemetry`).
 - Where SAMPLE sequence and COMMAND idempotency mechanics live exactly (shared with `game-host`) is decided when the realtime client is designed.
 
+Credential renewal (ADR-0009): on `401 token_invalid` the HTTP client renews the credential once and retries; only an unrenewable credential reaches `onCredentialRejected`.
+
 ## Depends on
 
 - `@playhoot/protocol`

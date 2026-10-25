@@ -287,6 +287,11 @@ const screens: [string, JoinView, string | null][] = [
   ['Unreachable', { phase: 'closed', outcome: { kind: 'unreachable' } }, null],
   ['Game error', { phase: 'closed', outcome: { kind: 'game-error' } }, null],
   [
+    'Limit reached',
+    { phase: 'closed', outcome: { kind: 'rejected', reason: 'rate_limited' } },
+    null,
+  ],
+  [
     'Session not found',
     { phase: 'closed', outcome: { kind: 'rejected', reason: 'invalid_session' } },
     null,

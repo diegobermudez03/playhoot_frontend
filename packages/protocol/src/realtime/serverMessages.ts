@@ -19,6 +19,9 @@ export const rejectReasons = [
   'join_code_expired',
   // The game version cannot be played on the device the player joined from (`requirements`).
   'device_not_supported',
+  // A limit on joining: too many attempts (`retry_after_seconds`), too many open connections.
+  'rate_limited',
+  'too_many_connections',
   // Joining by Session UUID: no such Session, or one that already ended (`status`, `end_cause`).
   'invalid_session',
   'session_ended',
@@ -42,6 +45,8 @@ const rejectedSchema = z.object({
     })
     .partial()
     .optional(),
+  // With `rate_limited`: how long to wait before trying again.
+  retry_after_seconds: z.number().nonnegative().optional(),
   // With `session_ended`: how it ended, as in `session_ended` / `lobby_closed`.
   status: z.string().optional(),
   end_cause: z.string().optional(),

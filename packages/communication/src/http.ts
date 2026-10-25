@@ -42,7 +42,8 @@ export interface HttpClientOptions {
   // Prefix for every path. Empty means same origin (the dev proxy, or a same-origin deployment).
   baseUrl: string;
   credentials: CredentialProvider;
-  // Called when the backend rejects the credential we sent as invalid, so the app can forget it.
+  // Called when the backend rejects the credential we sent as invalid and it could not be renewed,
+  // so the app can forget it.
   onCredentialRejected?: () => void;
   fetch?: typeof fetch;
 }
@@ -50,57 +51,63 @@ export interface HttpClientOptions {
 export function createHttpClient(options: HttpClientOptions): HttpClient {
   const doFetch = options.fetch ?? globalThis.fetch.bind(globalThis);
 
-  return {
-    async request<T>(request: HttpRequest<T>): Promise<Result<T, HttpFailure>> {
-      const headers: Record<string, string> = { Accept: 'application/json' };
-      if (request.body !== undefined) headers['Content-Type'] = 'application/json';
+  const send = async <T>(
+    request: HttpRequest<T>,
+    afterRefresh: boolean,
+  ): Promise<Result<T, HttpFailure>> => {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (request.body !== undefined) headers['Content-Type'] = 'application/json';
 
-      const token = request.authenticated === false ? null : options.credentials.currentToken();
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+    const token = request.authenticated === false ? null : options.credentials.currentToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      let response: Response;
-      try {
-        response = await doFetch(options.baseUrl + request.path, {
-          method: request.method,
-          headers,
-          ...(request.keepalive && { keepalive: true }),
-          ...(request.body !== undefined && { body: JSON.stringify(request.body) }),
-        });
-      } catch (cause) {
-        return err({
-          kind: 'network',
-          message: cause instanceof Error ? cause.message : String(cause),
-        });
+    let response: Response;
+    try {
+      response = await doFetch(options.baseUrl + request.path, {
+        method: request.method,
+        headers,
+        ...(request.keepalive && { keepalive: true }),
+        ...(request.body !== undefined && { body: JSON.stringify(request.body) }),
+      });
+    } catch (cause) {
+      return err({
+        kind: 'network',
+        message: cause instanceof Error ? cause.message : String(cause),
+      });
+    }
+
+    const body = await readJson(response);
+
+    if (!response.ok) {
+      const parsed = errorBodySchema.safeParse(body);
+      const code = parsed.success ? parsed.data.code : undefined;
+      if (token && response.status === 401 && code === authErrorCodes.tokenInvalid) {
+        // A refused credential is renewed once and the request sent again; only a credential
+        // that cannot be renewed is forgotten.
+        if (!afterRefresh && (await options.credentials.refresh?.())) return send(request, true);
+        options.onCredentialRejected?.();
       }
+      return err({
+        kind: 'http',
+        status: response.status,
+        code,
+        message: parsed.success ? parsed.data.message : response.statusText,
+        retryAfterSeconds: retryAfterSeconds(response.headers.get('Retry-After')),
+      });
+    }
 
-      const body = await readJson(response);
-
-      if (!response.ok) {
-        const parsed = errorBodySchema.safeParse(body);
-        const code = parsed.success ? parsed.data.code : undefined;
-        if (token && response.status === 401 && code === authErrorCodes.tokenInvalid) {
-          options.onCredentialRejected?.();
-        }
-        return err({
-          kind: 'http',
-          status: response.status,
-          code,
-          message: parsed.success ? parsed.data.message : response.statusText,
-          retryAfterSeconds: retryAfterSeconds(response.headers.get('Retry-After')),
-        });
-      }
-
-      const decoded = request.response.safeParse(body);
-      if (!decoded.success) {
-        return err({
-          kind: 'decode',
-          status: response.status,
-          message: `unexpected response body for ${request.method} ${request.path}`,
-        });
-      }
-      return ok(decoded.data);
-    },
+    const decoded = request.response.safeParse(body);
+    if (!decoded.success) {
+      return err({
+        kind: 'decode',
+        status: response.status,
+        message: `unexpected response body for ${request.method} ${request.path}`,
+      });
+    }
+    return ok(decoded.data);
   };
+
+  return { request: (request) => send(request, false) };
 }
 
 async function readJson(response: Response): Promise<unknown> {

@@ -89,6 +89,53 @@ describe('createHttpClient', () => {
     expect(forbidden.onCredentialRejected).not.toHaveBeenCalled();
   });
 
+  it('renews a refused credential once and sends the request again with the new token', async () => {
+    let token = 'old';
+    const sent: (string | null)[] = [];
+    const onCredentialRejected = vi.fn();
+    const refresh = vi.fn(() => {
+      token = 'new';
+      return Promise.resolve(true);
+    });
+    const http = createHttpClient({
+      baseUrl: 'http://api',
+      credentials: { currentToken: () => token, refresh },
+      onCredentialRejected,
+      fetch: (_input, init) => {
+        const auth = new Headers(init?.headers).get('Authorization');
+        sent.push(auth);
+        return Promise.resolve(
+          auth === 'Bearer new'
+            ? json(200, { value: 1 })
+            : json(401, { code: 'token_invalid', message: 'expired' }),
+        );
+      },
+    });
+    const result = await http.request({ method: 'GET', path: '/x', response: anyObject });
+    expect(result).toEqual({ ok: true, value: { value: 1 } });
+    expect(sent).toEqual(['Bearer old', 'Bearer new']);
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(onCredentialRejected).not.toHaveBeenCalled();
+  });
+
+  it('forgets the credential when it cannot be renewed, or is refused again after renewing', async () => {
+    const refused = () => Promise.resolve(json(401, { code: 'token_invalid', message: 'no' }));
+    for (const renewed of [false, true]) {
+      const onCredentialRejected = vi.fn();
+      const refresh = vi.fn(() => Promise.resolve(renewed));
+      const http = createHttpClient({
+        baseUrl: 'http://api',
+        credentials: { currentToken: () => 'tok', refresh },
+        onCredentialRejected,
+        fetch: refused,
+      });
+      const result = await http.request({ method: 'GET', path: '/x', response: anyObject });
+      expect(result.ok).toBe(false);
+      expect(refresh).toHaveBeenCalledOnce();
+      expect(onCredentialRejected).toHaveBeenCalledOnce();
+    }
+  });
+
   it('separates network failures and contract violations', async () => {
     const offline = client(async () => {
       throw new TypeError('Failed to fetch');

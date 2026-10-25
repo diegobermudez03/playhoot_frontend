@@ -74,6 +74,9 @@ export const en = {
   'outcome.invalidSession.title': "We couldn't find that game",
   'outcome.invalidSession.body':
     'The link may be incomplete, or that game no longer exists. Ask your host for a new code.',
+  'outcome.limitReached.title': 'You reached the limit for now',
+  'outcome.limitReached.body':
+    'Too many attempts or open games at once. Wait a moment and try again.',
   'outcome.codeExpired.title': 'This game is no longer taking players',
   'outcome.codeExpired.body': 'Its code expired. Ask your host for a new one.',
   'outcome.lobbyFull.title': 'This game is full',

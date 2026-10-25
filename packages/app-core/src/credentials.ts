@@ -17,4 +17,17 @@ export interface CredentialStore {
 // How the communication layer obtains the token to attach. Callers never pass tokens themselves.
 export interface CredentialProvider {
   currentToken(): string | null;
+  // Tries to renew the credential after the backend refused it; true when a new token is ready.
+  // Concurrent calls share one renewal.
+  refresh?(): Promise<boolean>;
 }
+
+// Renews a credential with the backend (access token from a refresh token). Placeholder until
+// authentication exists: `noCredentialRefresh` never renews, so a refused credential is forgotten.
+export interface CredentialRefresher {
+  refresh(credential: Credential): Promise<Credential | null>;
+}
+
+export const noCredentialRefresh: CredentialRefresher = {
+  refresh: () => Promise.resolve(null),
+};

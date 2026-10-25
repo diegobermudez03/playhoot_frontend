@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createAppState } from './appState';
-import type { Credential, CredentialStore } from './credentials';
+import type { Credential, CredentialRefresher, CredentialStore } from './credentials';
 import { resolveLocale, type LocalePreferenceStore } from './locale';
 
 function memoryStore(
@@ -122,5 +122,62 @@ describe('resolveLocale', () => {
     [[], 'en'],
   ])('%j -> %s', (preferences, expected) => {
     expect(resolveLocale(preferences)).toBe(expected);
+  });
+});
+
+describe('credential refresh', () => {
+  it('never renews without an authentication backend', async () => {
+    const credentials = memoryStore(guest);
+    const state = createAppState({
+      credentials,
+      locale: { store: localeStore(), devicePreferences: () => [] },
+    });
+    state.bootstrap();
+    await expect(state.credentials.refresh?.()).resolves.toBe(false);
+    expect(state.credentials.currentToken()).toBe('t-guest');
+  });
+
+  it('shares one renewal between concurrent calls and keeps the new credential', async () => {
+    const credentials = memoryStore(guest);
+    let calls = 0;
+    const refresher: CredentialRefresher = {
+      refresh: (current) => {
+        calls += 1;
+        return Promise.resolve({ ...current, token: 't-renewed' });
+      },
+    };
+    const state = createAppState({
+      credentials,
+      refresher,
+      locale: { store: localeStore(), devicePreferences: () => [] },
+    });
+    state.bootstrap();
+    const results = await Promise.all([
+      state.credentials.refresh?.(),
+      state.credentials.refresh?.(),
+    ]);
+    expect(results).toEqual([true, true]);
+    expect(calls).toBe(1);
+    expect(state.credentials.currentToken()).toBe('t-renewed');
+    expect(credentials.value?.token).toBe('t-renewed');
+  });
+
+  it('drops a renewal that finishes after the person signed out', async () => {
+    const credentials = memoryStore(guest);
+    let finish: (credential: Credential) => void = () => undefined;
+    const refresher: CredentialRefresher = {
+      refresh: () => new Promise((resolve) => (finish = resolve)),
+    };
+    const state = createAppState({
+      credentials,
+      refresher,
+      locale: { store: localeStore(), devicePreferences: () => [] },
+    });
+    state.bootstrap();
+    const renewing = state.credentials.refresh?.();
+    state.signOut();
+    finish({ ...guest, token: 't-late' });
+    await expect(renewing).resolves.toBe(false);
+    expect(state.credentials.currentToken()).toBeNull();
   });
 });

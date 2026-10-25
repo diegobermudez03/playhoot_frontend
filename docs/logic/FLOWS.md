@@ -156,7 +156,7 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 
 ## 10. A stored credential stops working
 
-Any HTTP call that carried a token and gets `401 token_invalid` → `SignOut()`: credential removed from storage, `Auth = none`. The next join asks for a name again. (A refused WebSocket handshake is invisible to the browser, so it shows as "unreachable".)
+Any HTTP call that carried a token and gets `401 token_invalid` → the credential is renewed once (`credentials.refresh()`, one renewal shared by concurrent calls) and the call is sent again with the new token; only when it cannot be renewed (or is refused again) → `SignOut()`: credential removed from storage, `Auth = none`, and the next join asks for a name again. The person never sees an authorization error (decided by the human, 2026-10-25). Until authentication exists the renewal is a placeholder that never renews, so today a refused credential is forgotten as before. (A refused WebSocket handshake is invisible to the browser, so it shows as "unreachable".)
 
 ## 11. Playing: what the connection does
 

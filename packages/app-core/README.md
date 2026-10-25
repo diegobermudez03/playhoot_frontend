@@ -14,6 +14,8 @@ Truly global state only (plan §4.4, §13.1, §14): the authentication/identity 
 - Authorization: visibility is UX, never a security barrier (§14).
 - Transport details: credentials are handed to `communication` through a provider, not read by callers.
 
+Credential renewal (ADR-0009): `credentials.refresh()` renews a refused credential once for every concurrent caller through the `CredentialRefresher` port (placeholder `noCredentialRefresh` until authentication exists).
+
 ## Depends on
 
 - Nothing.

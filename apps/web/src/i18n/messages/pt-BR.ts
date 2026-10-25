@@ -75,6 +75,9 @@ export const ptBR: Messages = {
   'outcome.invalidSession.title': 'Não encontramos essa partida',
   'outcome.invalidSession.body':
     'O link pode estar incompleto, ou essa partida não existe mais. Peça um código novo ao anfitrião.',
+  'outcome.limitReached.title': 'Você atingiu o limite por enquanto',
+  'outcome.limitReached.body':
+    'Houve tentativas ou partidas abertas demais ao mesmo tempo. Espere um momento e tente de novo.',
   'outcome.codeExpired.title': 'Esta partida não aceita mais jogadores',
   'outcome.codeExpired.body': 'O código expirou. Peça um novo ao anfitrião.',
   'outcome.lobbyFull.title': 'A partida está cheia',

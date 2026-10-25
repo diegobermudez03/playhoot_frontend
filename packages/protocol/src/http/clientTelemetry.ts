@@ -33,6 +33,7 @@ export const telemetryErrorKinds = {
     'invalid_join_code',
     'join_code_expired',
     'device_not_supported',
+    'too_many_connections',
     'invalid_session',
     'session_ended',
     'session_unavailable',

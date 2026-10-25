@@ -1,7 +1,13 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 import { authSnapshotOf, type AuthSnapshot } from './auth';
-import type { Credential, CredentialProvider, CredentialStore } from './credentials';
+import {
+  noCredentialRefresh,
+  type Credential,
+  type CredentialProvider,
+  type CredentialRefresher,
+  type CredentialStore,
+} from './credentials';
 import {
   fallbackLocale,
   isSupportedLocale,
@@ -17,6 +23,8 @@ export interface AppGlobalState {
 
 export interface AppStateOptions {
   credentials: CredentialStore;
+  // Renews a refused credential; defaults to never (no authentication backend yet).
+  refresher?: CredentialRefresher;
   locale: {
     store: LocalePreferenceStore;
     // The languages the device prefers, most preferred first (e.g. `navigator.languages`).
@@ -49,9 +57,28 @@ export function createAppState(options: AppStateOptions): AppState {
     store.setState({ auth: authSnapshotOf(next) });
   };
 
+  const refresher = options.refresher ?? noCredentialRefresh;
+  let refreshing: Promise<boolean> | null = null;
+  const refresh = (): Promise<boolean> => {
+    const current = credential;
+    if (!current) return Promise.resolve(false);
+    refreshing ??= refresher
+      .refresh(current)
+      .catch(() => null)
+      .then((next) => {
+        refreshing = null;
+        // Signed out or replaced meanwhile: the renewal no longer applies.
+        if (!next || credential !== current) return false;
+        options.credentials.save(next);
+        applyCredential(next);
+        return true;
+      });
+    return refreshing;
+  };
+
   return {
     store,
-    credentials: { currentToken: () => credential?.token ?? null },
+    credentials: { currentToken: () => credential?.token ?? null, refresh },
     bootstrap() {
       applyCredential(options.credentials.load());
       const saved = options.locale.store.load();

@@ -14,5 +14,6 @@ Frontend ADRs (`ADR-NNNN`, this repository's own sequence). Process: `docs/decis
 | ADR-0006 | [Game isolation hardening, bridge limits and game fault reports](ADR-0006-game-isolation-hardening-and-fault-reports.md) | ACCEPTED |
 | ADR-0007 | [Client telemetry sent to the backend, classified in one place](ADR-0007-client-telemetry-through-the-backend.md) | ACCEPTED |
 | ADR-0008 | [Game assets declared by the game, delivered by the Host](ADR-0008-game-assets-declared-delivered-by-the-host.md) | ACCEPTED |
+| ADR-0009 | [Credential renewal in the transport](ADR-0009-credential-renewal-in-the-transport.md) | ACCEPTED |
 
-Next ID: `ADR-0009`.
+Next ID: `ADR-0010`.
