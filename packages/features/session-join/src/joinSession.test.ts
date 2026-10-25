@@ -451,6 +451,20 @@ describe('createJoinSession', () => {
     expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'game-stopped' } });
   });
 
+  it('ends with a game error, not reconnected, when the game sent data it does not declare', () => {
+    const t = setup();
+    t.join.start();
+    t.last().emit({ type: 'open' });
+    t.last().emit({
+      type: 'closed',
+      kind: 'game-data-invalid',
+      code: 1007,
+      reason: 'invalid_game_data',
+    });
+    expect(t.view()).toEqual({ phase: 'closed', outcome: { kind: 'game-error' } });
+    expect(t.scheduled).toHaveLength(0);
+  });
+
   it('is replaced, not reconnected, when the same player connects elsewhere', () => {
     const t = setup();
     t.join.start();

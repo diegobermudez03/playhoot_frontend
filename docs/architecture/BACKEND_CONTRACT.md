@@ -3,7 +3,7 @@
 Status: REFERENCE SNAPSHOT — the backend code is the authority
 Backend ref inspected: `../playhoot` at `36d0c9d` (2026-10-19), plus `e4f0d85` (2026-10-20, `session_uuid` on lobby/start messages, G4), plus the aspect-ratio change (`552ce77`, `frontend.viewport`, G6), plus the uncommitted game fault reports (2026-10-20, `game_fault`, ADR-0006), plus the uncommitted join code refusal reasons and leave during a Start attempt (2026-10-21, Z10, Z8), plus the uncommitted game assets and batch-signed frontend access (2026-10-25, Z4, backend SESSION-ADR-0034)
 
-This document records the client-facing contract that the backend ACTUALLY implements, as the frontend needs it. It does not define the contract; the backend owns it (`../playhoot/api/README.md`, `../playhoot/play/CURRENT_STATE.md`, and the code). Paths below are relative to the backend repository.
+This document records the client-facing contract that the backend ACTUALLY implements, as the frontend needs it. Value lists in it (reasons, statuses, outcomes) are what exists today, never complete: the frontend handles others with a default (`docs/engineering/standards/backend-contract-values.md`). It does not define the contract; the backend owns it (`../playhoot/api/README.md`, `../playhoot/play/CURRENT_STATE.md`, and the code). Paths below are relative to the backend repository.
 
 Rules for this file:
 
@@ -81,7 +81,7 @@ Framing: text frames, JSON object with `type`. Max 32 KiB per message.
 | 1000 | Runtime end; reason `session_ended`, `disconnected`, `left` or `replaced` (`replaced` = do not reconnect) |
 | 1001 | Server shutting down |
 | 1003 | Binary frame |
-| 1007 | Invalid JSON / missing type / malformed sample, command or select |
+| 1007 | Invalid JSON / missing type / malformed sample, command or select (reason `malformed message`). Reason `invalid_game_data` (2026-10-25, uncommitted in the backend): the game's data does not match its declaration, an invalid SAMPLE or a COMMAND undeclared or with a payload not matching it; recorded in `play_game_faults` (SERVER, `INVALID_SAMPLE` / `INVALID_COMMAND`) before closing; nothing is sent before the close; only that connection ends |
 | 1008 | Unknown type for this endpoint, rate limited, or admission rejected |
 | 1009 | Message too big |
 | 1011 | Server failure (also: recovery failed — retry) |
@@ -96,8 +96,8 @@ Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` +
 
 | type | fields | notes |
 | --- | --- | --- |
-| `sample` | `sequence` int > 0, `inputs` object | Full snapshot of logical inputs; omitted inputs take defaults. Never answered; acknowledged in views. Stale sequence ignored. Undeclared input / invalid value -> close 1007. **Each new connection restarts sequences at 1.** Dropped before the game runs. |
-| `command` | `token` string 1..128, `name`, `payload?` object/null | Answered by `command_result`. |
+| `sample` | `sequence` int > 0, `inputs` object | Full snapshot of logical inputs; omitted inputs take defaults. Never answered; acknowledged in views. Stale sequence ignored. Undeclared input / invalid value -> recorded, then close 1007 `invalid_game_data`. **Each new connection restarts sequences at 1.** Dropped before the game runs. |
+| `command` | `token` string 1..128, `name`, `payload?` object/null | Answered by `command_result`. Undeclared name or payload not matching its declaration -> recorded, then close 1007 `invalid_game_data`, unanswered. |
 | `resync` | — | A FULL `player_view` follows. |
 | `leave` | — | `leave_result{outcome:"left"}` then close 1000 `left`. Lobby: leaves the lobby. Running: immediate disconnect (only rejoin brings the player back). |
 | `game_fault` | `kind` one of `artifact_unreachable`, `artifact_hash_mismatch`, `ready_timeout`, `unsupported_bridge_version`, `container_violation`, `bridge_abuse`; `detail` object <= 2 KiB | Never answered. Kept for auditing in `play_game_faults` only from a current participant of the running game (one record per Session, player and kind, counted); otherwise dropped. Unknown kind or bad detail -> close 1007 (`api/play/player_join.go`, 2026-10-20, ADR-0006). |
@@ -117,7 +117,7 @@ Upgrade first, then the Runtime admits or sends `{"type":"rejected","reason"}` +
 - `session_started` — player: `{session_uuid, participant_id, participants: [{participant_id, user_uuid, display_name}], frontend: {url, sha256, expires_at, viewport: {aspect_ratio, width, height}, assets: [{key, type, mime_type, sha256, size, url}]}}`; admin: same without `participant_id`. `assets` lists every asset of the version that has a stored object (`[]` when none); `url`, `expires_at` and the asset URLs come from one signed batch (`expires_at`, whole seconds, is shared; a URL works until it and stops within a second after). `viewport` is the game version's fixed shape: `aspect_ratio` from a closed backend catalog (`16:9`, `9:16`, `4:3`, `3:4`, `1:1`; a game picks one, it cannot declare its own) and its logical resolution (1080 on the short side: 1920x1080, 1080x1920, 1440x1080, 1080x1440, 1080x1080), the size the game draws in and receives input in (`play/session/internal/business/gameversion/aspect_ratio.go`, `api/play/live_connection.go`). Participants `P1..Pn` in lobby order. Re-sent on every reattach/rejoin, followed by a FULL view.
 - `player_view` (player) `{participant_id, full, revision, state, consumed_through_sample_sequence, errors?, events?}`.
 - `player_view` (admin) `{participant_id, full, revision, state, events?}` — no ack, no errors.
-- `command_result` `{token, outcome, response?}` — `executed` (response is the game's JSON, may be a game-rule rejection), `already_processed` (no response kept), `invalid`, `session_not_running`, `rate_limited` (token unused, may retry).
+- `command_result` `{token, outcome, response?}` — `executed` (response is the game's JSON, may be a game-rule rejection), `already_processed` (no response kept), `invalid` (no longer sent since 2026-10-25: invalid commands close the connection), `session_not_running`, `rate_limited` (token unused, may retry).
 - `leave_result`, `start_session_result`, `cancel_session_result`, `select_perspective_result` — `{type, outcome}`.
 - Terminal: `session_ended` / `lobby_closed` (the latter only if the client never saw `session_started`) `{status, end_cause}`, then close 1000 `session_ended`. An abort whose durable write failed closes without a terminal message.
 

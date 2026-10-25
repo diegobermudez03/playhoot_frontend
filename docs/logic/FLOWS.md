@@ -146,6 +146,7 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 | 3 reconnections failed | `closed(connection-lost)` | Try again · Enter a code |
 | A message breaks the protocol | `closed(protocol-error)`, shown as the unexpected error | Try again · Enter a code |
 | The game was stopped for misbehaving (abuse, leaving its container, wrong hash; flow 12) | `closed(game-stopped)`, after reporting it and leaving | Enter a code |
+| The game sent data it does not declare (an invalid SAMPLE or COMMAND): the backend records it against the game and closes 1007 `invalid_game_data` | `closed(game-error)`: "Lo sentimos, algo anda mal con este juego", not the player's fault; never reconnected | Enter a code |
 
 "Try again" / "Play here" = `Retry()` → `Start()` again (same URL). "Enter a code" navigates to `/join`.
 

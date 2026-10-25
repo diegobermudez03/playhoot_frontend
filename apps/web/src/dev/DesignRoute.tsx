@@ -285,6 +285,7 @@ const screens: [string, JoinView, string | null][] = [
     null,
   ],
   ['Unreachable', { phase: 'closed', outcome: { kind: 'unreachable' } }, null],
+  ['Game error', { phase: 'closed', outcome: { kind: 'game-error' } }, null],
   [
     'Code not found',
     { phase: 'closed', outcome: { kind: 'rejected', reason: 'invalid_join_code' } },

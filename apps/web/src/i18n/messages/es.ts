@@ -103,6 +103,9 @@ export const es: Messages = {
   'outcome.gameStopped.title': 'El juego tuvo un problema',
   'outcome.gameStopped.body':
     'Empezó a comportarse de forma extraña, así que lo detuvimos para proteger tu dispositivo y avisamos a Playhoot. Saliste de la partida.',
+  'outcome.gameError.title': 'Lo sentimos, algo anda mal con este juego',
+  'outcome.gameError.body':
+    'Envió datos que no esperábamos, así que te sacamos de la partida. No fue tu culpa ni tu conexión, y ya avisamos a Playhoot.',
   'outcome.action.retry': 'Intentar de nuevo',
   'outcome.action.playHere': 'Jugar aquí',
   'outcome.action.enterCode': 'Ingresar un código',

@@ -55,7 +55,7 @@ type IdentityError struct {
 }
 
 type JoinOutcome struct {
-	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "game-stopped" | "replaced" | "connection-lost" | "protocol-error"
+	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "game-stopped" | "game-error" | "replaced" | "connection-lost" | "protocol-error"
 	Reason      string // rejected: invalid_join_code, join_code_expired, lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
 	Status      string // ended: FINISHED | CANCELLED | EXPIRED | ABORTED
 	EndCause    string // ended: HOST_CANCELLED, LOBBY_EXPIRED, GAME_FINISHED...

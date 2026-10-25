@@ -133,6 +133,14 @@ describe('SessionConnection commands', () => {
     });
   });
 
+  it('takes an outcome the backend added as unknown, without a protocol error', async () => {
+    const t = setup();
+    const result = t.connection.command('teleport', { x: 1, y: 2 });
+    t.socket.receive({ type: 'command_result', token: 'tok-1', outcome: 'brand_new' });
+    await expect(result).resolves.toEqual({ token: 'tok-1', outcome: 'unknown' });
+    expect(t.events.some((event) => event.type === 'protocol-error')).toBe(false);
+  });
+
   it('retries rate_limited with the same token, then reports it', async () => {
     const t = setup();
     const result = t.connection.command('boost', null);

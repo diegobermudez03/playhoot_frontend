@@ -14,3 +14,4 @@ This index routes engineers and AI agents to accepted reusable engineering stand
 | Concern | Standard |
 | --- | --- |
 | User-facing text: languages, message catalogs, whole-sentence ICU messages, no hardcoded text | `user-facing-text.md` |
+| Values from the backend contract: never a closed list, known values handled and a general default for the rest, no protocol error for a new value | `backend-contract-values.md` |

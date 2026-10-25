@@ -98,6 +98,9 @@ export const en = {
   'outcome.gameStopped.title': 'The game had a problem',
   'outcome.gameStopped.body':
     'It started misbehaving, so we stopped it to protect your device and let Playhoot know. You left the game.',
+  'outcome.gameError.title': 'Sorry, something is wrong with this game',
+  'outcome.gameError.body':
+    'It sent data we did not expect, so we took you out of the game. It was not your fault or your connection, and Playhoot has been told.',
   'outcome.action.retry': 'Try again',
   'outcome.action.playHere': 'Play here',
   'outcome.action.enterCode': 'Enter a code',

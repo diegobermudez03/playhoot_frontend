@@ -151,6 +151,7 @@ type CloseKind string
 //	1000 "left"                   -> "left"
 //	1000 "replaced"               -> "replaced"      (same player connected elsewhere: do NOT reconnect)
 //	1000 other ("disconnected")   -> "disconnected"
+//	1007 "invalid_game_data"      -> "game-data-invalid" (the game sent undeclared data; recorded by the backend)
 //	1003, 1007, 1008, 1009        -> "protocol"      (the server judged our message invalid/over limits)
 //	anything else (1001,1006,1011,1012) -> "retryable"
 func classifyClose(opened bool, code int, reason string) CloseKind { return "" }

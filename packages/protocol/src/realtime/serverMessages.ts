@@ -121,7 +121,9 @@ export type CommandOutcome = (typeof commandOutcomes)[number];
 const commandResultSchema = z.object({
   type: z.literal('command_result'),
   token: z.string().min(1),
-  outcome: z.enum(commandOutcomes),
+  // Any text: the backend may add outcomes; the ones not in `commandOutcomes` are handled as
+  // unknown by the reader, never refused as a protocol error.
+  outcome: z.string().min(1),
   response: z.unknown().optional(),
 });
 

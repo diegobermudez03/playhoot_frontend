@@ -75,6 +75,9 @@ export type JoinOutcome =
   // The player left because their device stopped the game for misbehaving (ADR-0006); the backend
   // was told why.
   | { kind: 'game-stopped' }
+  // The game sent data it does not declare: the backend recorded it and ended this player's
+  // connection. Never reconnected (it would run the same game).
+  | { kind: 'game-error' }
   | { kind: 'replaced' }
   | { kind: 'connection-lost' }
   | { kind: 'protocol-error' };
@@ -360,6 +363,9 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
         return;
       case 'protocol':
         setView({ phase: 'closed', outcome: { kind: 'protocol-error' } });
+        return;
+      case 'game-data-invalid':
+        setView({ phase: 'closed', outcome: { kind: 'game-error' } });
         return;
       case 'unreachable':
       case 'retryable':

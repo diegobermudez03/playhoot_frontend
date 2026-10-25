@@ -1,6 +1,7 @@
 import type { CredentialProvider } from '@playhoot/app-core';
 import {
   closeCodes,
+  invalidGameDataReason,
   joinByCodePath,
   modeledPlayerServerMessageTypes,
   normalCloseReasons,
@@ -9,6 +10,7 @@ import {
   realtimeLimits,
   realtimeSubprotocol,
   tokenSubprotocolPrefix,
+  commandOutcomes,
   type CommandOutcome,
   type GameFaultKind,
   type PlayerClientMessage,
@@ -36,7 +38,10 @@ export type ConnectionCloseKind =
   // Transport trouble or a server restart/owner change: reconnecting may work.
   | 'retryable'
   // The server judged a message from this client invalid or over a limit.
-  | 'protocol';
+  | 'protocol'
+  // The game sent data it does not declare; the backend recorded it and ended this player's
+  // connection. Not the player's fault, and reconnecting would run the same game.
+  | 'game-data-invalid';
 
 export type SessionConnectionEvent =
   | { type: 'open' }
@@ -59,7 +64,8 @@ export interface CommandResult {
   token: string;
   // `connection-closed`: no answer arrived before the connection ended; the same token can be
   // retried on the next connection without running the command twice. `too-large`: never sent.
-  outcome: CommandOutcome | 'connection-closed' | 'too-large';
+  // `unknown`: an outcome this client does not know (the backend added one).
+  outcome: CommandOutcome | 'unknown' | 'connection-closed' | 'too-large';
   response?: unknown;
 }
 
@@ -197,7 +203,11 @@ function wrap(socket: WebSocket, timers: Timers, newToken: () => string): Sessio
     commands.clear();
   };
 
-  const onCommandResult = (token: string, outcome: CommandOutcome, response: unknown) => {
+  const onCommandResult = (
+    token: string,
+    outcome: CommandOutcome | 'unknown',
+    response: unknown,
+  ) => {
     const pending = commands.get(token);
     if (!pending) return;
     const delay = commandRetryDelaysMs[pending.attempt];
@@ -245,7 +255,7 @@ function wrap(socket: WebSocket, timers: Timers, newToken: () => string): Sessio
       return;
     }
     if (message.type === 'command_result') {
-      onCommandResult(message.token, message.outcome, message.response);
+      onCommandResult(message.token, asCommandOutcome(message.outcome), message.response);
       return;
     }
     // A new start means a new baseline: the next view is FULL.
@@ -364,8 +374,9 @@ export function classifyClose(opened: boolean, code: number, reason: string): Co
         default:
           return 'disconnected';
       }
-    case closeCodes.unsupportedData:
     case closeCodes.invalidPayload:
+      return reason === invalidGameDataReason ? 'game-data-invalid' : 'protocol';
+    case closeCodes.unsupportedData:
     case closeCodes.policyViolation:
     case closeCodes.messageTooBig:
       return 'protocol';
@@ -382,4 +393,10 @@ function base64UrlUnpadded(text: string): string {
   let binary = '';
   for (const byte of new TextEncoder().encode(text)) binary += String.fromCharCode(byte);
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function asCommandOutcome(outcome: string): CommandOutcome | 'unknown' {
+  return (commandOutcomes as readonly string[]).includes(outcome)
+    ? (outcome as CommandOutcome)
+    : 'unknown';
 }

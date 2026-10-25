@@ -41,6 +41,8 @@ export function outcomeCopy(outcome: JoinOutcome): OutcomeCopy {
       return copy('left', 'sleepy', ['enter-code']);
     case 'game-stopped':
       return copy('gameStopped', 'surprised', ['enter-code']);
+    case 'game-error':
+      return copy('gameError', 'surprised', ['enter-code']);
   }
 }
 
@@ -59,7 +61,8 @@ type OutcomeKey =
   | 'replaced'
   | 'connectionLost'
   | 'left'
-  | 'gameStopped';
+  | 'gameStopped'
+  | 'gameError';
 
 const tones: Record<OutcomeKey, OutcomeTone> = {
   unexpected: 'problem',
@@ -77,6 +80,7 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   connectionLost: 'problem',
   left: 'farewell',
   gameStopped: 'problem',
+  gameError: 'problem',
 };
 
 function copy(key: OutcomeKey, mood: OwlMood, actions: OutcomeAction[]): OutcomeCopy {

@@ -101,6 +101,9 @@ export const ptBR: Messages = {
   'outcome.gameStopped.title': 'O jogo teve um problema',
   'outcome.gameStopped.body':
     'Ele começou a se comportar de forma estranha, então o paramos para proteger seu aparelho e avisamos a Playhoot. Você saiu da partida.',
+  'outcome.gameError.title': 'Desculpe, algo está errado com este jogo',
+  'outcome.gameError.body':
+    'Ele enviou dados que não esperávamos, então tiramos você da partida. Não foi sua culpa nem sua conexão, e o Playhoot já foi avisado.',
   'outcome.action.retry': 'Tentar de novo',
   'outcome.action.playHere': 'Jogar aqui',
   'outcome.action.enterCode': 'Digitar um código',

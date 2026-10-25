@@ -145,6 +145,8 @@ describe('classifyClose', () => {
     [true, 1011, '', 'retryable'],
     [true, 1012, 'owner_changed', 'retryable'],
     [true, 1007, '', 'protocol'],
+    [true, 1007, 'malformed message', 'protocol'],
+    [true, 1007, 'invalid_game_data', 'game-data-invalid'],
     [true, 1008, 'rate limited', 'protocol'],
   ] as const)('opened=%s %i %s -> %s', (opened, code, reason, kind) => {
     expect(classifyClose(opened, code, reason)).toBe(kind);

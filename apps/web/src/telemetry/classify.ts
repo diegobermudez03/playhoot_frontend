@@ -66,10 +66,12 @@ const closeKinds: Record<ConnectionCloseKind, TelemetryCloseKind> = {
   disconnected: 'disconnected',
   retryable: 'retryable',
   protocol: 'protocol',
+  'game-data-invalid': 'other',
 };
 
 // Which outcomes of a join are errors, and of what origin. Ending, leaving and being replaced are
-// not; a game stopped for misbehaving was already counted as its GameHost failure.
+// not; a game stopped for misbehaving was already counted as its GameHost failure, and a game that
+// sent undeclared data was recorded against the game by the backend before closing.
 function outcomeError(outcome: JoinOutcome): TelemetryError | null {
   switch (outcome.kind) {
     case 'unreachable':
@@ -86,6 +88,7 @@ function outcomeError(outcome: JoinOutcome): TelemetryError | null {
     case 'ended':
     case 'left':
     case 'game-stopped':
+    case 'game-error':
     case 'replaced':
       return null;
   }

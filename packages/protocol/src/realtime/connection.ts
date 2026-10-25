@@ -33,6 +33,11 @@ export const closeCodes = {
 } as const;
 
 // Reasons of a 1000 close: why the Runtime ended this connection.
+// The reason of a 1007 close when the game's frontend sent data its game does not declare (an
+// invalid SAMPLE or COMMAND): the backend recorded it against the game and ended this player's
+// connection. Any other 1007 is a malformed message from the client itself.
+export const invalidGameDataReason = 'invalid_game_data';
+
 export const normalCloseReasons = {
   sessionEnded: 'session_ended',
   disconnected: 'disconnected',
