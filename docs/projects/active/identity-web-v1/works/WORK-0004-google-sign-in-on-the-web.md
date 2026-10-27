@@ -16,7 +16,7 @@ Sign-in with the real Google provider from the web: full-page navigation to Goog
 
 ## Context
 
-With the refresh token held by the client, the backend cannot finish the login by setting a cookie; WORK-0056 decides the completion (proposal: a one-time code exchanged with a client-generated verifier).
+With the refresh token held by the client, the backend cannot finish the login by setting a cookie; the human accepted on 2026-10-27 (backend WORK-0056) a one-time code in the return URL, exchanged with a verifier the client generated and kept in `sessionStorage` with the intended path.
 
 ## Scope
 

@@ -125,11 +125,22 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## L. Global bootstrap and visibility (§14, §18 step 10)
 
-- [-] OUT OF SCOPE (2026-10-21, decided by the human: postponed until the Session flow and play are finished; it moves to the general platform work (plan step 12), when features whose visibility depends on the identity exist; the human already has a direction in mind). Bootstrap/me capabilities consumed when the backend provides them; visibility centralized, never treated as authorization (backend: no endpoint exists yet)
+- [-] OUT OF SCOPE (2026-10-21, decided by the human: postponed until the Session flow and play are finished; it moves to the general platform work (plan step 12), when features whose visibility depends on the identity exist; the human already has a direction in mind). Bootstrap/me capabilities consumed when the backend provides them; visibility centralized, never treated as authorization (backend: no endpoint exists yet). 2026-10-27: the human's direction is now owned by `docs/projects/active/identity-web-v1/` WORK-0006 (operation catalog with minimum authentication levels, sign-in redirection and return to intent).
 
 ## N. Playhoot SDK built-in functions (the last step of this project, decided by the human 2026-10-25)
 
 - [ ] Built-in functions for the game's frontend and backend scripts that abstract every interaction with the player and the platform, so a generated script never touches the keyboard, the mouse or the finger directly: keyboard (letters, digits, arrows, space), pointer move (hover), press/drag (primary click; a finger press on touch, so mouse and finger are equivalent when a game uses only one of them), and later spatial behavior shared by frontend and backend (a navigable space with collisions known to both, prediction and consistency handled by the platform). Two kinds, both to be designed: compiled (the platform generates code from what the authoring AI wrote and injects it into the frontend and backend scripts stored in Cloud Storage) and injected framework code; the code the AI wrote must stay identifiable apart from the injected code, because a non-final game is edited by the AI, which sees only its own part. A static analysis of the script at publishing infers the device requirements (section F) from the built-ins it uses. Not built yet: when nothing else is left, this is the next step.
+
+## P. Admin (host) experience (pulled in by the human 2026-10-27, definitive, built together with `identity-web-v1` WORK-0006)
+
+The creator's side of a Session, no longer provisional. Its entry is WORK-0006's "Create Session" button (account required), which for now always creates a Session of one game UUID hardcoded in the frontend (placeholder). The backend already implements the admin connection and its operations (`BACKEND_CONTRACT.md` "Admin -> server"); route name to confirm when designed (proposal: `/sessions/:sessionUUID/host`).
+
+- [ ] Create a Session (`POST /v1/sessions`, hardcoded game for now) and open the admin connection right away; the screen shows the join code and link to share; reloading the route rebuilds it from the URL and reconnects as admin
+- [ ] Lobby as admin: players appear as they join (`lobby_update`); "Start game" enabled only when the player count is within the game's limits, with "N more players needed" otherwise (backend, Z13); `start_session` outcomes shown, `invalid_player_count` included since the backend stays the authority
+- [ ] Cancel the Session from the lobby or during the game (`cancel_session`), with confirmation
+- [ ] The creator can also join as a player while in the lobby (no new players once started): a player connection in parallel; the creator then keeps only Start and Cancel (admin connection) over the player screen, and is never offered perspective selection (`creator_is_playing`)
+- [ ] An admin who does not play switches between the connected players' perspectives (`select_perspective`, FULL then patches, `resync`), with the game loaded by the GameHost in a read-only mode that never sends SAMPLE or COMMAND (decision: how the Host and the bridge express read-only)
+- [ ] Session end, admin reconnection and every rejection (`not_creator`, `too_many_admins`, `session_ended`, ...) shown with the existing outcomes; `docs/logic/` updated
 
 ## O. NativeGameHost prototype (after N, decided by the human 2026-10-25)
 
@@ -160,6 +171,8 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 - [x] Z11. The backend learns about games the client stopped, and can audit them from its database (2026-10-20, decided by the human, ADR-0006): `game_fault` on the player's live connection, stored in `play_game_faults` (one record per Session, player and kind, counted), only from a current participant of the running game; never acted on automatically (backend Engineering Radar: verification and review of reported games). 2026-10-21, decided by the human: after a suspicious stop (abuse, container violation, hash mismatch) the player also leaves the Session (report and leave share one backend lane, so the report is kept first), and every backend limit hit within a Session is persisted best effort as a `SERVER_LIMIT` record; verified end to end (50 refused commands stored as one record split by limit, a report sent right before leaving stored). Verified by backend unit, API and Postgres integration tests and end to end on a fresh database (two kinds stored with reporter, participant, version and detail). Uncommitted in the backend
 
 - [x] Z12. The backend takes the client's telemetry (2026-10-21, decided by the human, ADR-0007): `POST /v1/client-telemetry` in `api/clienttelemetry`, any identity, closed catalog, invalid events dropped and counted. Verified by backend unit tests and end to end
+
+- [ ] Z13. (backend; decided by the human 2026-10-27, for section P) The admin's `lobby_update` carries the game version's `min_players` and `max_players`, so the host screen enables "Start game" and tells how many players are missing; the backend keeps refusing a wrong count with `invalid_player_count`.
 
 ## Placeholders Left Behind
 

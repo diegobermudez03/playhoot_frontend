@@ -26,6 +26,7 @@ Created 2026-10-25. The human accepted the plan except the refresh token locatio
 | Order | Work | Status |
 |------:|------|--------|
 | 0 | [WORK-0001](works/WORK-0001-client-credential-contract-and-decisions.md) — Client credential contract and decisions | PLANNED |
+| 0b | [WORK-0006](works/WORK-0006-authentication-levels-sign-in-routes-and-return-to-intent.md) — Authentication levels, sign-in routes and return to intent | PLANNED |
 | 1 | [WORK-0002](works/WORK-0002-real-guest-on-the-web.md) — Real guest on the web | PLANNED |
 | 2 | [WORK-0003](works/WORK-0003-account-sign-in-with-the-local-provider.md) — Account sign-in with the local provider | PLANNED |
 | 3 | [WORK-0004](works/WORK-0004-google-sign-in-on-the-web.md) — Google sign-in on the web | PLANNED |
@@ -38,6 +39,7 @@ Each frontend WORK pairs with a backend WORK of `identity-v1` (the backend owns 
 | Frontend | Needs in the backend |
 |---|---|
 | WORK-0001 | WORK-0056 (contracts and decisions) |
+| WORK-0006 | WORK-0062 (operation catalog); its guest and account completions also need WORK-0002 and WORK-0003 here |
 | WORK-0002 | WORK-0057, WORK-0058 (persisted core, guests, refresh, logout) |
 | WORK-0003 | WORK-0059 (accounts with the simulated provider) |
 | WORK-0004 | WORK-0060 (Google OIDC) |
@@ -51,8 +53,10 @@ The plan's acceptance criteria (§11) are the coverage list; each WORK names the
 
 ## Material Decisions Needing Human Input
 
-1. **Google login completion without a cookie** (agent proposal, decided in the backend's WORK-0056): the callback redirects to the web with a one-time code that the client exchanges, with a verifier it generated at start, for access and refresh.
-2. **Creating a Session in the local closure**: the plan's closure has a persisted account create a Session; creating Sessions from the UI is out of scope of `session-play-v1`. Decide in WORK-0003 whether a dev tool is enough or the account gets a minimal "create Session" screen.
+1. **Google login completion without a cookie**: ACCEPTED by the human on 2026-10-27 (recorded in the backend's WORK-0056): the callback redirects to the web with a one-time code that the client exchanges, with a verifier it generated at start, for access and refresh.
+2. **Admin after "Create Session"**: resolved by the human on 2026-10-27: the definitive host experience (create and share, lobby with Start enabled by player limits, cancel, play too, switch perspectives) is pulled into `session-play-v1` (its CHECKLIST P, backend Z13) and built together with WORK-0006, whose "Create Session" button (hardcoded game for now) is its entry.
+
+Added by the human on 2026-10-27 (WORK-0006, with the backend's WORK-0062): the catalog of operations with their minimum authentication level read at startup; operations shown above the person's level redirect to the most flexible authentication allowed and return to the intended path; the definitive `/sign-in` route; the guest page with the account option; the corner sign-in/profile button (guests show their name and "Sign in"). This takes over `session-play-v1` CHECKLIST L.
 
 ## Completion Criteria
 

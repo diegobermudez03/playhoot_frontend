@@ -13,3 +13,7 @@ Last updated: 2026-10-25
 - Identity before the SDK built-ins (CHECKLIST N) and the NativeGameHost prototype (CHECKLIST O) of session-play-v1.
 - Refresh token held by the client (`localStorage` on the web) and sent in the body, so web and mobile share one backend contract; the plan's other decisions accepted as a whole.
 - Tracking: one WORK per plan stage, designed just in time.
+
+## Human decisions (2026-10-27)
+
+- Scope added: WORK-0006. Global pattern: catalog of operations and minimum levels at startup; redirect to the most flexible authentication allowed and return to `next`; definitive `/sign-in`; guest page with the account option (join no longer asks the name inline); corner button (anonymous: sign in/up; guest: name + sign in, with the identity-switch warning; account: name + sign out); minimal "Create Session" requiring an account. Takes over session-play-v1 CHECKLIST L.
