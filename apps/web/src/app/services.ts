@@ -1,4 +1,4 @@
-import { createAppState, type AppState } from '@playhoot/app-core';
+import { createAppState, type AppState, type RefreshOutcome } from '@playhoot/app-core';
 import {
   createAdminConnector,
   createHttpClient,
@@ -20,13 +20,18 @@ import {
   type AssetLoader,
 } from '@playhoot/game-host';
 
+import { refreshInvalidCode } from '@playhoot/protocol';
+
 import { createSoundPlayer, type SoundPlayer } from '../sound';
 import { createAppTelemetry, type AppTelemetry } from '../telemetry/appTelemetry';
 import {
   createBrowserArtifactCache,
   createBrowserAssetCache,
 } from '../platform/browserArtifactCache';
-import { createBrowserCredentialStore } from '../platform/browserCredentialStore';
+import {
+  createBrowserCredentialStore,
+  credentialStorageKey,
+} from '../platform/browserCredentialStore';
 import { loadSoundMuted, saveSoundMuted } from '../platform/browserSoundPreference';
 import {
   browserLanguagePreferences,
@@ -60,8 +65,22 @@ export interface Services {
 }
 
 export function createServices(): Services {
+  // The identity client needs HTTP, HTTP needs the app's credentials, and the app renews them
+  // through the identity client: the app reaches it through this late-bound reference.
+  let identityClient: IdentityClient | null = null;
   const app = createAppState({
     credentials: createBrowserCredentialStore(),
+    refresher: {
+      async refresh(credential): Promise<RefreshOutcome> {
+        if (!credential.refreshToken || !identityClient) return { kind: 'invalid' };
+        const result = await identityClient.refresh(credential.refreshToken);
+        if (result.ok) return { kind: 'renewed', credential: result.value };
+        return result.error.kind === 'http' && result.error.code === refreshInvalidCode
+          ? { kind: 'invalid' }
+          : { kind: 'unavailable' };
+      },
+    },
+    revoke: (refreshToken) => identityClient?.logout(refreshToken) ?? Promise.resolve(),
     locale: { store: createBrowserLocaleStore(), devicePreferences: browserLanguagePreferences },
   });
   const device = createDeviceCapabilitiesStore(detectBrowserCapabilities());
@@ -70,6 +89,7 @@ export function createServices(): Services {
     credentials: app.credentials,
     onCredentialRejected: app.signOut,
   });
+  identityClient = createIdentityClient(http);
   const sessions = createSessionConnector({
     realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
     credentials: app.credentials,
@@ -100,7 +120,7 @@ export function createServices(): Services {
     gameArtifacts,
     gameAssets,
     http,
-    identity: createIdentityClient(http),
+    identity: identityClient,
     sessions,
     sessionsApi: createSessionsClient(http),
     sound,
@@ -127,16 +147,23 @@ export function startServices(services: Services): () => void {
   const stopLoadingOperations = loadOperations(services);
   const stopWatching = watchBrowserCapabilities(services.device);
   // The last chance to send queued telemetry: the tab is hidden (often for good on phones) or the
-  // page is going away.
+  // page is going away. Coming back, the access token is renewed if it expired while timers slept.
   const sendBeforeLeaving = () => {
     if (document.visibilityState === 'hidden') services.telemetry.flush(true);
+    else services.app.ensureFresh();
   };
+  // Another tab signed in, out, or rotated the refresh token.
+  const followOtherTabs = (event: StorageEvent) => {
+    if (event.key === credentialStorageKey || event.key === null) services.app.syncFromStore();
+  };
+  window.addEventListener('storage', followOtherTabs);
   document.addEventListener('visibilitychange', sendBeforeLeaving);
   window.addEventListener('pagehide', sendBeforeLeaving);
   return () => {
     stopLoadingOperations();
     stopWatching();
     document.removeEventListener('visibilitychange', sendBeforeLeaving);
+    window.removeEventListener('storage', followOtherTabs);
     window.removeEventListener('pagehide', sendBeforeLeaving);
   };
 }

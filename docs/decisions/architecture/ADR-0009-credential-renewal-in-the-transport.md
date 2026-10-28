@@ -3,6 +3,7 @@
 Status: ACCEPTED
 Created: 2026-10-25
 Last status change: 2026-10-25
+Amended: 2026-10-27 (implemented against the backend's real credentials; see the Amendment)
 Supersedes: None
 Superseded by: None
 
@@ -40,6 +41,10 @@ Rejected (IDENTITY-ADR-0002): on-demand renewal already extends an active sessio
 - One retry per refused request, never a loop.
 - Until authentication exists nothing changes in behavior: the placeholder never renews.
 - `noCredentialRefresh` is listed as a placeholder in `CURRENT_STATE.md` and the Project checklist.
+
+## Amendment (2026-10-27)
+
+Implemented with the backend's real credentials (backend IDENTITY-ADR-0003 as amended, `identity-web-v1` WORK-0001/0002): the refresh token is kept in browser storage (decided by the human 2026-10-25), never with the access token, which lives in memory; `POST /v1/identity/refresh` renews it, with the refresh token alone. Point 5 is settled that way. Beyond point 2: a stored credential is renewed on load before anything uses it (retried while the backend cannot be reached, never replaced by a new guest meanwhile); the access token is renewed a minute before it expires and when the tab is shown again close to expiry; only `refresh_invalid` forgets the credential, an unreachable backend keeps it; concurrent renewals are one; another tab's rotated refresh token is picked up from storage. `noCredentialRefresh` remains only as the default for an app without an authentication backend.
 
 ## Canonical Knowledge Impact
 

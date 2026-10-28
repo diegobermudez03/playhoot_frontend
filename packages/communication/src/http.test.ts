@@ -95,7 +95,7 @@ describe('createHttpClient', () => {
     const onCredentialRejected = vi.fn();
     const refresh = vi.fn(() => {
       token = 'new';
-      return Promise.resolve(true);
+      return Promise.resolve('renewed' as const);
     });
     const http = createHttpClient({
       baseUrl: 'http://api',
@@ -120,9 +120,9 @@ describe('createHttpClient', () => {
 
   it('forgets the credential when it cannot be renewed, or is refused again after renewing', async () => {
     const refused = () => Promise.resolve(json(401, { code: 'token_invalid', message: 'no' }));
-    for (const renewed of [false, true]) {
+    for (const renewal of ['invalid', 'renewed'] as const) {
       const onCredentialRejected = vi.fn();
-      const refresh = vi.fn(() => Promise.resolve(renewed));
+      const refresh = vi.fn(() => Promise.resolve(renewal));
       const http = createHttpClient({
         baseUrl: 'http://api',
         credentials: { currentToken: () => 'tok', refresh },
@@ -134,6 +134,20 @@ describe('createHttpClient', () => {
       expect(refresh).toHaveBeenCalledOnce();
       expect(onCredentialRejected).toHaveBeenCalledOnce();
     }
+  });
+
+  it('keeps the credential when it could not be renewed for now', async () => {
+    const onCredentialRejected = vi.fn();
+    const refresh = vi.fn(() => Promise.resolve('unavailable' as const));
+    const http = createHttpClient({
+      baseUrl: 'http://api',
+      credentials: { currentToken: () => 'tok', refresh },
+      onCredentialRejected,
+      fetch: () => Promise.resolve(json(401, { code: 'token_invalid', message: 'expired' })),
+    });
+    const result = await http.request({ method: 'GET', path: '/x', response: anyObject });
+    expect(result).toMatchObject({ ok: false, error: { status: 401 } });
+    expect(onCredentialRejected).not.toHaveBeenCalled();
   });
 
   it('separates network failures and contract violations', async () => {

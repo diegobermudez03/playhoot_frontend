@@ -29,30 +29,50 @@ func CreateSession(gameUUID, idempotencyKey string) (struct{ SessionUUID, JoinCo
 // code: packages/communication/src/adminConnection.ts
 func OpenAdminConnection(sessionUUID string) (Socket, *NoCredential) { return Socket{}, nil }
 
-// CreateGuest creates a guest identity for someone without an account.
+// CreateGuest creates a guest identity for someone without an account. A retry with the same key
+// (within 5 minutes) answers the same guest.
 //
 //	POST /v1/guests   (no Authorization header)
 //	body: {"display_name": displayName, "idempotency_key": idempotencyKey}
 //
 // code: packages/communication/src/identityClient.ts#createGuest
-func CreateGuest(displayName string, idempotencyKey string) (CreatedGuest, *HttpFailure) {
-	// 201 -> CreatedGuest
-	// 400 -> HttpFailure{Status: 400}            (name rejected)
+func CreateGuest(displayName string, idempotencyKey string) (Credential, *HttpFailure) {
+	// 201 -> Credentials body (see RefreshCredentials) -> Credential
+	// 400 -> HttpFailure{Status: 400, Code: "invalid_display_name" | ""}   (name rejected)
+	// 409 -> HttpFailure{Code: "idempotency_conflict" | "idempotency_key_spent"}
 	// 429 -> HttpFailure{Code: "rate_limited", RetryAfterSeconds}
 	// network down / anything else -> HttpFailure{Kind: "network" | "http"}
-	return CreatedGuest{}, nil
+	return Credential{}, nil
 }
 
-type CreatedGuest struct {
-	UserUUID string
-	Token    string // opaque; sent later as "Bearer <token>" or inside the WebSocket subprotocol
+// RefreshCredentials renews the access token with the refresh token alone.
+//
+//	POST /v1/identity/refresh   (no Authorization header)
+//	body: {"refresh_token": refreshToken}
+//
+// Credentials body (also of CreateGuest): {"user":{"user_uuid","display_name","level"},
+// "access_token","access_expires_at","access_expires_in","refresh_token"}; level "account" -> Kind
+// "account", anything else -> "guest"; ExpiresAt = now (this device) + access_expires_in. The refresh token returned may be a new one: always keep the one returned.
+// code: packages/communication/src/identityClient.ts#refresh
+func RefreshCredentials(refreshToken string) (Credential, *HttpFailure) {
+	// 200 -> Credential
+	// 401 -> HttpFailure{Code: "refresh_invalid"}   (the credential is over)
+	// 503 / network / anything else -> the credential may still be good
+	return Credential{}, nil
 }
+
+// Logout ends the refresh token's session on the backend. Answer ignored.
+// endpoint: POST /v1/identity/logout {"refresh_token"} -> 204
+// code: packages/communication/src/identityClient.ts#logout
+func Logout(refreshToken string) {}
 
 // Every HTTP call goes through one client that:
 //   - attaches "Authorization: Bearer <token>" from the global credential when the call needs it;
 //   - never throws: it returns a value or an HttpFailure;
 //   - when the backend answers 401 with code "token_invalid" to a call that carried a token,
-//     calls SignOut() in state_app.go (the stored credential is dead).
+//     renews it once with Refresh() in state_app.go and sends the call again; if the backend
+//     refused the renewal the credential is dead and SignOut() runs; if it could not be reached,
+//     the 401 is returned and the credential kept.
 //
 // code: packages/communication/src/http.ts#createHttpClient
 type HttpFailure struct {

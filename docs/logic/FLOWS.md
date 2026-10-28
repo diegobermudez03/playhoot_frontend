@@ -27,7 +27,9 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | Page load (flow 1), retried until it answers | `GET /v1/identity/operations` | no credential | Each operation's minimum level → where to send a person to authenticate (flow 15) |
 | "Crear una partida" (flow 16) | `POST /v1/sessions` | `game_uuid` (fixed for now), `idempotency_key` (one per visit) | `session_uuid` + `join_code` → the host screen's URL |
 | The host screen opens (flow 16) | WebSocket `/v1/play/join/sessions/{sessionUUID}/admin` | token in subprotocol | Lobby with player limits, start / cancel / perspective results, the watched player's views |
-| Name submitted on the guest page (flow 15) | `POST /v1/guests` | `display_name`, `idempotency_key` | `user_uuid` + `token` → stored as the credential |
+| Name submitted on the guest page (flow 15) | `POST /v1/guests` | `display_name`, `idempotency_key` | user (uuid, name, level) + access token + refresh token → the credential (stored without the access token) |
+| Page load with a stored credential (flow 1), a minute before the access token expires, the tab shown again near expiry, or a call refused with `token_invalid` (flow 10) | `POST /v1/identity/refresh` | `refresh_token` only | New access token, and the refresh token to keep (may be a new one); `401 refresh_invalid` → signed out |
+| Sign out from the corner menu | `POST /v1/identity/logout` | `refresh_token` | Nothing (`204`); never awaited |
 | Joining, by code | WebSocket `/v1/play/join/{joinCode}?device=desktop\|mobile` | token in subprotocol | Opening it IS joining; then server messages |
 | Joining / reconnecting, by Session | WebSocket `/v1/play/join/sessions/{sessionUUID}/player?device=desktop\|mobile` | token in subprotocol | Same |
 | The game screen opens (only when the artifact is not cached yet) | `GET` the signed artifact URL from `session_started` (storage, not the backend API) | no credentials | The game's HTML, accepted only if its SHA-256 matches; cached by hash so later loads skip the network |
@@ -46,13 +48,13 @@ sequenceDiagram
   participant B as Browser storage
   participant G as Global state
   participant R as Router
-  B->>G: read credential → Auth = none | guest | authenticated
+  B->>G: read credential → Auth = none, or unknown while POST /v1/identity/refresh renews it → guest | authenticated
   B->>G: read language → saved choice, else best device match, else English
   G->>R: resolve the URL → mount its screen
   G->>G: GET /v1/identity/operations → Operations (asked again after 1, 2, 4… s, at most 30, while unreachable)
 ```
 
-The stored credential is trusted locally until a backend call rejects it (flow 10). The only call is the operation catalog; a route that needs it (a game) shows an empty page until it arrives.
+Only the refresh token is stored: on every load it is renewed into an access token before anything uses it (`Auth` stays `unknown`, so routes that need an identity wait). If the backend refuses it (`refresh_invalid`) it is forgotten (`Auth = none`); if the backend cannot be reached it is kept and tried again after 1, 2, 4, 8, 16, 30… s, and no new guest is ever created meanwhile. Afterwards the access token is renewed a minute before it expires, and when the tab is shown again close to its expiry. Another tab signing in or out, or rotating the refresh token, is followed through the browser's `storage` event. A route that needs the operation catalog (a game) shows an empty page until it arrives.
 
 ## 2. Enter a code → a join link
 
@@ -153,7 +155,7 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 
 ## 10. A stored credential stops working
 
-Any HTTP call that carried a token and gets `401 token_invalid` → the credential is renewed once (`credentials.refresh()`, one renewal shared by concurrent calls) and the call is sent again with the new token; only when it cannot be renewed (or is refused again) → `SignOut()`: credential removed from storage, `Auth = none`, and a page that needs an identity (a game) sends the person to authenticate and back (flow 15). The person never sees an authorization error (decided by the human, 2026-10-25). Until authentication exists the renewal is a placeholder that never renews, so today a refused credential is forgotten as before. (A refused WebSocket handshake is invisible to the browser, so it shows as "unreachable".)
+Any HTTP call that carried a token and gets `401 token_invalid` → the credential is renewed once (`credentials.refresh()`, one renewal shared by concurrent calls) and the call is sent again with the new token; only when it cannot be renewed (or is refused again) → `SignOut()`: credential removed from storage, `Auth = none`, and a page that needs an identity (a game) sends the person to authenticate and back (flow 15). The person never sees an authorization error (decided by the human, 2026-10-25). The renewal is `POST /v1/identity/refresh`; if the backend cannot be reached the credential is kept and the call fails as unavailable. The development test accounts have no refresh token, so a refused one is forgotten. Before opening a live connection the access token is renewed if it expires within a minute. (A refused WebSocket handshake is invisible to the browser, so it shows as "unreachable".)
 
 ## 11. Playing: what the connection does
 

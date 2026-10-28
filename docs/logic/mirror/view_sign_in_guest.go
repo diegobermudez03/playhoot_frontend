@@ -54,12 +54,15 @@ func GuestSignInOnSubmitted(page *GuestSignInState) {
 	page.Submitting = false
 
 	if failure != nil {
+		// rule: 409 (the key is too old to be a retry) -> the key is dropped, the next try uses a new one.
 		// rule: 400 -> invalid-name/rejected · code rate_limited -> rate-limited (+ seconds) · else unavailable.
 		page.Error = &IdentityError{}
 		return
 	}
-	// rule: an answer that arrives after the person left the page still signs them in.
-	SignIn(Credential{Token: guest.Token, UserUUID: guest.UserUUID, Kind: "guest", DisplayName: name}) // state_app.go
+	// rule: an answer that arrives after the person left the page still signs them in, unless they
+	//       signed into an account meanwhile (a guest never replaces an account).
+	// rule: the name shown is the backend's form of it (trimmed, normalized).
+	SignIn(guest) // state_app.go
 }
 
 func orHome(next string) string {

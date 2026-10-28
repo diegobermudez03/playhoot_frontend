@@ -4,7 +4,7 @@ Current stage: WORK-0006 committed (3dbbf0f) and extended 2026-10-27 with Create
 Current execution surface: CODEBASE AGENT
 Related durable artifacts: docs/projects/active/identity-web-v1/PROJECT.md, docs/decisions/architecture/ADR-0009-credential-renewal-in-the-transport.md, backend Project ../playhoot/docs/projects/active/identity-v1/
 Blocked by: nothing
-Next action: re-review, close WORK-0006; then WORK-0001 when backend WORK-0057/0058 approach
+Next action: WORK-0003 (accounts with the backend's local provider; removes the dev picker). WORK-0001 + WORK-0002 DONE 2026-10-27 (real guests end to end, credential redesign by the human; cross-tab Web Locks coordinator dropped: no reuse detection, predecessor grace covers races)
 Last durable checkpoint: Project and WORK files created, cross-reference in session-play-v1 PROJECT.md (2026-10-25)
 Last updated: 2026-10-27
 

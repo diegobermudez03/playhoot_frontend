@@ -37,7 +37,7 @@ The dev server proxies `/v1` (REST and WebSocket) to `PLAYHOOT_BACKEND_URL` (def
 
 To try the GameHost and the Game SDK without a backend: `npm run fixtures` once (builds `fixtures/games/space-drift`), then open http://localhost:5173/dev/game-host. The dev server serves built fixtures at `/__fixtures/games/<game>/`.
 
-To play through a Session without a host UI: `node scripts/dev-host.mjs` creates one as `test-user-1`, prints the join link, and starts it when you press Enter. Every guest is the same user in the backend's placeholder Identity, so a second player on the same machine uses the dev "Test user 2" button in a private window.
+To play through a Session without a host UI: `node scripts/dev-host.mjs` creates one as `test-user-1`, prints the join link, and starts it when you press Enter. Each guest is its own user (a private window or another browser context gives another guest); the backend needs `IDENTITY_DEV_TEST_USERS=true` for the script's test account.
 
 ## Deployment
 

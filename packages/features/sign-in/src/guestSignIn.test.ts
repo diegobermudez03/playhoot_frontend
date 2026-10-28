@@ -23,6 +23,8 @@ function setup(createGuest: IdentityClient['createGuest']) {
   const identity: IdentityClient = {
     createGuest: vi.fn(createGuest),
     listOperations: vi.fn(),
+    refresh: vi.fn(),
+    logout: vi.fn(),
   };
   let keys = 0;
   const telemetry: SignInTelemetry[] = [];
@@ -35,7 +37,8 @@ function setup(createGuest: IdentityClient['createGuest']) {
   return { app, identity, signIn, telemetry, state: () => signIn.store.getState() };
 }
 
-const created = async () => ({ ok: true as const, value: { userUUID: 'u-1', token: 'g' } });
+const guestCredential = { token: 'g', refreshToken: 'r', userUUID: 'u-1', kind: 'guest' as const };
+const created = async () => ({ ok: true as const, value: guestCredential });
 
 describe('createGuestSignIn', () => {
   it('creates a guest with the trimmed name and signs in as them', async () => {
@@ -78,6 +81,25 @@ describe('createGuestSignIn', () => {
     expect(t.telemetry).toContainEqual({ type: 'identity-failed', error: { kind: 'unavailable' } });
   });
 
+  it('starts over with a new key once the backend no longer answers the old one', async () => {
+    const spent = {
+      kind: 'http' as const,
+      status: 409,
+      code: 'idempotency_key_spent',
+      message: '',
+    };
+    const t = setup(async () => ({ ok: false, error: { ...spent, retryAfterSeconds: undefined } }));
+
+    await t.signIn.submit('Ana');
+    await t.signIn.submit('Ana');
+
+    expect(vi.mocked(t.identity.createGuest).mock.calls.map((call) => call[1])).toEqual([
+      'key-1',
+      'key-2',
+    ]);
+    expect(t.state().error).toEqual({ kind: 'unavailable' });
+  });
+
   it('tells a name the backend refused and a rate limit apart', async () => {
     const refused = setup(async () => ({
       ok: false,
@@ -112,7 +134,7 @@ describe('createGuestSignIn', () => {
 
     const submitted = t.signIn.submit('Ana');
     t.app.signIn({ token: 'a', userUUID: 'acc', kind: 'account', displayName: 'Test user 1' });
-    answer({ ok: true, value: { userUUID: 'u-1', token: 'g' } });
+    answer({ ok: true, value: guestCredential });
 
     expect(await submitted).toBe(false);
     expect(t.app.store.getState().auth).toMatchObject({ status: 'authenticated', userUUID: 'acc' });

@@ -17,7 +17,7 @@ Rules for this file:
 | --- | --- | --- | --- |
 | G1 | RESOLVED 2026-10-25 (uncommitted in the backend): REST CORS from `CORS_ALLOWED_ORIGINS` and the WebSocket origin check from `WEBSOCKET_ALLOWED_ORIGINS`, same format (comma-separated origins or `*`; local `*`, production the platform's origin); preflight answered, `Retry-After` exposed, no credentials. Formerly: no CORS on REST routes | Browser calls from another origin fail preflight. Dev: handled by the same-origin Vite proxy (`apps/web/vite.config.ts`). | no CORS code in `api/` |
 | G2 | WS origin check | Dev origin must be in `WEBSOCKET_ALLOWED_ORIGINS` (e.g. `localhost:5173`) unless proxied keeping the Host header (what the Vite proxy does). | `api/internal/wsx/wsx.go:32-35`, `main.go:258` |
-| G3 | Identity is a placeholder | `POST /v1/guests` always returns the same guest (`test-guest`); only tokens `test-user-1`, `test-user-2` (accounts) and `test-guest` exist, named "Test user 1", "Test user 2" and "Guest" (2026-10-20: `lobby_update`, `session_started` and the new player message `roster_update` carry `display_name`; `roster_update` also carries each participant's `status`: active, reconnecting, disconnected, left). Display names typed at guest creation are still not stored and no endpoint maps `user_uuid` to a name. | `identity/usecases/createguest/service.go`, `identity/usecases/authorize/service.go:22-26` |
+| G3 | RESOLVED for guests 2026-10-27 (uncommitted in the backend, `identity-v1` WORK-0057/0058): `POST /v1/guests` persists a distinct guest with its normalized display name and returns real credentials (JWT access token, refresh token); `lobby_update`, `session_started` and `roster_update` carry that name. Accounts are still only the development bypass `test-user-1` / `test-user-2` ("Test user 1", "Test user 2"), accepted only with `IDENTITY_DEV_TEST_USERS=true` and refused in production; `test-guest` no longer exists | The dev account picker on `/sign-in` stays until the backend's local provider (WORK-0059). | `identity/usecases/authorize/service.go`, `main.go#readIdentityVariables` |
 | G4 | RESOLVED 2026-10-20: the join code is still released at Start, but every `lobby_update` and `session_started` now carries `session_uuid` | The frontend replaces `/join/:joinCode` with `/sessions/:sessionUUID/play` (ADR-0002) and reconnects by Session. | `api/play/live_connection.go`, `api/play/player_join.go`, `api/play/admin_join.go` |
 | G5 | RESOLVED 2026-10-20, changed 2026-10-25 (uncommitted in the backend): the HTML and every asset of a version are signed together as one batch with one expiry, stored and shared by every Session of the version; a Session reuses the batch while it expires after the Session's own `expires_at` plus 5 min, otherwise a new 24 h batch is signed. So a URL a client gets always outlives its Session; there is no refresh endpoint. A failed signing at start fails the start; on reattach it keeps the start's access | The GameHost still caches by hash, so a reload or reconnect usually needs no download at all. | `play/session/usecases/frontendaccess/service.go:36`, `step_start_session.go:404`, `step_reattach_player.go:46` |
 | G6 | Game frontend package is a single self-contained HTML file (Space Drift's seed version `...c2` holds the real one built here, `fixtures/games/space-drift`; `...c3` the one that loads assets); assets solved 2026-10-25 (ADR-0008: `play_game_version_assets`, image/audio/video, closed MIME list, 5/10/50 MiB per type, 100 MiB per version, sent in `frontend.assets`); no frontend fields in the manifest (entry, capabilities); manifest never sent to the client. Aspect ratio: solved 2026-10-20 outside the manifest (`play_game_versions.aspect_ratio`, sent as `frontend.viewport`) | Assets and the SDK contract need backend work. The game must know its own inputs/commands. | `play/session/internal/migrations/seed_objects.go`, `play/session/internal/business/manifest/manifest.go` |
@@ -25,7 +25,7 @@ Rules for this file:
 | G8 | RESOLVED 2026-10-21 (uncommitted in the backend): a `leave` during a Start attempt waits for the attempt and is then applied (left the running game, or left the lobby if the start failed), answered `leave_result` `left` and closed 1000. `session_started`, a view and `roster_update` may arrive before `leave_result`; if the attempt aborted the Session, `session_ended` may come first | The feature ignores lobby, start and roster messages while leaving. | `play/runtime/workflows/liveconnection/step_leave_player.go` |
 | G9 | No Game <-> Host bridge exists anywhere | Defined by this repository (it was out of the backend's scope): ADR-0005. | backend `docs/projects/active/session-runtime-v1/PROJECT.md:16` |
 
-Backend doc drift seen (code wins): `api/README.md` shows paths without `/v1` and `/play/join`, says `lobby_closed` is sent "once the Session starts" and "Bearer <jwt>" (tokens are opaque); `play/CURRENT_STATE.md` mentions a non-existent `session_aborted`.
+Backend doc drift seen (code wins): `api/README.md` shows paths without `/v1` and `/play/join`, says `lobby_closed` is sent "once the Session starts" and "Bearer <jwt>" (correct since 2026-10-27: access tokens are JWTs; clients still treat them as opaque); `play/CURRENT_STATE.md` mentions a non-existent `session_aborted`.
 
 ## 2. HTTP
 
@@ -34,7 +34,21 @@ Every route: observability -> authorization -> rate limit -> route (`api/server.
 ### `POST /v1/guests` (no auth)
 
 - Request `{"display_name": string (1..64 runes), "idempotency_key": UUID}`, body <= 4 KiB.
-- `201 {"user_uuid", "token"}`; `400` invalid body/key/name; `409` idempotency conflict; `500`.
+- `201` credentials body: `{"user":{"user_uuid","display_name","level"},"access_token","access_expires_at","access_expires_in","refresh_token"}`, `Cache-Control: no-store`; `access_expires_in` is the lifetime in seconds (the client measures expiry on its own clock from it); `level` `guest` | `account` (anything else: treat as guest); `display_name` is the backend's normalized form.
+- The same key and name within 5 minutes answers the same guest (a retry); `400` invalid body/key/name (`invalid_display_name` when Identity rejects the name); `409` `idempotency_conflict` (key used with another name) or `idempotency_key_spent` (key older than 5 minutes: use a new one); `500`.
+
+### `POST /v1/identity/refresh` (no auth)
+
+- Request `{"refresh_token"}`. `200` credentials body: always a new access token (15 min); the refresh token is the same one unless the backend rotated it (after 5 h): keep the one returned. The previous refresh token keeps answering for 5 minutes after a rotation (with the current one), so two tabs racing a rotation both end with the same refresh token.
+- `401` `refresh_invalid`: the credential is over (sign out). `503` / network: the credential may still be good (keep it, retry).
+
+### `POST /v1/identity/logout` (no auth)
+
+- Request `{"refresh_token"}`. `204` always (invalid or not); `503` on failure. Access tokens already issued stay valid until they expire.
+
+### `GET /v1/identity/me` (Bearer, `VIEW_OWN_IDENTITY`)
+
+- `200 {"user":{"user_uuid","display_name","level"}}`, from the access token. Not used by the frontend yet.
 
 ### `POST /v1/client-telemetry` (Bearer, `REPORT_CLIENT_TELEMETRY`, guests too)
 
@@ -61,7 +75,7 @@ Seed games (non-production): `11111111-1111-4111-8111-111111111111` (input `move
 - REST: `Authorization: Bearer <token>`.
 - WebSocket from a browser: subprotocols `["playhoot.v1", "base64url.bearer.authorization.playhoot." + base64url_unpadded(token)]`. The server selects only `playhoot.v1`.
 - Operations: `CREATE_SESSION`, `JOIN_SESSION_AS_ADMIN` (accounts); `JOIN_SESSION_AS_PLAYER`, `REPORT_CLIENT_TELEMETRY`, `VIEW_OWN_IDENTITY` (guests allowed).
-- Operation catalog (2026-10-27, backend IDENTITY-ADR-0003, uncommitted in the backend): `GET /v1/identity/operations`, no token, `200 {"operations":[{"operation":"CREATE_SESSION","required_level":"account"},...]}`, ordered by operation, `Cache-Control: public, max-age=300`. Levels on `anonymous < guest < account`; the catalog is the one `Authorize` decides with. Unknown operations or levels may appear (`backend-contract-values.md`). There is no endpoint yet that tells the caller its own level (refresh / `me` come with real credentials); the test tokens are `account` (`test-user-1`, `test-user-2`) and `guest` (`test-guest`).
+- Operation catalog (2026-10-27, backend IDENTITY-ADR-0003, uncommitted in the backend): `GET /v1/identity/operations`, no token, `200 {"operations":[{"operation":"CREATE_SESSION","required_level":"account"},...]}`, ordered by operation, `Cache-Control: public, max-age=300`. Levels on `anonymous < guest < account`; the catalog is the one `Authorize` decides with. Unknown operations or levels may appear (`backend-contract-values.md`). The caller's own level comes in every credentials body (`user.level`) and from `me`; the development test tokens are `account`.
 
 ## 3. WebSocket routes
 
@@ -162,4 +176,4 @@ In `../playhoot`: `docker compose up -d` (Postgres, fake-gcs on 4443, adminer on
 
 Against the frontend dev server, use `http://localhost:5173` instead of the backend port: `/v1` is proxied.
 
-Manual flow: `POST /v1/sessions` with `Bearer test-user-1` and Space Drift; players connect to `/v1/play/join/{code}` with `test-user-2` / `test-guest`; the admin connects to `/v1/play/join/sessions/{uuid}/admin` with `test-user-1` and sends `start_session`.
+Manual flow: `POST /v1/sessions` with `Bearer test-user-1` and Space Drift; players connect to `/v1/play/join/{code}` with `test-user-2` or a guest's access token from `POST /v1/guests`; the admin connects to `/v1/play/join/sessions/{uuid}/admin` with `test-user-1` and sends `start_session`.

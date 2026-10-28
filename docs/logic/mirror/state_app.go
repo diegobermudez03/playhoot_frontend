@@ -25,17 +25,21 @@ type OperationCatalog struct {
 type AuthSnapshot struct {
 	Status      string // "unknown" (before bootstrap) | "none" | "guest" | "authenticated"
 	UserUUID    string // when guest/authenticated
-	DisplayName string // the name chosen locally; the backend stores no names yet
+	DisplayName string // as the backend returned it
 }
 
-// Credential is what is persisted to keep acting as someone. Only Token is ever sent.
-// Persisted in the browser's localStorage under "playhoot.credential.v1".
+// Credential is what the app keeps to act as someone. Only Token (the access token) is ever sent.
+// Persisted in the browser's localStorage under "playhoot.credential.v2" WITHOUT Token and
+// ExpiresAt: the access token lives only in memory and is renewed from RefreshToken on every load.
+// (v1, the old fixed test guest, is left behind and ignored.)
 // code: packages/app-core/src/credentials.ts#Credential
 type Credential struct {
-	Token       string
-	UserUUID    string
-	Kind        string // "guest" | "account"
-	DisplayName string
+	Token        string // access token (a JWT, 15 min); empty while a stored credential is restored
+	RefreshToken string // absent only for the dev test accounts, whose fixed token never expires
+	ExpiresAt    int64  // when Token expires (epoch ms)
+	UserUUID     string
+	Kind         string // "guest" | "account"
+	DisplayName  string
 }
 
 var global AppGlobalState // starts as {Auth: {Status: "unknown"}, Locale: "en"}
@@ -44,8 +48,7 @@ var credential *Credential // in memory; the source of the token for every call
 // Bootstrap runs once when the page loads, before anything renders.
 // code: apps/web/src/app/services.ts#startServices -> packages/app-core/src/appState.ts#bootstrap
 func Bootstrap() {
-	credential = loadFromBrowser("playhoot.credential.v1") // nil if absent, corrupt or storage blocked
-	global.Auth = snapshotOf(credential)
+	adopt(loadFromBrowser("playhoot.credential.v2")) // nil if absent, corrupt or storage blocked
 
 	saved := loadFromBrowser("playhoot.locale.v1")
 	if isSupported(saved) {
@@ -82,19 +85,86 @@ func OperationAccess(operation string) struct{ Status, Level string } {
 	return struct{ Status, Level string }{} // "pending" | "allowed" | "needs" (+ Level "guest" | "account")
 }
 
+// adopt takes a stored credential at load time, or when another tab changed it.
+// rule: a stored credential with a refresh token has no access token: Auth stays "unknown" (routes
+//       wait) while Refresh() renews it; while the backend cannot be reached it tries again after
+//       1, 2, 4, 8, 16, 30, 30... seconds, never creating another identity meanwhile.
+// rule: refused (refresh_invalid) -> forgotten, Auth "none".
+// code: packages/app-core/src/appState.ts#adopt, #restore
+func adopt(stored *Credential) {
+	if stored == nil {
+		credential = nil
+		global.Auth = AuthSnapshot{Status: "none"}
+		return
+	}
+	credential = stored
+	if stored.Token == "" {
+		global.Auth = AuthSnapshot{Status: "unknown"}
+		Refresh() // retried as the rule says
+		return
+	}
+	activate(*stored)
+}
+
+// activate uses a credential and schedules its renewal one minute before the access token expires.
+// code: packages/app-core/src/appState.ts#activate
+func activate(c Credential) {
+	credential = &c
+	global.Auth = snapshotOf(credential)
+	// timer: at ExpiresAt - 60 s (at least 5 s from now) -> Refresh()
+}
+
+// Refresh renews the access token with the refresh token. Concurrent callers share one call.
+// rule: uses the refresh token stored by another tab if it rotated it meanwhile (same user).
+// rule: "renewed" -> saved (the refresh token may be a new one) and activated; "invalid" -> the
+//       credential is forgotten (Auth "none"); "unavailable" -> kept, and tried again after 1, 2, 4,
+//       8, 16, 30, 30... s.
+// rule: a renewal started before the person changed (signed out, signed in, another tab's person)
+//       never applies and never counts as renewed; another tab only rotating the refresh token
+//       does not change the person.
+// rule: also run when the page becomes visible with the access token expiring within a minute
+//       (its timer may have slept), and by the HTTP client on a 401 token_invalid (external.go).
+// code: packages/app-core/src/appState.ts#refresh, #ensureFresh
+func Refresh() string { // "renewed" | "invalid" | "unavailable"
+	renewed, failure := RefreshCredentials(credential.RefreshToken) // external.go
+	switch {
+	case failure == nil:
+		saveToBrowser("playhoot.credential.v2", renewed)
+		activate(renewed)
+		return "renewed"
+	case failure.Code == "refresh_invalid":
+		forget()
+		return "invalid"
+	default:
+		return "unavailable"
+	}
+}
+
+// SyncFromStore follows another tab that changed the stored credential (browser "storage" event).
+// rule: another person, or none -> adopt it; same person with a rotated refresh token -> keep using
+//       our access token with the new refresh token.
+// code: packages/app-core/src/appState.ts#syncFromStore
+func SyncFromStore() {}
+
 // SignIn adopts a new identity (after creating a guest, or the dev test-account picker).
 // code: packages/app-core/src/appState.ts#signIn
 func SignIn(c Credential) {
-	saveToBrowser("playhoot.credential.v1", c)
-	credential = &c
-	global.Auth = snapshotOf(credential)
+	saveToBrowser("playhoot.credential.v2", c)
+	activate(c)
 }
 
-// SignOut forgets the identity. Called when any HTTP call gets 401 token_invalid, and by the
-// account menu's sign out. A route that needs an identity then sends the person to sign in.
+// SignOut forgets the identity and ends its session on the backend (best effort, never awaited).
+// Called by the account menu's sign out, and when the HTTP client finds the credential cannot be
+// renewed. A route that needs an identity then sends the person to sign in.
 // code: packages/app-core/src/appState.ts#signOut
 func SignOut() {
-	removeFromBrowser("playhoot.credential.v1")
+	refreshToken := credential.RefreshToken
+	forget()
+	go Logout(refreshToken) // external.go
+}
+
+func forget() {
+	removeFromBrowser("playhoot.credential.v2")
 	credential = nil
 	global.Auth = AuthSnapshot{Status: "none"}
 }

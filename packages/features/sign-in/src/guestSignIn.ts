@@ -65,11 +65,15 @@ export function createGuestSignIn(deps: GuestSignInDeps): GuestSignIn {
           store.setState({ submitting: false, error: null });
           return false;
         }
-        deps.app.signIn({ ...result.value, kind: 'guest', displayName });
+        // The backend's own form of the name, falling back to the one typed.
+        deps.app.signIn({ ...result.value, displayName: result.value.displayName ?? displayName });
         store.setState({ submitting: false, error: null });
         return true;
       }
       const failure = result.error;
+      // The backend no longer answers this key (too old to be a retry): the next attempt needs a
+      // new one.
+      if (failure.kind === 'http' && failure.status === 409) pending = null;
       const error: IdentityError =
         failure.kind === 'http' && failure.status === 400
           ? { kind: 'invalid-name', reason: 'rejected', maxLength: guestDisplayNameMaxLength }

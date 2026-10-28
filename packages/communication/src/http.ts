@@ -82,10 +82,12 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       const parsed = errorBodySchema.safeParse(body);
       const code = parsed.success ? parsed.data.code : undefined;
       if (token && response.status === 401 && code === authErrorCodes.tokenInvalid) {
-        // A refused credential is renewed once and the request sent again; only a credential
-        // that cannot be renewed is forgotten.
-        if (!afterRefresh && (await options.credentials.refresh?.())) return send(request, true);
-        options.onCredentialRejected?.();
+        // A refused access token is renewed once and the request sent again. Only a credential
+        // the backend refuses to renew is forgotten; one that could not be renewed for now (the
+        // backend unreachable) is kept, and this request fails.
+        const renewal = afterRefresh ? 'invalid' : await options.credentials.refresh?.();
+        if (renewal === 'renewed') return send(request, true);
+        if (renewal !== 'unavailable') options.onCredentialRejected?.();
       }
       return err({
         kind: 'http',

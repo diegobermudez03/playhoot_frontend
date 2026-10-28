@@ -1,8 +1,8 @@
 # WORK-0001: Client credential contract and decisions
 
-Status: PLANNED
+Status: DONE
 Created: 2026-10-25
-Last status change: 2026-10-25
+Last status change: 2026-10-27 (decided by the human in conversation under the working agreement; done with WORK-0002)
 
 Related decisions:
 - `docs/decisions/architecture/ADR-0009-credential-renewal-in-the-transport.md`
@@ -22,8 +22,14 @@ Today `apps/web/src/platform/browserCredentialStore.ts` keeps the whole credenti
 
 ## Scope
 
-Not yet designed.
+Decided by the human in conversation on 2026-10-27, redesigning the backend's credentials (backend IDENTITY-ADR-0003 amendment): JWT access tokens, refresh tokens stored as-is server side, renewal with the refresh token alone that keeps it unless it is over 5 hours old (then rotated), the immediate predecessor accepted for 5 minutes after a rotation (answering with the current refresh token), anything else stale rejected. With no reuse detection, two tabs renewing at once cannot revoke anything: the cross-tab coordinator (Web Locks, request ids) planned here is not needed and was dropped. Done as one vertical slice with WORK-0002 and the backend's WORK-0057/0058 ("real guests end to end"); accounts stay the backend's development bypass until WORK-0003.
+
+What the web keeps: the access token and its expiry in memory only; the refresh token, user, level and name in `localStorage` (`playhoot.credential.v2`; v1 left behind). Within a tab one renewal is shared and a renewal started for an earlier person never applies (a generation counter); across tabs the stored refresh token is re-read before renewing and other tabs' changes are followed through the `storage` event. Protocol types in `packages/protocol/src/http/guests.ts`. ADR-0009 amended.
 
 ## Blockers
 
-- The backend's WORK-0056 (contract and DTOs).
+None.
+
+## Completion Record
+
+See WORK-0002 (one change).
