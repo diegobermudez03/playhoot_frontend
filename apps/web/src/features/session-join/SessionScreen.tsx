@@ -1,32 +1,9 @@
-import type {
-  IdentityError,
-  JoinSessionState,
-  JoinView,
-  LobbyMember,
-} from '@playhoot/feature-session-join';
-import { guestDisplayNameMaxLength } from '@playhoot/protocol';
-import {
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type FormEvent,
-  type ReactNode,
-} from 'react';
+import type { JoinSessionState, JoinView, LobbyMember } from '@playhoot/feature-session-join';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { FormattedMessage, useIntl, type IntlShape } from 'react-intl';
 
 import { useSound, type SoundId } from '../../sound';
-import {
-  Avatar,
-  Button,
-  Card,
-  CodeTiles,
-  Confetti,
-  Owl,
-  SplitStage,
-  Stage,
-  TextField,
-} from '../../ui';
+import { Avatar, Button, Card, CodeTiles, Confetti, Owl, Stage } from '../../ui';
 import type { Layout } from '../layout';
 import {
   outcomeActionLabels,
@@ -37,7 +14,6 @@ import {
 import styles from './SessionScreen.module.css';
 
 export interface SessionScreenActions {
-  submitDisplayName(displayName: string): void;
   retry(): void;
   leave(): void;
   enterAnotherCode(): void;
@@ -53,8 +29,6 @@ export interface SessionScreenProps {
   // The local name of the person playing, if they chose one.
   displayName: string | null;
   actions: SessionScreenActions;
-  // Development-only identity shortcuts rendered under the name form.
-  devIdentity?: ReactNode;
   // The running game (Session Play). Without it, the started phase shows the "game on" screen.
   renderPlay?: (view: Extract<JoinView, { phase: 'started' }>) => ReactNode;
 }
@@ -64,8 +38,6 @@ export interface SessionScreenProps {
 export function SessionScreen(props: SessionScreenProps) {
   const { view } = props.state;
   switch (view.phase) {
-    case 'identity':
-      return <IdentityStep view={view} {...props} />;
     case 'connecting':
       return <ConnectingStep reconnectAttempt={view.reconnectAttempt} joinCode={props.joinCode} />;
     case 'lobby':
@@ -80,87 +52,6 @@ export function SessionScreen(props: SessionScreenProps) {
       );
     case 'closed':
       return <OutcomeStep view={view} actions={props.actions} />;
-  }
-}
-
-function IdentityStep({
-  view,
-  layout,
-  joinCode,
-  actions,
-  devIdentity,
-}: SessionScreenProps & { view: Extract<JoinView, { phase: 'identity' }> }) {
-  const intl = useIntl();
-  const [name, setName] = useState('');
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    actions.submitDisplayName(name);
-  };
-
-  const hero = (
-    <div className={styles.hero}>
-      <Owl size={88} />
-      <h1 className={styles.title}>
-        <FormattedMessage id="identity.title" />
-      </h1>
-      {joinCode && (
-        <p className={styles.lead}>
-          <FormattedMessage id="identity.joining" values={{ code: joinCode }} />
-        </p>
-      )}
-    </div>
-  );
-  const form = (
-    <Card>
-      <form className={styles.form} onSubmit={submit} noValidate>
-        <TextField
-          label={intl.formatMessage({ id: 'identity.nameLabel' })}
-          placeholder={intl.formatMessage({ id: 'identity.namePlaceholder' })}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          maxLength={guestDisplayNameMaxLength}
-          autoComplete="nickname"
-          autoFocus
-          error={view.error ? identityErrorText(intl, view.error) : null}
-          hint={intl.formatMessage({ id: 'identity.nameHint' })}
-        />
-        <Button type="submit" size="lg" block loading={view.submitting}>
-          <FormattedMessage id="identity.submit" />
-        </Button>
-      </form>
-    </Card>
-  );
-
-  // Compact: the owl above the form. Wide: beside it, so the form stays whole above a keyboard.
-  return layout === 'wide' ? (
-    <SplitStage aside={hero}>
-      {form}
-      {devIdentity}
-    </SplitStage>
-  ) : (
-    <Stage>
-      {hero}
-      {form}
-      {devIdentity}
-    </Stage>
-  );
-}
-
-function identityErrorText(intl: IntlShape, error: IdentityError): string {
-  switch (error.kind) {
-    case 'invalid-name':
-      return error.reason === 'empty'
-        ? intl.formatMessage({ id: 'identity.error.empty' })
-        : error.reason === 'too-long'
-          ? intl.formatMessage({ id: 'identity.error.tooLong' }, { max: error.maxLength })
-          : intl.formatMessage({ id: 'identity.error.rejected' });
-    case 'rate-limited':
-      return intl.formatMessage(
-        { id: 'identity.error.rateLimited' },
-        { seconds: error.retryAfterSeconds ?? 0 },
-      );
-    case 'unavailable':
-      return intl.formatMessage({ id: 'identity.error.unavailable' });
   }
 }
 

@@ -1,14 +1,16 @@
 import type { TelemetryReporter } from '@playhoot/communication';
 import type { JoinTelemetry } from '@playhoot/feature-session-join';
 import type { SessionPlayTelemetry } from '@playhoot/feature-session-play';
+import type { SignInTelemetry } from '@playhoot/feature-sign-in';
 import type { ClientTelemetryEvent } from '@playhoot/protocol';
 
-import { joinEvents, playEvents, presentationError } from './classify';
+import { joinEvents, playEvents, presentationError, signInEvents } from './classify';
 
 // What the features and the presentation report; classified here and sent to the backend.
 export interface AppTelemetry {
   join(event: JoinTelemetry): void;
   play(event: SessionPlayTelemetry): void;
+  signIn(event: SignInTelemetry): void;
   // A render failed into the route error boundary.
   presentationFailed(): void;
   // Sends what is queued; `leaving` when the page is going away.
@@ -29,6 +31,7 @@ export function createAppTelemetry(
   return {
     join: (event) => record(joinEvents(event)),
     play: (event) => record(playEvents(event)),
+    signIn: (event) => record(signInEvents(event)),
     presentationFailed: () => record([presentationError()]),
     flush: (leaving) => void reporter.flush({ leaving }),
   };

@@ -60,7 +60,8 @@ Seed games (non-production): `11111111-1111-4111-8111-111111111111` (input `move
 
 - REST: `Authorization: Bearer <token>`.
 - WebSocket from a browser: subprotocols `["playhoot.v1", "base64url.bearer.authorization.playhoot." + base64url_unpadded(token)]`. The server selects only `playhoot.v1`.
-- Operations: `CREATE_SESSION`, `JOIN_SESSION_AS_ADMIN` (accounts); `JOIN_SESSION_AS_PLAYER` (guests allowed).
+- Operations: `CREATE_SESSION`, `JOIN_SESSION_AS_ADMIN` (accounts); `JOIN_SESSION_AS_PLAYER`, `REPORT_CLIENT_TELEMETRY`, `VIEW_OWN_IDENTITY` (guests allowed).
+- Operation catalog (2026-10-27, backend IDENTITY-ADR-0003, uncommitted in the backend): `GET /v1/identity/operations`, no token, `200 {"operations":[{"operation":"CREATE_SESSION","required_level":"account"},...]}`, ordered by operation, `Cache-Control: public, max-age=300`. Levels on `anonymous < guest < account`; the catalog is the one `Authorize` decides with. Unknown operations or levels may appear (`backend-contract-values.md`). There is no endpoint yet that tells the caller its own level (refresh / `me` come with real credentials); the test tokens are `account` (`test-user-1`, `test-user-2`) and `guest` (`test-guest`).
 
 ## 3. WebSocket routes
 

@@ -20,7 +20,7 @@ With the refresh token held by the client, the backend cannot finish the login b
 
 ## Scope
 
-Not yet designed.
+Not yet designed. Required (decided by the human 2026-10-27, backend IDENTITY-ADR-0003 point 8 clarification; no browser-binding cookie): the one-time code must never leave the browser. The completion route removes it from the URL before loading anything else, sends no referrer, loads no third-party resources, and never sends it to client telemetry or logs.
 
 ## Blockers
 

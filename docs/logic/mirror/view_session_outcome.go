@@ -15,7 +15,7 @@ func OutcomeScreen(join *JoinSession) {
 
 // OutcomeOnRetry starts the same join again, on the same URL.
 func OutcomeOnRetry(join *JoinSession) {
-	join.Retry() // state_joinsession.go -> Start(): connect (or ask for a name if the identity is gone)
+	join.Retry() // state_joinsession.go -> Start(): connect
 }
 
 // OutcomeOnEnterAnotherCode goes to Enter a code.

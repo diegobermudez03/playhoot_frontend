@@ -26,6 +26,21 @@ export const es: Messages = {
     '{seconds, plural, =0 {Demasiados intentos. Espera un momento y vuelve a intentarlo.} one {Demasiados intentos. Espera # segundo y vuelve a intentarlo.} other {Demasiados intentos. Espera # segundos y vuelve a intentarlo.}}',
   'identity.error.unavailable':
     'No pudimos conectar con Playhoot. Inténtalo de nuevo en un momento.',
+  'identity.useAccount': '¿Prefieres usar una cuenta? <link>Inicia sesión o regístrate</link>',
+
+  'signIn.title': 'Inicia sesión o crea tu cuenta',
+  'signIn.lead':
+    'Con una cuenta puedes crear partidas y volver a entrar desde cualquier dispositivo.',
+  'signIn.google': 'Continuar con Google',
+  'signIn.googleSoon': 'Muy pronto podrás entrar con Google.',
+  'signIn.guestSwitch':
+    'Ahora juegas como invitado ({name}). Si entras con una cuenta dejarás de ser ese invitado y sus partidas no pasarán a la cuenta.',
+
+  'account.guest': 'Invitado',
+  'account.menu': 'Cuenta: {name}',
+  'account.signIn': 'Iniciar sesión',
+  'account.signOut': 'Cerrar sesión',
+  'account.unnamed': 'Sin nombre',
 
   'connecting.joining': 'Uniéndote a la partida…',
   'connecting.joiningCode': 'Uniéndote a {code}…',

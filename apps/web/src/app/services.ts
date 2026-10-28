@@ -111,6 +111,7 @@ function realtimeBaseUrl(apiBaseUrl: string): string {
 // capabilities. The router resolves the URL afterwards and features rebuild from URL + backend.
 export function startServices(services: Services): () => void {
   services.app.bootstrap();
+  const stopLoadingOperations = loadOperations(services);
   const stopWatching = watchBrowserCapabilities(services.device);
   // The last chance to send queued telemetry: the tab is hidden (often for good on phones) or the
   // page is going away.
@@ -120,8 +121,33 @@ export function startServices(services: Services): () => void {
   document.addEventListener('visibilitychange', sendBeforeLeaving);
   window.addEventListener('pagehide', sendBeforeLeaving);
   return () => {
+    stopLoadingOperations();
     stopWatching();
     document.removeEventListener('visibilitychange', sendBeforeLeaving);
     window.removeEventListener('pagehide', sendBeforeLeaving);
   };
 }
+
+// Reads the backend's operation catalog (which level each operation requires). Routes that need it
+// wait meanwhile; while the backend cannot be reached it is asked again, waiting longer each time.
+function loadOperations(services: Services): () => void {
+  let stopped = false;
+  let retry: number | undefined;
+  const attempt = async (failures: number) => {
+    const result = await services.identity.listOperations();
+    if (stopped) return;
+    if (result.ok) {
+      services.app.setOperations(result.value);
+      return;
+    }
+    const delayMs = Math.min(operationsRetryMaxMs, 1000 * 2 ** failures);
+    retry = window.setTimeout(() => void attempt(failures + 1), delayMs);
+  };
+  void attempt(0);
+  return () => {
+    stopped = true;
+    window.clearTimeout(retry);
+  };
+}
+
+const operationsRetryMaxMs = 30_000;

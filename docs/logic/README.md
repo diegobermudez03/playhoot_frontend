@@ -6,7 +6,7 @@ This folder explains what the frontend DOES, without UI: which external calls it
 
 | File | What it gives you |
 | --- | --- |
-| [FLOWS.md](FLOWS.md) | Every user-visible flow step by step, with sequence diagrams: bootstrap, home, identity, joining, lobby, start, reconnection, leaving, endings, preferences. |
+| [FLOWS.md](FLOWS.md) | Every user-visible flow step by step, with sequence diagrams: bootstrap, home, joining, lobby, start, reconnection, leaving, endings, preferences, signing in. |
 | [mirror/](mirror/) | The same logic as Go-syntax pseudocode, traceable from a URL: routes → screens → events → state → external calls. |
 
 ## How to read the mirror
@@ -14,8 +14,8 @@ This folder explains what the frontend DOES, without UI: which external calls it
 It is pseudocode with Go syntax: it does not compile and never runs, it only mirrors the code. Follow it like a call trace:
 
 1. **[mirror/routes.go](mirror/routes.go)** — start here. Every URL and the view it runs. Navigating anywhere is just a call to `Router(url)`, so you can keep following.
-2. **`view_*.go`** — one per screen. The view function only lists what can happen on that screen; each call has a comment saying WHEN (a click, a submit, a message from the server). The Session route (`view_session.go`) picks one of its screens (`view_session_identity.go`, `_connecting`, `_lobby`, `_started`, `_outcome`) by the feature's phase.
-3. **Event functions** (`EnterCodeOnJoinPressed`, `IdentityOnSubmitted`, `LobbyOnLeave`…) — right below each view. They call the logic, and `Navigate(...)` when the screen changes.
+2. **`view_*.go`** — one per screen. The view function only lists what can happen on that screen; each call has a comment saying WHEN (a click, a submit, a message from the server). The Session route (`view_session.go`) picks one of its screens (`view_session_connecting.go`, `_lobby`, `_started`, `_outcome`) by the feature's phase.
+3. **Event functions** (`EnterCodeOnJoinPressed`, `GuestSignInOnSubmitted`, `LobbyOnLeave`…) — right below each view. They call the logic, and `Navigate(...)` when the screen changes.
 4. **`state_*.go`** — what the events do to state: `state_app.go` (global state and browser storage), `state_joinsession.go` (the Session route's feature: phases, transitions, rules), `state_connection.go` (one live WebSocket), `state_sessionplay.go` (the started game's feature), `state_gamehost.go` (a game running in its sandboxed iframe).
 5. **[mirror/external.go](mirror/external.go)** — every backend call as a bare function: endpoint in the comment, inputs in, DTO out.
 
@@ -30,9 +30,14 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Every page (top bar) | Speaker button | `AppShellOnSoundToggled` | [view_app_shell.go](mirror/view_app_shell.go) |
 | Enter a code (`/join`) | Code tiles | `EnterCodeOnCodeTyped` | [view_enter_code.go](mirror/view_enter_code.go) |
 | Enter a code (`/join`) | **Unirme** / Join / Entrar | `EnterCodeOnJoinPressed` | [view_enter_code.go](mirror/view_enter_code.go) |
-| Session: name step | Tu nombre / Your name / Seu nome (field) | `IdentityScreenState.Name` | [view_session_identity.go](mirror/view_session_identity.go) |
-| Session: name step | **¡A jugar!** / Let's play / Bora jogar | `IdentityOnSubmitted` | [view_session_identity.go](mirror/view_session_identity.go) |
-| Session: name step (dev only) | Test user 1 / Test user 2 | `IdentityOnDevAccountPicked` | [view_session_identity.go](mirror/view_session_identity.go) |
+| Every page (top bar), nobody signed in | Person icon (**Iniciar sesión** / Sign in / Entrar on wide screens) | `Navigate(SignInURL(here))` | [view_app_shell.go](mirror/view_app_shell.go) |
+| Every page (top bar), guest | Initial → **Iniciar sesión** / Sign in / Entrar | `Navigate(SignInURL(here))` | [view_app_shell.go](mirror/view_app_shell.go) |
+| Every page (top bar), account | Initial → **Cerrar sesión** / Sign out / Sair | `AppShellOnSignedOut` | [view_app_shell.go](mirror/view_app_shell.go) |
+| Guest page (`/sign-in/guest`) | Tu nombre / Your name / Seu nome (field) | `GuestSignInState.Name` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
+| Guest page (`/sign-in/guest`) | **¡A jugar!** / Let's play / Bora jogar | `GuestSignInOnSubmitted` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
+| Guest page (`/sign-in/guest`) | **Inicia sesión o regístrate** / Sign in or sign up / Entre ou cadastre-se | `Navigate(SignInURL(next))` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
+| Sign-in page (`/sign-in`) | Continuar con Google / Continue with Google (disabled for now) | — | [view_sign_in.go](mirror/view_sign_in.go) |
+| Sign-in page (dev only) | Test user 1 / Test user 2 | `SignInOnDevAccountPicked` | [view_sign_in.go](mirror/view_sign_in.go) |
 | Session: lobby | **Copiar enlace de invitación** / Copy invite link / Copiar link de convite | `LobbyOnCopyInvite` | [view_session_lobby.go](mirror/view_session_lobby.go) |
 | Session: lobby | **Salir de la partida** / Leave game / Sair da partida | `LobbyOnLeave` | [view_session_lobby.go](mirror/view_session_lobby.go) |
 | Session: game | **Jugador 2 de 3** / Player 2 of 3 / Jogador 2 de 3 | opens the players list (no call) | [view_session_started.go](mirror/view_session_started.go) |

@@ -1,6 +1,7 @@
 // PSEUDOCODE — Go syntax, not compiled.
 // STATE: the Join Session feature — the logic behind every screen of the Session route
-// (view_session*.go), from "who are you?" to the game start.
+// (view_session*.go), from connecting to the game start. The route only opens it once the person
+// has an identity the backend accepts for playing (routes.go#RequireOperation).
 //
 // The views call these methods; the screen shown follows State.View.Phase.
 // In the real code the connection's events reach one dispatcher that calls the On* methods below.
@@ -17,10 +18,8 @@ type JoinSessionState struct {
 
 // JoinView: one phase at a time, with the data that phase needs.
 type JoinView struct {
-	Phase string // "identity" | "connecting" | "lobby" | "started" | "leaving" | "closed"
+	Phase string // "connecting" | "lobby" | "started" | "leaving" | "closed"
 
-	Submitting       bool           // identity: waiting for POST /v1/guests
-	IdentityError    *IdentityError // identity: why the name was not accepted
 	ReconnectAttempt int            // connecting: 0 first try, 1..3 reconnecting
 	Members          []LobbyMember  // lobby
 	Started          *StartedSession
@@ -47,13 +46,6 @@ type StartedSession struct {
 	}
 }
 
-type IdentityError struct {
-	Kind              string // "invalid-name" | "rate-limited" | "unavailable"
-	Reason            string // invalid-name: "empty" | "too-long" | "rejected"
-	MaxLength         int    // 64
-	RetryAfterSeconds int
-}
-
 type JoinOutcome struct {
 	Kind        string // "rejected" | "unreachable" | "ended" | "left" | "game-stopped" | "game-error" | "replaced" | "connection-lost" | "protocol-error"
 	Reason      string // rejected: invalid_join_code, join_code_expired, device_not_supported (+ Requirements), invalid_session, lobby_full, session_started, session_unavailable, participant_disconnected, rejoin_rejected, server_busy, owner_changed, or "unknown"
@@ -71,7 +63,6 @@ type JoinSession struct {
 	Live       LiveSession
 	connection *ConnectionState // state_connection.go; at most one at a time
 	attempt    int              // which connection attempt is current
-	pendingKey struct{ Name, Key string }
 	// leftOutcome is what leaving ends in: "left", or "game-stopped" when the game was stopped
 	// for misbehaving.
 	leftOutcome string
@@ -98,35 +89,12 @@ func (j *JoinSession) Dispose() { j.dropConnection() }
 // Start: right after creation, and again on Retry.
 func (j *JoinSession) Start() {
 	if global.Auth.Status == "guest" || global.Auth.Status == "authenticated" {
-		j.connect(0) // already someone: the name is not asked again
-		return
+		j.connect(0)
 	}
-	j.State.View = JoinView{Phase: "identity"} // -> IdentityScreen
+	// Without an identity nothing happens: the route has already sent the person to sign in.
 }
 
-// SubmitDisplayName: "Let's play" on the identity screen.
-func (j *JoinSession) SubmitDisplayName(raw string) {
-	name := trim(raw)
-	// rule: 1..64 characters, else IdentityError{invalid-name, empty | too-long}; the backend is not called.
-
-	// rule: same name submitted again -> same idempotency key, so a retry never creates two guests.
-	if j.pendingKey.Name != name {
-		j.pendingKey.Name, j.pendingKey.Key = name, newUUID()
-	}
-	j.State.View = JoinView{Phase: "identity", Submitting: true}
-
-	guest, failure := CreateGuest(name, j.pendingKey.Key) // external.go: POST /v1/guests
-
-	if failure != nil {
-		// rule: 400 -> invalid-name/rejected · code rate_limited -> rate-limited (+ seconds) · else unavailable.
-		j.State.View = JoinView{Phase: "identity", IdentityError: &IdentityError{}} // stays on IdentityScreen
-		return
-	}
-	SignIn(Credential{Token: guest.Token, UserUUID: guest.UserUUID, Kind: "guest", DisplayName: name}) // state_app.go (persisted)
-	j.connect(0)
-}
-
-// Retry: "Try again" / "Play here" on the outcome screen, and after a dev account is picked.
+// Retry: "Try again" / "Play here" on the outcome screen.
 func (j *JoinSession) Retry() { j.Start() }
 
 // Leave: "Leave game" on the lobby screen, "Salir" during the game, or Session Play when the game
@@ -159,8 +127,7 @@ func (j *JoinSession) connect(attempt int) {
 	socket, noCredential := OpenPlayerConnection(target) // external.go: WebSocket /v1/play/join/...
 
 	if noCredential != nil {
-		j.State.View = JoinView{Phase: "identity"} // -> IdentityScreen
-		return
+		return // the identity is gone: the route sends the person to sign in (routes.go)
 	}
 	j.attempt = attempt
 	j.State.View = JoinView{Phase: "connecting", ReconnectAttempt: attempt} // -> ConnectingScreen

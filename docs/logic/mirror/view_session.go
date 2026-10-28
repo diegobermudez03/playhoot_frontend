@@ -17,8 +17,6 @@ func SessionRouteView(target SessionTarget) {
 
 	// Which screen is shown, decided by the phase:
 	switch join.State.View.Phase {
-	case "identity":
-		IdentityScreen(join) // view_session_identity.go
 	case "connecting", "leaving":
 		ConnectingScreen(join) // view_session_connecting.go
 	case "lobby":

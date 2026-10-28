@@ -25,6 +25,20 @@ export const en = {
   'identity.error.rateLimited':
     '{seconds, plural, =0 {Too many tries. Wait a moment and try again.} one {Too many tries. Wait # second and try again.} other {Too many tries. Wait # seconds and try again.}}',
   'identity.error.unavailable': "We couldn't reach Playhoot. Try again in a moment.",
+  'identity.useAccount': 'Rather use an account? <link>Sign in or sign up</link>',
+
+  'signIn.title': 'Sign in or create your account',
+  'signIn.lead': 'With an account you can host games and get back in from any device.',
+  'signIn.google': 'Continue with Google',
+  'signIn.googleSoon': 'Signing in with Google is coming soon.',
+  'signIn.guestSwitch':
+    "You're playing as a guest ({name}). Signing in with an account replaces that guest, and its games don't move to the account.",
+
+  'account.guest': 'Guest',
+  'account.menu': 'Account: {name}',
+  'account.signIn': 'Sign in',
+  'account.signOut': 'Sign out',
+  'account.unnamed': 'No name',
 
   'connecting.joining': 'Joining the game…',
   'connecting.joiningCode': 'Joining {code}…',

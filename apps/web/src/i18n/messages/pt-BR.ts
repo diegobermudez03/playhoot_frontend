@@ -25,6 +25,20 @@ export const ptBR: Messages = {
   'identity.error.rateLimited':
     '{seconds, plural, =0 {Muitas tentativas. Aguarde um momento e tente de novo.} one {Muitas tentativas. Aguarde # segundo e tente de novo.} other {Muitas tentativas. Aguarde # segundos e tente de novo.}}',
   'identity.error.unavailable': 'Não conseguimos falar com o Playhoot. Tente de novo em instantes.',
+  'identity.useAccount': 'Prefere usar uma conta? <link>Entre ou cadastre-se</link>',
+
+  'signIn.title': 'Entre ou crie sua conta',
+  'signIn.lead': 'Com uma conta você pode criar partidas e voltar de qualquer dispositivo.',
+  'signIn.google': 'Continuar com o Google',
+  'signIn.googleSoon': 'Em breve você poderá entrar com o Google.',
+  'signIn.guestSwitch':
+    'Você está jogando como convidado ({name}). Se entrar com uma conta, deixará de ser esse convidado e as partidas dele não passam para a conta.',
+
+  'account.guest': 'Convidado',
+  'account.menu': 'Conta: {name}',
+  'account.signIn': 'Entrar',
+  'account.signOut': 'Sair',
+  'account.unnamed': 'Sem nome',
 
   'connecting.joining': 'Entrando na partida…',
   'connecting.joiningCode': 'Entrando em {code}…',

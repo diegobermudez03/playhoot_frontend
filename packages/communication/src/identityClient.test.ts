@@ -28,3 +28,37 @@ describe('createIdentityClient.createGuest', () => {
     });
   });
 });
+
+describe('createIdentityClient.listOperations', () => {
+  it('reads the catalog without a credential, keeping levels it does not know', async () => {
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(
+          JSON.stringify({
+            operations: [
+              { operation: 'CREATE_SESSION', required_level: 'account' },
+              { operation: 'FUTURE_THING', required_level: 'verified' },
+            ],
+          }),
+          { status: 200 },
+        ),
+    );
+    const identity = createIdentityClient(
+      createHttpClient({ baseUrl: '', credentials: { currentToken: () => 't' }, fetch: fetchImpl }),
+    );
+
+    const result = await identity.listOperations();
+
+    expect(result).toEqual({
+      ok: true,
+      value: [
+        { operation: 'CREATE_SESSION', requiredLevel: 'account' },
+        { operation: 'FUTURE_THING', requiredLevel: 'verified' },
+      ],
+    });
+    const [url, init] = fetchImpl.mock.calls[0]!;
+    expect(url).toBe('/v1/identity/operations');
+    expect(init?.method).toBe('GET');
+    expect(init?.headers).not.toHaveProperty('Authorization');
+  });
+});

@@ -7,8 +7,16 @@ package mirror
 // AppGlobalState is the whole global state.
 // code: packages/app-core/src/appState.ts#AppGlobalState
 type AppGlobalState struct {
-	Auth   AuthSnapshot
-	Locale string // "es" | "en" | "pt-BR"
+	Auth       AuthSnapshot
+	Operations OperationCatalog
+	Locale     string // "es" | "en" | "pt-BR"
+}
+
+// OperationCatalog is the backend's list of operations and the minimum level each requires.
+// code: packages/app-core/src/access.ts#OperationCatalog
+type OperationCatalog struct {
+	Status       string            // "loading" | "ready"
+	Requirements map[string]string // operation -> "anonymous" | "guest" | "account" (or a level this code does not know)
 }
 
 // AuthSnapshot is who the app acts as. It drives UX only: it never grants anything, and a
@@ -51,6 +59,29 @@ func Bootstrap() {
 	// their own small store; nothing reads them for logic yet.
 }
 
+// LoadOperations reads the backend's operation catalog once per page load.
+// rule: while the backend cannot be reached it is asked again after 1, 2, 4... seconds (at most
+//       30); routes that need it show an empty page meanwhile (routes.go#RequireOperation).
+// code: apps/web/src/app/services.ts#loadOperations
+func LoadOperations() {
+	operations, failure := ListOperations() // external.go: GET /v1/identity/operations
+	if failure != nil {
+		return // asked again later (see rule)
+	}
+	global.Operations = OperationCatalog{Status: "ready", Requirements: operations}
+}
+
+// OperationAccess says whether the person may go ahead with an operation, from the identity and the
+// catalog. UX only: the backend still decides.
+// rule: the person's level: none -> "anonymous", guest -> "guest", authenticated -> "account".
+// rule: an operation missing from the catalog, or a level this code does not know, requires "account".
+// rule: allowed when the person's level is at least the required one; otherwise "needs" that level
+//       (a guest when the operation allows guests).
+// code: packages/app-core/src/access.ts#operationAccess
+func OperationAccess(operation string) struct{ Status, Level string } {
+	return struct{ Status, Level string }{} // "pending" | "allowed" | "needs" (+ Level "guest" | "account")
+}
+
 // SignIn adopts a new identity (after creating a guest, or the dev test-account picker).
 // code: packages/app-core/src/appState.ts#signIn
 func SignIn(c Credential) {
@@ -59,7 +90,8 @@ func SignIn(c Credential) {
 	global.Auth = snapshotOf(credential)
 }
 
-// SignOut forgets the identity. Called when any HTTP call gets 401 token_invalid.
+// SignOut forgets the identity. Called when any HTTP call gets 401 token_invalid, and by the
+// account menu's sign out. A route that needs an identity then sends the person to sign in.
 // code: packages/app-core/src/appState.ts#signOut
 func SignOut() {
 	removeFromBrowser("playhoot.credential.v1")

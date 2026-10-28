@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { joinEvents, playEvents, presentationError } from './classify';
+import { joinEvents, playEvents, presentationError, signInEvents } from './classify';
 
 describe('joinEvents', () => {
   it('counts closes, reconnections and resyncs', () => {
@@ -40,19 +40,21 @@ describe('joinEvents', () => {
       expect(joinEvents({ type: 'outcome', outcome })).toEqual([]);
     }
   });
+});
 
-  it('classifies identity failures, but not a name the person typed wrong', () => {
+describe('signInEvents', () => {
+  it('classifies guest creation failures, but not a name the person typed wrong', () => {
     expect(
-      joinEvents({
+      signInEvents({
         type: 'identity-failed',
         error: { kind: 'rate-limited', retryAfterSeconds: 3 },
       }),
     ).toEqual([{ name: 'error', origin: 'backend_rejection', kind: 'rate_limited' }]);
-    expect(joinEvents({ type: 'identity-failed', error: { kind: 'unavailable' } })).toEqual([
+    expect(signInEvents({ type: 'identity-failed', error: { kind: 'unavailable' } })).toEqual([
       { name: 'error', origin: 'transport', kind: 'network' },
     ]);
     expect(
-      joinEvents({
+      signInEvents({
         type: 'identity-failed',
         error: { kind: 'invalid-name', reason: 'empty', maxLength: 32 },
       }),

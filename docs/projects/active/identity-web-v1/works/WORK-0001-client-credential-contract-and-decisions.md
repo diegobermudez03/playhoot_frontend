@@ -18,7 +18,7 @@ The client's side of the plan's decisions recorded before code: what the web kee
 
 ## Context
 
-Today `apps/web/src/platform/browserCredentialStore.ts` keeps the whole credential in `localStorage` and `CredentialRefresher` is the `noCredentialRefresh` placeholder. The plan's coordination rules (§6) still apply with a client-held refresh token: same `request_id` on retries, never in parallel, no fake mutex made of reads and writes to `localStorage`, explicit and tested behavior when Web Locks are missing.
+Today `apps/web/src/platform/browserCredentialStore.ts` keeps the whole credential in `localStorage` and `CredentialRefresher` is the `noCredentialRefresh` placeholder. The plan's coordination rules (§6) still apply with a client-held refresh token: same `request_id` on retries, never in parallel, no fake mutex made of reads and writes to `localStorage`, explicit and tested behavior when Web Locks are missing. The backend contract depends on it (backend WORK-0056 review, 2026-10-27): every tab shares the stored refresh token, so two tabs refreshing it with different `request_id`s count as reuse and revoke the family, which loses a guest for good; credential-changing calls are serialized per origin across tabs and the stored token is re-read inside the lock before refreshing.
 
 ## Scope
 

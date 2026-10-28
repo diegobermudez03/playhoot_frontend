@@ -27,3 +27,10 @@
 .lg .word {
   font-size: var(--text-display);
 }
+
+/* A phone's top bar also holds sound, language and account: the owl alone stands for the brand. */
+@media (max-width: 439px) {
+  .md .word {
+    display: none;
+  }
+}

@@ -1,12 +1,13 @@
 import type { SessionTarget } from '@playhoot/communication';
 import { createJoinSession, type JoinSession } from '@playhoot/feature-session-join';
+import { operations } from '@playhoot/protocol';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
-import { DevIdentityPicker } from '../../dev/DevIdentityPicker';
 import { AppShell } from '../../ui';
+import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
 import { enterCodePath, joinPath, sessionPlayPath } from '../paths';
 import { SessionPlayView } from '../session-play/SessionPlayView';
@@ -15,8 +16,17 @@ import { SessionScreen } from './SessionScreen';
 // Serves both Session URLs (ADR-0002): `/join/:joinCode` and `/sessions/:sessionUUID/play`.
 // One Join Session instance lives while the URL keeps pointing at the same Session, so
 // replacing the code URL by the UUID URL keeps the connection; any other change, or leaving
-// the route, disposes it and the next one rebuilds from URL + backend.
+// the route, disposes it and the next one rebuilds from URL + backend. Joining needs an identity
+// the backend accepts for playing: without one, the person is sent to authenticate and back here.
 export function SessionRoute() {
+  return (
+    <RequireOperation operation={operations.joinSessionAsPlayer}>
+      <JoinSessionRoute />
+    </RequireOperation>
+  );
+}
+
+function JoinSessionRoute() {
   const target = useTarget();
   const join = useJoinSession(target);
   if (!join) return <AppShell>{null}</AppShell>;
@@ -71,13 +81,11 @@ function SessionView({ join }: { join: JoinSession }) {
         joinCode={joinCode}
         displayName={displayName}
         actions={{
-          submitDisplayName: (name) => void join.submitDisplayName(name),
           retry: join.retry,
           leave: join.leave,
           enterAnotherCode: () => navigate(enterCodePath),
           copyInvite,
         }}
-        devIdentity={import.meta.env.DEV ? <DevIdentityPicker onPicked={join.retry} /> : undefined}
         renderPlay={(view) => (
           <SessionPlayView
             view={view}
@@ -111,9 +119,7 @@ function useJoinSession(target: SessionTarget): JoinSession | null {
     existing?.dispose();
     const next = createJoinSession(target, {
       app: services.app,
-      identity: services.identity,
       connector: services.sessions,
-      newIdempotencyKey: () => crypto.randomUUID(),
       onTelemetry: services.telemetry.join,
     });
     current.current = next;

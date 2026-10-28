@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { useIntl } from 'react-intl';
 import { Link } from 'react-router';
 
+import { AccountButton } from '../app/AccountButton';
 import { LanguagePicker } from '../i18n/LanguagePicker';
 import { SoundToggle } from '../sound/SoundToggle';
 import styles from './AppShell.module.css';
@@ -43,6 +44,7 @@ export function AppShell({ children, bare = false, immersive = false }: AppShell
         <div className={styles.trailing}>
           <SoundToggle />
           <LanguagePicker />
+          <AccountButton />
         </div>
       </header>
       <main className={styles.main}>{children}</main>

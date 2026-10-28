@@ -1,12 +1,11 @@
 import { createAppState, type Credential, type CredentialStore } from '@playhoot/app-core';
 import type {
-  IdentityClient,
   SessionConnection,
   SessionConnectionEvent,
   SessionConnector,
   SessionTarget,
 } from '@playhoot/communication';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { createJoinSession, type JoinTelemetry } from './joinSession';
 
@@ -88,16 +87,11 @@ function setup(options: { signedIn?: boolean; target?: SessionTarget } = {}) {
       return { ok: true, value: connection };
     },
   };
-  const identity: IdentityClient = {
-    createGuest: vi.fn(async () => ({ ok: true as const, value: { userUUID: me, token: 'g' } })),
-  };
   const scheduled: { run: () => void; delayMs: number }[] = [];
   const telemetry: JoinTelemetry[] = [];
   const join = createJoinSession(options.target ?? { kind: 'joinCode', joinCode: 'ABC234' }, {
     app,
-    identity,
     connector,
-    newIdempotencyKey: () => 'key-1',
     onTelemetry: (event) => telemetry.push(event),
     schedule: (run, delayMs) => {
       scheduled.push({ run, delayMs });
@@ -109,7 +103,6 @@ function setup(options: { signedIn?: boolean; target?: SessionTarget } = {}) {
     app,
     join,
     connections,
-    identity,
     scheduled,
     telemetry,
     last,
@@ -126,28 +119,11 @@ const started = {
 };
 
 describe('createJoinSession', () => {
-  it('asks for a name without an identity, creates a guest, then connects by code', async () => {
+  it('does not connect without an identity', () => {
     const t = setup({ signedIn: false });
     t.join.start();
-    expect(t.view()).toEqual({ phase: 'identity', submitting: false, error: null });
-
-    await t.join.submitDisplayName('  Ana  ');
-
-    expect(t.identity.createGuest).toHaveBeenCalledWith('Ana', 'key-1');
-    expect(t.app.store.getState().auth).toMatchObject({ status: 'guest', displayName: 'Ana' });
-    expect(t.connections[0]!.target).toEqual({ kind: 'joinCode', joinCode: 'ABC234' });
+    expect(t.connections).toHaveLength(0);
     expect(t.view()).toEqual({ phase: 'connecting', reconnectAttempt: 0 });
-  });
-
-  it('rejects an empty name locally', async () => {
-    const t = setup({ signedIn: false });
-    t.join.start();
-    await t.join.submitDisplayName('   ');
-    expect(t.view()).toMatchObject({
-      phase: 'identity',
-      error: { kind: 'invalid-name', reason: 'empty', maxLength: 64 },
-    });
-    expect(t.identity.createGuest).not.toHaveBeenCalled();
   });
 
   it('enters the lobby, learns the Session UUID and marks the player', () => {

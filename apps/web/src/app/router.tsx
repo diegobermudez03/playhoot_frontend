@@ -2,9 +2,11 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 
 import { DesignRoute } from '../dev/DesignRoute';
 import { GameHostLabRoute } from '../dev/GameHostLabRoute';
-import { enterCodePath } from '../features/paths';
+import { enterCodePath, guestSignInRoute, signInRoute } from '../features/paths';
 import { EnterCodeRoute } from '../features/session-join/EnterCodeRoute';
 import { SessionRoute } from '../features/session-join/SessionRoute';
+import { GuestSignInRoute } from '../features/sign-in/GuestSignInRoute';
+import { SignInRoute } from '../features/sign-in/SignInRoute';
 import { NotFoundRoute } from './NotFoundRoute';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
@@ -16,6 +18,9 @@ const routes: RouteObject[] = [
   // There is no home page yet (it comes late): the root only sends people to the code entry.
   { path: '/', element: <Navigate to={enterCodePath} replace /> },
   { path: enterCodePath, element: <EnterCodeRoute /> },
+  // Where a person is sent to authenticate, with `next` to continue (features/access.tsx).
+  { path: signInRoute, element: <SignInRoute /> },
+  { path: guestSignInRoute, element: <GuestSignInRoute /> },
   {
     // One pathless parent for both Session URLs, so moving from the code URL to the UUID URL
     // keeps the same mounted feature (and its connection).

@@ -6,6 +6,13 @@ package mirror
 
 // ─── HTTP ──────────────────────────────────────────────────────────────────
 
+// ListOperations reads every operation with the minimum authentication level it requires. No
+// credential. Public and cacheable (5 minutes).
+// endpoint: GET /v1/identity/operations
+// answer: 200 {"operations":[{"operation":"CREATE_SESSION","required_level":"account"},...]}
+// code: packages/communication/src/identityClient.ts#listOperations
+func ListOperations() (map[string]string, *HttpFailure) { return nil, nil }
+
 // CreateGuest creates a guest identity for someone without an account.
 //
 //	POST /v1/guests   (no Authorization header)

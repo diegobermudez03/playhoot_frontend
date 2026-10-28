@@ -1,6 +1,7 @@
 import type { ConnectionCloseKind } from '@playhoot/communication';
 import type { JoinOutcome, JoinTelemetry } from '@playhoot/feature-session-join';
 import type { SessionPlayTelemetry } from '@playhoot/feature-session-play';
+import type { SignInTelemetry } from '@playhoot/feature-sign-in';
 import type { GameHostError } from '@playhoot/game-host';
 import {
   clientTelemetryLimits,
@@ -27,16 +28,18 @@ export function joinEvents(event: JoinTelemetry): ClientTelemetryEvent[] {
       const error = outcomeError(event.outcome);
       return error ? [{ name: 'error', ...error }] : [];
     }
-    case 'identity-failed':
-      switch (event.error.kind) {
-        case 'rate-limited':
-          return [{ name: 'error', origin: 'backend_rejection', kind: 'rate_limited' }];
-        case 'unavailable':
-          return [{ name: 'error', origin: 'transport', kind: 'network' }];
-        // A name the person typed wrong is not an error of the platform.
-        case 'invalid-name':
-          return [];
-      }
+  }
+}
+
+export function signInEvents(event: SignInTelemetry): ClientTelemetryEvent[] {
+  switch (event.error.kind) {
+    case 'rate-limited':
+      return [{ name: 'error', origin: 'backend_rejection', kind: 'rate_limited' }];
+    case 'unavailable':
+      return [{ name: 'error', origin: 'transport', kind: 'network' }];
+    // A name the person typed wrong is not an error of the platform.
+    case 'invalid-name':
+      return [];
   }
 }
 

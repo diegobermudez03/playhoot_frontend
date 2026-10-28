@@ -2,11 +2,11 @@
 
 Join Session feature (logical state and ports).
 
-Status: IMPLEMENTED: `createJoinSession` (identity, connecting, lobby, started, typed outcomes, reconnection by Session UUID). During a game a lost connection keeps the phase `started` with `connection: 'reconnecting'`, so Session Play keeps the game on screen; `live` is a link to whatever connection is current (sample, command, current view, and the `open` / `view` / `sample-sent` events), which Session Play's GameHost uses. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createJoinSession` (connecting, lobby, started, typed outcomes, reconnection by Session UUID). During a game a lost connection keeps the phase `started` with `connection: 'reconnecting'`, so Session Play keeps the game on screen; `live` is a link to whatever connection is current (sample, command, current view, and the `open` / `view` / `sample-sent` events), which Session Play's GameHost uses. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 
-Feature state and communication ports for opening `/join/{joinCode}` directly (plan §5, §13.2, §18 step 2): read the auth snapshot, run the identity/guest flow when needed, read the device capabilities the join needs, open the backend join flow through `communication`, and expose accepted / rejected-with-typed-reason state plus the transition to Session Play. Web/mobile presentation lives in the apps.
+Feature state and communication ports for opening `/join/{joinCode}` directly (plan §5, §13.2, §18 step 2): read the auth snapshot (the app opens the feature only once the person has an identity the backend accepts for joining; becoming a guest is `@playhoot/feature-sign-in`), read the device capabilities the join needs, open the backend join flow through `communication`, and expose accepted / rejected-with-typed-reason state plus the transition to Session Play. Web/mobile presentation lives in the apps.
 
 ## Does not own
 

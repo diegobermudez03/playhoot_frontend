@@ -1,5 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
+import type { OperationCatalog } from './access';
 import { authSnapshotOf, type AuthSnapshot } from './auth';
 import {
   noCredentialRefresh,
@@ -18,6 +19,8 @@ import {
 
 export interface AppGlobalState {
   auth: AuthSnapshot;
+  // The backend's catalog of operations and the level each requires, read once at startup.
+  operations: OperationCatalog;
   locale: Locale;
 }
 
@@ -40,6 +43,8 @@ export interface AppState {
   bootstrap(): void;
   signIn(credential: Credential): void;
   signOut(): void;
+  // Keeps the backend's operation catalog (operation -> required level, as the backend wrote it).
+  setOperations(requirements: Iterable<{ operation: string; requiredLevel: string }>): void;
   setLocale(locale: Locale): void;
 }
 
@@ -49,6 +54,7 @@ export function createAppState(options: AppStateOptions): AppState {
   let credential: Credential | null = null;
   const store = createStore<AppGlobalState>(() => ({
     auth: { status: 'unknown' },
+    operations: { status: 'loading' },
     locale: fallbackLocale,
   }));
 
@@ -96,6 +102,11 @@ export function createAppState(options: AppStateOptions): AppState {
     signOut() {
       options.credentials.clear();
       applyCredential(null);
+    },
+    setOperations(requirements) {
+      const byOperation = new Map<string, string>();
+      for (const entry of requirements) byOperation.set(entry.operation, entry.requiredLevel);
+      store.setState({ operations: { status: 'ready', requirements: byOperation } });
     },
     setLocale(locale) {
       options.locale.store.save(locale);

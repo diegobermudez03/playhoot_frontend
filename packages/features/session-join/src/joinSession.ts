@@ -2,16 +2,13 @@ import type { AppState } from '@playhoot/app-core';
 import type {
   CommandResult,
   ConnectionCloseKind,
-  IdentityClient,
   SessionConnection,
   SessionConnectionEvent,
   SessionConnector,
   SessionTarget,
 } from '@playhoot/communication';
 import {
-  guestDisplayNameMaxLength,
   presenceStatuses,
-  rateLimitedCode,
   rejectReasons,
   type PlayerServerMessage,
   type PresenceStatus,
@@ -65,12 +62,6 @@ export interface GameAsset {
   url: string;
 }
 
-// Why a name was not accepted. Presentation turns each into text in the person's language.
-export type IdentityError =
-  | { kind: 'invalid-name'; reason: 'empty' | 'too-long' | 'rejected'; maxLength: number }
-  | { kind: 'rate-limited'; retryAfterSeconds: number | undefined }
-  | { kind: 'unavailable' };
-
 // Why the join is over. Each outcome maps to a message and a next action in presentation.
 export type JoinOutcome =
   | { kind: 'rejected'; reason: RejectReason | 'unknown'; requirements?: DeviceRequirements }
@@ -90,7 +81,6 @@ export type JoinOutcome =
   | { kind: 'protocol-error' };
 
 export type JoinView =
-  | { phase: 'identity'; submitting: boolean; error: IdentityError | null }
   | { phase: 'connecting'; reconnectAttempt: number }
   | { phase: 'lobby'; members: LobbyMember[] }
   // The game is running. While the connection is lost and being re-established the phase stays
@@ -109,9 +99,7 @@ export interface JoinSessionState {
 
 export interface JoinSessionDeps {
   app: AppState;
-  identity: IdentityClient;
   connector: SessionConnector;
-  newIdempotencyKey: () => string;
   // Waits before reconnecting; returns a cancel function. Defaults to setTimeout.
   schedule?: (run: () => void, delayMs: number) => () => void;
   // Observability (plan §17): what happened to the join, for whatever sink the app wires.
@@ -127,9 +115,7 @@ export type JoinTelemetry =
   // The connection asked for a FULL view because it missed one.
   | { type: 'resync-requested' }
   // The join is over: every outcome, so the app can classify the errors among them.
-  | { type: 'outcome'; outcome: JoinOutcome }
-  // Creating the guest identity failed.
-  | { type: 'identity-failed'; error: IdentityError };
+  | { type: 'outcome'; outcome: JoinOutcome };
 
 // The player's connection as whoever plays the game needs it: it always talks to the current
 // connection and survives reconnections. Each new connection announces itself with an `open` event.
@@ -141,9 +127,9 @@ export type LiveSession = Pick<
 export interface JoinSession {
   store: StoreApi<JoinSessionState>;
   live: LiveSession;
-  // Begins: asks for an identity when there is none, otherwise connects.
+  // Begins connecting. The app only opens the feature once the person has an identity the
+  // backend's catalog accepts for joining as a player (`app-core` `operationAccess`).
   start(): void;
-  submitDisplayName(displayName: string): Promise<void>;
   // Starts over after a closed outcome.
   retry(): void;
   // Leaves the Session. `game-stopped`: because the game was stopped for misbehaving, which the
@@ -172,8 +158,6 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
   let connection: SessionConnection | null = null;
   let cancelReconnect: (() => void) | null = null;
   let disposed = false;
-  // One idempotency key per submitted name, reused when the same name is submitted again.
-  let pendingGuest: { displayName: string; key: string } | null = null;
   const liveListeners = new Set<(event: SessionConnectionEvent) => void>();
 
   const setView = (view: JoinView) => {
@@ -197,10 +181,9 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
     dropConnection();
     const sessionUUID = store.getState().sessionUUID;
     const result = deps.connector.connect(sessionUUID ? { kind: 'session', sessionUUID } : target);
-    if (!result.ok) {
-      setView({ phase: 'identity', submitting: false, error: null });
-      return;
-    }
+    // Without a credential there is nothing to connect with: the app sends the person to sign in
+    // (the route's access check) and this feature is disposed with the route.
+    if (!result.ok) return;
     const view = store.getState().view;
     if (view.phase === 'started') setView({ ...view, connection: 'reconnecting' });
     else setView({ phase: 'connecting', reconnectAttempt });
@@ -428,7 +411,6 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
   const begin = () => {
     const auth = deps.app.store.getState().auth;
     if (auth.status === 'guest' || auth.status === 'authenticated') connect(0);
-    else setView({ phase: 'identity', submitting: false, error: null });
   };
 
   const live: LiveSession = {
@@ -452,42 +434,6 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
     store,
     live,
     start: begin,
-    async submitDisplayName(raw) {
-      const displayName = raw.trim();
-      if (!displayName || [...displayName].length > guestDisplayNameMaxLength) {
-        setView({
-          phase: 'identity',
-          submitting: false,
-          error: {
-            kind: 'invalid-name',
-            reason: displayName ? 'too-long' : 'empty',
-            maxLength: guestDisplayNameMaxLength,
-          },
-        });
-        return;
-      }
-      if (pendingGuest?.displayName !== displayName) {
-        pendingGuest = { displayName, key: deps.newIdempotencyKey() };
-      }
-      setView({ phase: 'identity', submitting: true, error: null });
-      const result = await deps.identity.createGuest(displayName, pendingGuest.key);
-      if (disposed) return;
-      if (result.ok) {
-        pendingGuest = null;
-        deps.app.signIn({ ...result.value, kind: 'guest', displayName });
-        connect(0);
-        return;
-      }
-      const failure = result.error;
-      const error: IdentityError =
-        failure.kind === 'http' && failure.status === 400
-          ? { kind: 'invalid-name', reason: 'rejected', maxLength: guestDisplayNameMaxLength }
-          : failure.kind === 'http' && failure.code === rateLimitedCode
-            ? { kind: 'rate-limited', retryAfterSeconds: failure.retryAfterSeconds }
-            : { kind: 'unavailable' };
-      deps.onTelemetry?.({ type: 'identity-failed', error });
-      setView({ phase: 'identity', submitting: false, error });
-    },
     retry: begin,
     leave(reason) {
       leftOutcome = reason === 'game-stopped' ? { kind: 'game-stopped' } : { kind: 'left' };

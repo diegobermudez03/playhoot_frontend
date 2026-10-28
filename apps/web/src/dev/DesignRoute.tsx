@@ -249,12 +249,6 @@ const members = [
 ];
 
 const screens: [string, JoinView, string | null][] = [
-  ['Name', { phase: 'identity', submitting: false, error: null }, 'HOOT42'],
-  [
-    'Name · error',
-    { phase: 'identity', submitting: false, error: { kind: 'unavailable' } },
-    'HOOT42',
-  ],
   ['Joining', { phase: 'connecting', reconnectAttempt: 0 }, 'HOOT42'],
   ['Reconnecting', { phase: 'connecting', reconnectAttempt: 2 }, null],
   ['Lobby', { phase: 'lobby', members }, 'HOOT42'],

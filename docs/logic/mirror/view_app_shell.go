@@ -16,6 +16,22 @@ func AppShellView() {
 
 	// When: the person presses the speaker button.
 	AppShellOnSoundToggled()
+
+	// The corner (code: apps/web/src/app/AccountButton.tsx), by who the person is:
+	// - nobody: a person icon ("Iniciar sesión" / "Sign in" / "Entrar" written out on wide screens);
+	//   hidden on the sign-in pages themselves.
+	// - a guest or an account: their initial; it opens a menu with their name ("Invitado" under it
+	//   for a guest) and one action.
+	// When: nobody presses the person icon, or a guest presses "Iniciar sesión" in the menu.
+	Navigate(SignInURL(currentURL())) // view_sign_in.go; continues here afterwards
+	// When: an account presses "Cerrar sesión" / "Sign out" / "Sair" in the menu.
+	AppShellOnSignedOut()
+}
+
+// AppShellOnSignedOut forgets the account. If the current page needs an identity (a game), the page
+// then sends the person to authenticate and back (routes.go#RequireOperation).
+func AppShellOnSignedOut() {
+	SignOut() // state_app.go
 }
 
 // AppShellOnLanguagePicked: every text on screen switches at once. No call, no navigation.

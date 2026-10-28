@@ -17,6 +17,7 @@
     "@playhoot/device": "*",
     "@playhoot/feature-session-join": "*",
     "@playhoot/feature-session-play": "*",
+    "@playhoot/feature-sign-in": "*",
     "@playhoot/game-host": "*",
     "@playhoot/protocol": "*",
     "react": "^19.3.1",

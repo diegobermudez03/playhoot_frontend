@@ -9,13 +9,14 @@ What happens, step by step, in every flow built so far: external calls, what is 
 | Where | What | Lifetime | Mirror |
 | --- | --- | --- | --- |
 | **Browser storage** (localStorage) | `playhoot.credential.v1` (token, userUUID, kind, displayName) · `playhoot.locale.v1` (chosen language) · `playhoot.sound.v1` (on/off) | Until the person clears site data | [state_app.go](mirror/state_app.go) |
-| **Global state** | `Auth` (unknown / none / guest / authenticated + userUUID + displayName) · `Locale` | The open tab | [state_app.go](mirror/state_app.go) |
+| **Global state** | `Auth` (unknown / none / guest / authenticated + userUUID + displayName) · `Operations` (the backend's catalog: each operation's minimum level) · `Locale` | The open tab | [state_app.go](mirror/state_app.go) |
+| **Feature state** (Guest sign-in) | the name being submitted · submitting · error · the idempotency key of that name | While the guest page is open | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | **Feature state** (Join Session) | `Target` (from the URL) · `SessionUUID` (learned) · `View` (the current phase; during a game also `Connection`: connected / reconnecting) · the live link to the current connection | While a Session route is open; discarded when leaving it | [state_joinsession.go](mirror/state_joinsession.go) |
 | **Feature state** (Session Play) | the game's GameHost status · refused game messages | One started game (kept across reconnections); discarded when the game screen goes away | [state_sessionplay.go](mirror/state_sessionplay.go) |
 | **Browser Cache Storage** | `playhoot-game-artifacts-v1`: verified game artifacts by SHA-256; `playhoot-game-assets-v1`: verified game assets by SHA-256 | Until the person clears site data (content never changes for a hash) | [state_gamehost.go](mirror/state_gamehost.go) |
 | **GameHost state** | phase (loading / starting / running / failed / disposed) · the iframe · game sample ids ↔ connection sequences | One game run; disposed with its screen | [state_gamehost.go](mirror/state_gamehost.go) |
 | **Connection state** | sample sequence · the player's game state rebuilt from views · pending commands | One WebSocket; a reconnection starts a new one from zero | [state_connection.go](mirror/state_connection.go) |
-| **Component state** | Enter a code: the code being typed · Name step: the name being typed · Lobby: "link copied" flag | While the component is on screen | the screen's `view_*.go` |
+| **Component state** | Enter a code: the code being typed · Guest page: the name being typed · Lobby: "link copied" flag · top bar: account menu open | While the component is on screen | the screen's `view_*.go` |
 
 Rule of the architecture: nothing of a feature survives leaving its route. Coming back rebuilds it from the URL plus the backend.
 
@@ -23,7 +24,8 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 
 | When | Call | With | Answer used for |
 | --- | --- | --- | --- |
-| Name submitted (no identity yet) | `POST /v1/guests` | `display_name`, `idempotency_key` | `user_uuid` + `token` → stored as the credential |
+| Page load (flow 1), retried until it answers | `GET /v1/identity/operations` | no credential | Each operation's minimum level → where to send a person to authenticate (flow 15) |
+| Name submitted on the guest page (flow 15) | `POST /v1/guests` | `display_name`, `idempotency_key` | `user_uuid` + `token` → stored as the credential |
 | Joining, by code | WebSocket `/v1/play/join/{joinCode}?device=desktop\|mobile` | token in subprotocol | Opening it IS joining; then server messages |
 | Joining / reconnecting, by Session | WebSocket `/v1/play/join/sessions/{sessionUUID}/player?device=desktop\|mobile` | token in subprotocol | Same |
 | The game screen opens (only when the artifact is not cached yet) | `GET` the signed artifact URL from `session_started` (storage, not the backend API) | no credentials | The game's HTML, accepted only if its SHA-256 matches; cached by hash so later loads skip the network |
@@ -45,9 +47,10 @@ sequenceDiagram
   B->>G: read credential → Auth = none | guest | authenticated
   B->>G: read language → saved choice, else best device match, else English
   G->>R: resolve the URL → mount its screen
+  G->>G: GET /v1/identity/operations → Operations (asked again after 1, 2, 4… s, at most 30, while unreachable)
 ```
 
-No network call: the stored credential is trusted locally until a backend call rejects it (flow 10).
+The stored credential is trusted locally until a backend call rejects it (flow 10). The only call is the operation catalog; a route that needs it (a game) shows an empty page until it arrives.
 
 ## 2. Enter a code → a join link
 
@@ -60,33 +63,25 @@ A join link opened directly (shared by someone) skips this screen and starts at 
 
 ## 3. Joining by code
 
-The Session route creates the feature from the URL: `Target = {joinCode}`, `View = connecting`, then `Start()`:
+The Session route needs `JOIN_SESSION_AS_PLAYER`, which the catalog allows to guests. Without an identity the route sends the person to the guest page first (flow 15) and they come back here. With one, it creates the feature from the URL: `Target = {joinCode}`, `View = connecting`, then `Start()`:
 
 ```mermaid
 sequenceDiagram
   participant U as Person
+  participant R as Route
   participant F as Join feature
-  participant G as Global state
   participant API as Backend
-  F->>G: Auth?
-  alt no identity (first visit)
-    F->>U: View = identity ("What should we call you?")
-    U->>F: SubmitDisplayName("Ana")
-    Note over F: rule: 1–64 chars, else error without calling the backend
-    F->>API: POST /v1/guests {display_name, idempotency_key}
-    API-->>F: 201 {user_uuid, token}
-    F->>G: SignIn(credential) → Auth = guest; saved to browser storage
-  else already guest/authenticated (later visits)
-    Note over F: no name asked
+  alt no identity
+    R->>U: REPLACE URL with /sign-in/guest?next=/join/{code} (flow 15)
+    U->>R: comes back to /join/{code} as a guest
   end
+  R->>F: create from the URL, Start()
   F->>API: WebSocket /v1/play/join/{code} (token in subprotocol)
   F->>U: View = connecting
   API-->>F: lobby_update {session_uuid, members}
   F->>F: SessionUUID = session_uuid; View = lobby(members, IsYou marked)
   Note over F,U: Router REPLACES the URL with /sessions/{uuid}/play (same feature, same connection)
 ```
-
-Errors of `POST /v1/guests` stay in the name step: `400` → "that name can't be used", `rate_limited` → "wait N seconds", anything else → "couldn't reach Playhoot". The idempotency key is reused if the same name is submitted again, so a retry never creates two guests.
 
 ## 4. In the lobby
 
@@ -156,7 +151,7 @@ The URL is already `/sessions/{uuid}/play`, so a refresh runs flow 1 (identity f
 
 ## 10. A stored credential stops working
 
-Any HTTP call that carried a token and gets `401 token_invalid` → the credential is renewed once (`credentials.refresh()`, one renewal shared by concurrent calls) and the call is sent again with the new token; only when it cannot be renewed (or is refused again) → `SignOut()`: credential removed from storage, `Auth = none`, and the next join asks for a name again. The person never sees an authorization error (decided by the human, 2026-10-25). Until authentication exists the renewal is a placeholder that never renews, so today a refused credential is forgotten as before. (A refused WebSocket handshake is invisible to the browser, so it shows as "unreachable".)
+Any HTTP call that carried a token and gets `401 token_invalid` → the credential is renewed once (`credentials.refresh()`, one renewal shared by concurrent calls) and the call is sent again with the new token; only when it cannot be renewed (or is refused again) → `SignOut()`: credential removed from storage, `Auth = none`, and a page that needs an identity (a game) sends the person to authenticate and back (flow 15). The person never sees an authorization error (decided by the human, 2026-10-25). Until authentication exists the renewal is a placeholder that never renews, so today a refused credential is forgotten as before. (A refused WebSocket handshake is invisible to the browser, so it shows as "unreachable".)
 
 ## 11. Playing: what the connection does
 
@@ -213,3 +208,14 @@ sequenceDiagram
 ## 14. Telemetry (what the platform sees)
 
 ADR-0007. While the app runs, the features say what happened (connections closing, reconnections, resyncs, how a join ended, load and READY times of the game, game messages refused, GameHost failures) and the route error boundary says when a screen crashed. One module classifies them into the backend's catalog, every error with its origin (presentation, bridge, transport, backend rejection, artifact): [external.go](mirror/external.go) `TelemetryEvent`. They wait in a queue, the same ones merged with a count, and leave in one batch every 30 s (sooner when 50 wait, and once more when the tab is hidden or closed), only once the person has an identity. Nothing on screen changes; a batch that fails is lost. In development every event is also printed to the console (`[telemetry]`).
+
+## 15. Signing in (guest or account)
+
+Which identity an operation needs comes from the backend's catalog (flow 1), on the scale anonymous < guest < account; an operation the catalog does not list, or a level this code does not know, needs an account. Choosing an operation above the person's level sends them to the most flexible way in that the operation allows, carrying where they were going as `next` (only a path of this app; anything else is ignored); once authenticated, the page continues to `next` by itself (REPLACE). It is UX only: the backend still decides.
+
+| Page | Reached | What it does |
+| --- | --- | --- |
+| Guest page `/sign-in/guest?next=…` | An operation that allows guests (joining a game) without an identity | "What should we call you?": `POST /v1/guests` with the name (1–64 chars checked first; the same name retried reuses its idempotency key, so a retry never creates two guests) → signed in as a guest, kept in this browser. Errors stay on the page: `400` → "that name can't be used", `rate_limited` → "wait N seconds", anything else → "couldn't reach Playhoot". Links to the sign-in page, keeping `next`. Says which game when `next` is a join link. |
+| Sign-in page `/sign-in?next=…` | The top bar's corner, the guest page, or an operation that needs an account | Sign in or register with an account. "Continue with Google" is shown disabled ("coming soon") until the backend's Google sign-in exists; development builds sign in with the backend's test accounts. A guest is warned that an account replaces that guest and its games do not move to it. |
+
+The top bar's corner: nobody → a person icon to the sign-in page (hidden on the sign-in pages); a guest or an account → their initial, opening a menu with their name and "Sign in" (guest, to the sign-in page) or "Sign out" (account: `SignOut()`; a game page then sends them to authenticate again). Mirror: [routes.go](mirror/routes.go) (`RequireOperation`), [view_sign_in_guest.go](mirror/view_sign_in_guest.go), [view_sign_in.go](mirror/view_sign_in.go), [view_app_shell.go](mirror/view_app_shell.go).

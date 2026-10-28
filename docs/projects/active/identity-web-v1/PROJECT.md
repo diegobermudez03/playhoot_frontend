@@ -19,14 +19,14 @@ Decided by the human on 2026-10-25: this project goes before the SDK built-ins (
 
 ## Current Work
 
-Created 2026-10-25. The human accepted the plan except the refresh token location: the client keeps it (web `localStorage`) and sends it in the request body instead of an `HttpOnly` cookie, so the web and the future mobile app share one backend contract. Next: WORK-0001, after the backend's WORK-0056 records the contract.
+Created 2026-10-25. The human accepted the plan except the refresh token location: the client keeps it (web `localStorage`) and sends it in the request body instead of an `HttpOnly` cookie, so the web and the future mobile app share one backend contract. The backend's contract (WORK-0056) and operation catalog (WORK-0062) were done 2026-10-27. WORK-0006 IMPLEMENTING since 2026-10-27: the catalog in the global state, `RequireOperation` on the Session routes, `/sign-in` and `/sign-in/guest` with return to `next`, guest creation moved out of Join into `@playhoot/feature-sign-in`, and the top bar corner are built and verified (unit tests, `npm run check`, browser walk-through against the real backend); its "Create Session" button is built together with `session-play-v1` CHECKLIST P (host experience), next.
 
 ## Work
 
 | Order | Work | Status |
 |------:|------|--------|
 | 0 | [WORK-0001](works/WORK-0001-client-credential-contract-and-decisions.md) — Client credential contract and decisions | PLANNED |
-| 0b | [WORK-0006](works/WORK-0006-authentication-levels-sign-in-routes-and-return-to-intent.md) — Authentication levels, sign-in routes and return to intent | PLANNED |
+| 0b | [WORK-0006](works/WORK-0006-authentication-levels-sign-in-routes-and-return-to-intent.md) — Authentication levels, sign-in routes and return to intent | IMPLEMENTING |
 | 1 | [WORK-0002](works/WORK-0002-real-guest-on-the-web.md) — Real guest on the web | PLANNED |
 | 2 | [WORK-0003](works/WORK-0003-account-sign-in-with-the-local-provider.md) — Account sign-in with the local provider | PLANNED |
 | 3 | [WORK-0004](works/WORK-0004-google-sign-in-on-the-web.md) — Google sign-in on the web | PLANNED |
