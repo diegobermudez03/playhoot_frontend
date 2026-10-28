@@ -31,7 +31,7 @@ export type RejectReason = (typeof rejectReasons)[number];
 export const sessionStatuses = ['FINISHED', 'CANCELLED', 'EXPIRED', 'ABORTED'] as const;
 export type SessionEndStatus = (typeof sessionStatuses)[number];
 
-const rejectedSchema = z.object({
+export const rejectedSchema = z.object({
   type: z.literal('rejected'),
   // Unknown future reasons still decode; the client treats them as generic.
   reason: z.string(),
@@ -55,13 +55,16 @@ const rejectedSchema = z.object({
 // Display names come from the backend's Identity; empty when it has none for someone.
 const displayName = z.string().default('');
 
-const lobbyUpdateSchema = z.object({
+export const lobbyUpdateSchema = z.object({
   type: z.literal('lobby_update'),
   session_uuid: z.string().min(1),
   members: z.array(z.object({ user_uuid: z.string().min(1), display_name: displayName })),
+  // How many players the game can start with (2026-10-27). Absent from an older backend.
+  min_players: z.number().int().nonnegative().optional(),
+  max_players: z.number().int().nonnegative().optional(),
 });
 
-const participantSchema = z.object({
+export const participantSchema = z.object({
   participant_id: z.string().min(1),
   user_uuid: z.string().min(1),
   display_name: displayName,
@@ -95,7 +98,7 @@ const frontendAssetSchema = z.object({
   url: z.string().min(1),
 });
 
-const frontendSchema = z.object({
+export const frontendSchema = z.object({
   url: z.string().min(1),
   sha256: z.string().min(1),
   expires_at: z.string().min(1),
@@ -112,7 +115,7 @@ const playerSessionStartedSchema = z.object({
   frontend: frontendSchema,
 });
 
-const sessionEndSchema = z.object({
+export const sessionEndSchema = z.object({
   type: z.enum(['session_ended', 'lobby_closed']),
   status: z.string(),
   end_cause: z.string(),

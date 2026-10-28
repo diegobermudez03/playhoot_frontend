@@ -1,12 +1,16 @@
 import { createAppState, type AppState } from '@playhoot/app-core';
 import {
+  createAdminConnector,
   createHttpClient,
   createIdentityClient,
   createSessionConnector,
+  createSessionsClient,
   createTelemetryReporter,
+  type AdminConnector,
   type HttpClient,
   type IdentityClient,
   type SessionConnector,
+  type SessionsClient,
 } from '@playhoot/communication';
 import { createDeviceCapabilitiesStore, type DeviceCapabilitiesStore } from '@playhoot/device';
 import {
@@ -37,6 +41,8 @@ import { config } from './config';
 // Everything app-wide the web host runs on, created once at startup. Features receive what they
 // need from here; nothing else constructs clients or reads the credential.
 export interface Services {
+  // The creator's admin connections to their Sessions.
+  admins: AdminConnector;
   app: AppState;
   device: DeviceCapabilitiesStore;
   // Loads GameVersion frontend artifacts, verified by hash and cached in the browser.
@@ -46,6 +52,8 @@ export interface Services {
   http: HttpClient;
   identity: IdentityClient;
   sessions: SessionConnector;
+  // Session creation (REST).
+  sessionsApi: SessionsClient;
   sound: SoundPlayer;
   // Classified telemetry, sent to the backend in batches (plan §17).
   telemetry: AppTelemetry;
@@ -83,6 +91,10 @@ export function createServices(): Services {
     import.meta.env.DEV ? (event) => console.debug('[telemetry]', event) : undefined,
   );
   return {
+    admins: createAdminConnector({
+      realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
+      credentials: app.credentials,
+    }),
     app,
     device,
     gameArtifacts,
@@ -90,6 +102,7 @@ export function createServices(): Services {
     http,
     identity: createIdentityClient(http),
     sessions,
+    sessionsApi: createSessionsClient(http),
     sound,
     telemetry,
   };

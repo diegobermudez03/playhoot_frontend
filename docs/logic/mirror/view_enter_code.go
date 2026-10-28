@@ -17,6 +17,10 @@ func EnterCodeView() {
 
 	// When: the person presses the button "Unirme" / "Join" / "Entrar" (enabled only with 6 characters).
 	EnterCodeOnJoinPressed(screen)
+
+	// When: the person presses "Crear una partida" / "Host a game" / "Criar uma partida" (shown to
+	// everyone). rule: without an account, signing in first and back (routes.go#RequireOperation).
+	Navigate("/sessions/new") // view_host.go
 }
 
 // EnterCodeOnCodeTyped keeps only valid code characters.

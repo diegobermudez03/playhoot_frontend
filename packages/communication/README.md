@@ -2,7 +2,7 @@
 
 HTTP/WebSocket clients and credential-aware transport.
 
-Status: REALTIME CLIENT: HTTP client, `IdentityClient`, `SessionConnector` (player connection, message validation, close classification, coalesced SAMPLEs, correlated and retried COMMANDs, reconciled views with automatic resync and `currentView()` (state + ack), leave, game fault reports), and `createTelemetryReporter` (client telemetry in batches to the backend, ADR-0007). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: REALTIME CLIENT: HTTP client, `IdentityClient` (guests, operation catalog), `SessionsClient` (create a Session), `AdminConnector` (the creator's admin connection: start, cancel, perspective, the watched participant's reconciled views), `SessionConnector` (player connection, message validation, close classification, coalesced SAMPLEs, correlated and retried COMMANDs, reconciled views with automatic resync and `currentView()` (state + ack), leave, game fault reports), and `createTelemetryReporter` (client telemetry in batches to the backend, ADR-0007). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

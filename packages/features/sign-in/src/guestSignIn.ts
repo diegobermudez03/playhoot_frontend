@@ -60,6 +60,11 @@ export function createGuestSignIn(deps: GuestSignInDeps): GuestSignIn {
       const result = await deps.identity.createGuest(displayName, pending.key);
       if (result.ok) {
         pending = null;
+        // Signed in with an account meanwhile (from the account option): a guest never replaces it.
+        if (deps.app.store.getState().auth.status === 'authenticated') {
+          store.setState({ submitting: false, error: null });
+          return false;
+        }
         deps.app.signIn({ ...result.value, kind: 'guest', displayName });
         store.setState({ submitting: false, error: null });
         return true;

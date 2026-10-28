@@ -105,4 +105,16 @@ describe('createGuestSignIn', () => {
     await limited.signIn.submit('Ana');
     expect(limited.state().error).toEqual({ kind: 'rate-limited', retryAfterSeconds: 7 });
   });
+
+  it('never replaces an account signed into while the guest was being created', async () => {
+    let answer: (value: Awaited<ReturnType<typeof created>>) => void = () => undefined;
+    const t = setup(() => new Promise((resolve) => (answer = resolve)));
+
+    const submitted = t.signIn.submit('Ana');
+    t.app.signIn({ token: 'a', userUUID: 'acc', kind: 'account', displayName: 'Test user 1' });
+    answer({ ok: true, value: { userUUID: 'u-1', token: 'g' } });
+
+    expect(await submitted).toBe(false);
+    expect(t.app.store.getState().auth).toMatchObject({ status: 'authenticated', userUUID: 'acc' });
+  });
 });

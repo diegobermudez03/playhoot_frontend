@@ -50,3 +50,8 @@ export const normalCloseReasons = {
   left: 'left',
   replaced: 'replaced',
 } as const;
+
+// The creator's admin connection to their Session (lobby, start, cancel, watching players).
+export function adminBySessionPath(sessionUUID: string): string {
+  return `/v1/play/join/sessions/${encodeURIComponent(sessionUUID)}/admin`;
+}

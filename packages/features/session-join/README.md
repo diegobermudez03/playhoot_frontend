@@ -6,7 +6,7 @@ Status: IMPLEMENTED: `createJoinSession` (connecting, lobby, started, typed outc
 
 ## Owns
 
-Feature state and communication ports for opening `/join/{joinCode}` directly (plan §5, §13.2, §18 step 2): read the auth snapshot (the app opens the feature only once the person has an identity the backend accepts for joining; becoming a guest is `@playhoot/feature-sign-in`), read the device capabilities the join needs, open the backend join flow through `communication`, and expose accepted / rejected-with-typed-reason state plus the transition to Session Play. Web/mobile presentation lives in the apps.
+Feature state and communication ports for opening `/join/{joinCode}` directly (plan §5, §13.2, §18 step 2): read the auth snapshot (the app opens the feature only once the person has an identity the backend accepts for joining; becoming a guest is `@playhoot/feature-sign-in`), read the device capabilities the join needs, open the backend join flow through `communication`, and expose accepted / rejected-with-typed-reason state plus the transition to Session Play. Web/mobile presentation lives in the apps; the web embeds the same player screens in the host screen for a creator who plays (`PlayerSession` with `embedded`: no URL changes, leaving reported to the host).
 
 ## Does not own
 

@@ -2,8 +2,10 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 
 import { DesignRoute } from '../dev/DesignRoute';
 import { GameHostLabRoute } from '../dev/GameHostLabRoute';
-import { enterCodePath, guestSignInRoute, signInRoute } from '../features/paths';
+import { enterCodePath, guestSignInRoute, newSessionPath, signInRoute } from '../features/paths';
 import { EnterCodeRoute } from '../features/session-join/EnterCodeRoute';
+import { CreateSessionRoute } from '../features/session-host/CreateSessionRoute';
+import { HostRoute } from '../features/session-host/HostRoute';
 import { SessionRoute } from '../features/session-join/SessionRoute';
 import { GuestSignInRoute } from '../features/sign-in/GuestSignInRoute';
 import { SignInRoute } from '../features/sign-in/SignInRoute';
@@ -21,6 +23,9 @@ const routes: RouteObject[] = [
   // Where a person is sent to authenticate, with `next` to continue (features/access.tsx).
   { path: signInRoute, element: <SignInRoute /> },
   { path: guestSignInRoute, element: <GuestSignInRoute /> },
+  // The creator's side: create a Session (an account's), then its host screen.
+  { path: newSessionPath, element: <CreateSessionRoute /> },
+  { path: '/sessions/:sessionUUID/host', element: <HostRoute /> },
   {
     // One pathless parent for both Session URLs, so moving from the code URL to the UUID URL
     // keeps the same mounted feature (and its connection).

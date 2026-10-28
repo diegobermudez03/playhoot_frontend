@@ -25,6 +25,8 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | When | Call | With | Answer used for |
 | --- | --- | --- | --- |
 | Page load (flow 1), retried until it answers | `GET /v1/identity/operations` | no credential | Each operation's minimum level → where to send a person to authenticate (flow 15) |
+| "Crear una partida" (flow 16) | `POST /v1/sessions` | `game_uuid` (fixed for now), `idempotency_key` (one per visit) | `session_uuid` + `join_code` → the host screen's URL |
+| The host screen opens (flow 16) | WebSocket `/v1/play/join/sessions/{sessionUUID}/admin` | token in subprotocol | Lobby with player limits, start / cancel / perspective results, the watched player's views |
 | Name submitted on the guest page (flow 15) | `POST /v1/guests` | `display_name`, `idempotency_key` | `user_uuid` + `token` → stored as the credential |
 | Joining, by code | WebSocket `/v1/play/join/{joinCode}?device=desktop\|mobile` | token in subprotocol | Opening it IS joining; then server messages |
 | Joining / reconnecting, by Session | WebSocket `/v1/play/join/sessions/{sessionUUID}/player?device=desktop\|mobile` | token in subprotocol | Same |
@@ -219,3 +221,18 @@ Which identity an operation needs comes from the backend's catalog (flow 1), on 
 | Sign-in page `/sign-in?next=…` | The top bar's corner, the guest page, or an operation that needs an account | Sign in or register with an account. "Continue with Google" is shown disabled ("coming soon") until the backend's Google sign-in exists; development builds sign in with the backend's test accounts. A guest is warned that an account replaces that guest and its games do not move to it. |
 
 The top bar's corner: nobody → a person icon to the sign-in page (hidden on the sign-in pages); a guest or an account → their initial, opening a menu with their name and "Sign in" (guest, to the sign-in page) or "Sign out" (account: `SignOut()`; a game page then sends them to authenticate again). Mirror: [routes.go](mirror/routes.go) (`RequireOperation`), [view_sign_in_guest.go](mirror/view_sign_in_guest.go), [view_sign_in.go](mirror/view_sign_in.go), [view_app_shell.go](mirror/view_app_shell.go).
+
+## 16. Hosting a game (the creator's side)
+
+"Crear una partida" on Enter a code needs `CREATE_SESSION` (an account): without one, flow 15 first, then back. `/sessions/new` creates a Session of the fixed test game (placeholder until a catalog exists; one idempotency key per visit, so a retry never creates two) and REPLACES the URL with `/sessions/{uuid}/host?code={code}` (the code is in the URL because the backend tells it only at creation).
+
+The host screen opens the creator's admin connection (needs `JOIN_SESSION_AS_ADMIN`) and shows, by phase:
+
+| Phase | What the creator sees and can do |
+| --- | --- |
+| Lobby | The code and invite link, the players as they join, **Iniciar partida** enabled only within the game's player limits (`lobby_update.min_players` / `max_players`; under it how many are missing; the backend still refuses a wrong count), **Jugar también**, **Cancelar partida** (asks once more). |
+| Playing too | The player's own screens of the same Session (lobby, game), with a host bar above: start (lobby) and cancel go through the admin connection. Any end of the player's part (leaving, a refusal, a stopped game) returns to the admin screens. |
+| Started, watching | One button per participant ("Viendo a …"); the chosen player's game runs in the GameHost read only (nothing the game sends leaves the device, and no play telemetry is sent); only that player's views reach it, and a selection the backend does not accept goes back to the previous player. The first participant is watched right away; after a reconnection, the same one. A creator who plays (here or on another device) cannot watch: a note says so. |
+| Closed | Cancelled, ended, refused (each known reason with its own text: not the creator, no such game, the lobby closed, a limit reached, open in too many tabs), unreachable or connection lost; "Try again" for limits, too many tabs, unreachable, connection lost and unknown refusals; "Back to the start". |
+
+The admin connection reconnects by itself after 1, 2 and 4 seconds when lost after opening; a reload rebuilds the screen from the URL. Mirror: [view_host.go](mirror/view_host.go), [state_hostsession.go](mirror/state_hostsession.go).

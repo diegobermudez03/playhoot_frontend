@@ -133,14 +133,16 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## P. Admin (host) experience (pulled in by the human 2026-10-27, definitive, built together with `identity-web-v1` WORK-0006)
 
+Done 2026-10-27: `@playhoot/feature-session-host`, `AdminConnector`, routes `/sessions/new` and `/sessions/:uuid/host?code=` (`apps/web/src/features/session-host/`), the player's screens embeddable (`PlayerSession`) for the creator who plays. Decided while building: the join code travels in the host URL; the GameHost shows the watched player's game read only (samples and commands dropped by the host's live link, no game fault reports from an admin); a new participant is a new game run; "Play too" applies only from this page (a creator playing on another device makes the backend refuse watching, shown as a note). Verified by unit tests, `npm run check` and a browser walk-through against the real backend with two browser contexts (account creates via sign-in, guest joins by code, start enabled by the limits, watching the guest's real Space Drift game, cancel for everyone, a second Session where the creator plays and starts from the host bar, reload of the host page).
+
 The creator's side of a Session, no longer provisional. Its entry is WORK-0006's "Create Session" button (account required), which for now always creates a Session of one game UUID hardcoded in the frontend (placeholder). The backend already implements the admin connection and its operations (`BACKEND_CONTRACT.md` "Admin -> server"); route name to confirm when designed (proposal: `/sessions/:sessionUUID/host`).
 
-- [ ] Create a Session (`POST /v1/sessions`, hardcoded game for now) and open the admin connection right away; the screen shows the join code and link to share; reloading the route rebuilds it from the URL and reconnects as admin
-- [ ] Lobby as admin: players appear as they join (`lobby_update`); "Start game" enabled only when the player count is within the game's limits, with "N more players needed" otherwise (backend, Z13); `start_session` outcomes shown, `invalid_player_count` included since the backend stays the authority
-- [ ] Cancel the Session from the lobby or during the game (`cancel_session`), with confirmation
-- [ ] The creator can also join as a player while in the lobby (no new players once started): a player connection in parallel; the creator then keeps only Start and Cancel (admin connection) over the player screen, and is never offered perspective selection (`creator_is_playing`)
-- [ ] An admin who does not play switches between the connected players' perspectives (`select_perspective`, FULL then patches, `resync`), with the game loaded by the GameHost in a read-only mode that never sends SAMPLE or COMMAND (decision: how the Host and the bridge express read-only)
-- [ ] Session end, admin reconnection and every rejection (`not_creator`, `too_many_admins`, `session_ended`, ...) shown with the existing outcomes; `docs/logic/` updated
+- [x] Create a Session (`POST /v1/sessions`, hardcoded game for now) and open the admin connection right away; the screen shows the join code and link to share; reloading the route rebuilds it from the URL and reconnects as admin
+- [x] Lobby as admin: players appear as they join (`lobby_update`); "Start game" enabled only when the player count is within the game's limits, with "N more players needed" otherwise (backend, Z13); `start_session` outcomes shown, `invalid_player_count` included since the backend stays the authority
+- [x] Cancel the Session from the lobby or during the game (`cancel_session`), with confirmation
+- [x] The creator can also join as a player while in the lobby (no new players once started): a player connection in parallel; the creator then keeps only Start and Cancel (admin connection) over the player screen, and is never offered perspective selection (`creator_is_playing`)
+- [x] An admin who does not play switches between the connected players' perspectives (`select_perspective`, FULL then patches, `resync`), with the game loaded by the GameHost in a read-only mode that never sends SAMPLE or COMMAND (decision: how the Host and the bridge express read-only)
+- [x] Session end, admin reconnection and every rejection (`not_creator`, `too_many_admins`, `session_ended`, ...) shown with the existing outcomes; `docs/logic/` updated
 
 ## O. NativeGameHost prototype (after N, decided by the human 2026-10-25)
 
@@ -172,7 +174,7 @@ The creator's side of a Session, no longer provisional. Its entry is WORK-0006's
 
 - [x] Z12. The backend takes the client's telemetry (2026-10-21, decided by the human, ADR-0007): `POST /v1/client-telemetry` in `api/clienttelemetry`, any identity, closed catalog, invalid events dropped and counted. Verified by backend unit tests and end to end
 
-- [ ] Z13. (backend; decided by the human 2026-10-27, for section P) The admin's `lobby_update` carries the game version's `min_players` and `max_players`, so the host screen enables "Start game" and tells how many players are missing; the backend keeps refusing a wrong count with `invalid_player_count`.
+- [x] Z13. (backend; decided by the human 2026-10-27, for section P; done 2026-10-27: every `lobby_update` carries them, players' too) The admin's `lobby_update` carries the game version's `min_players` and `max_players`, so the host screen enables "Start game" and tells how many players are missing; the backend keeps refusing a wrong count with `invalid_player_count`.
 
 ## Placeholders Left Behind
 

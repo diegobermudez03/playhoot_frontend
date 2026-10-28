@@ -33,6 +33,12 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Every page (top bar), nobody signed in | Person icon (**Iniciar sesión** / Sign in / Entrar on wide screens) | `Navigate(SignInURL(here))` | [view_app_shell.go](mirror/view_app_shell.go) |
 | Every page (top bar), guest | Initial → **Iniciar sesión** / Sign in / Entrar | `Navigate(SignInURL(here))` | [view_app_shell.go](mirror/view_app_shell.go) |
 | Every page (top bar), account | Initial → **Cerrar sesión** / Sign out / Sair | `AppShellOnSignedOut` | [view_app_shell.go](mirror/view_app_shell.go) |
+| Enter a code (`/join`) | **Crear una partida** / Host a game / Criar uma partida | `Navigate("/sessions/new")` (sign in first without an account) | [view_enter_code.go](mirror/view_enter_code.go) |
+| Host screen: lobby | **Iniciar partida** / Start game / Começar partida | `host.StartGame()` | [view_host.go](mirror/view_host.go) |
+| Host screen: lobby | **Jugar también** / Play too / Jogar também | `host.PlayToo()` | [view_host.go](mirror/view_host.go) |
+| Host screen (any phase) | **Cancelar partida** → **Sí, cancelar** / Cancel game → Yes, cancel | `host.Cancel()` | [view_host.go](mirror/view_host.go) |
+| Host screen: game | A participant's button ("Viendo a" / Watching / Vendo) | `host.Watch(participantID)` | [view_host.go](mirror/view_host.go) |
+| Host screen: outcome | **Intentar de nuevo** / **Volver al inicio** | `host.Retry()` / `Navigate("/join")` | [view_host.go](mirror/view_host.go) |
 | Guest page (`/sign-in/guest`) | Tu nombre / Your name / Seu nome (field) | `GuestSignInState.Name` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Guest page (`/sign-in/guest`) | **¡A jugar!** / Let's play / Bora jogar | `GuestSignInOnSubmitted` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Guest page (`/sign-in/guest`) | **Inicia sesión o regístrate** / Sign in or sign up / Entre ou cadastre-se | `Navigate(SignInURL(next))` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |

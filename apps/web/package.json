@@ -15,6 +15,7 @@
     "@playhoot/app-core": "*",
     "@playhoot/communication": "*",
     "@playhoot/device": "*",
+    "@playhoot/feature-session-host": "*",
     "@playhoot/feature-session-join": "*",
     "@playhoot/feature-session-play": "*",
     "@playhoot/feature-sign-in": "*",

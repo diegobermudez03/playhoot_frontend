@@ -48,6 +48,14 @@ func Router(url string) {
 			SessionRouteView(SessionTarget{Kind: "session", SessionUUID: param(url, "sessionUUID")}) // view_session.go
 		})
 
+	case url == "/sessions/new":
+		RequireOperation("CREATE_SESSION", url, func() { CreateSessionView() }) // view_host.go
+
+	case matches(url, "/sessions/{sessionUUID}/host?code={joinCode}"):
+		RequireOperation("JOIN_SESSION_AS_ADMIN", url, func() {
+			HostView(param(url, "sessionUUID"), param(url, "joinCode")) // view_host.go
+		})
+
 	case matches(url, "/sign-in/guest?next={next}"):
 		GuestSignInView(safeNext(url)) // view_sign_in_guest.go
 
@@ -100,6 +108,7 @@ const EnterCodeURL = "/join"
 
 func JoinURL(joinCode string) string           { return "/join/" + joinCode }
 func SessionPlayURL(sessionUUID string) string { return "/sessions/" + sessionUUID + "/play" }
+func HostURL(sessionUUID, joinCode string) string { return "/sessions/" + sessionUUID + "/host?code=" + joinCode }
 func SignInURL(next string) string             { return "/sign-in?next=" + urlEncode(next) }
 func GuestSignInURL(next string) string        { return "/sign-in/guest?next=" + urlEncode(next) }
 

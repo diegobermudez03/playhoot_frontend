@@ -13,6 +13,22 @@ package mirror
 // code: packages/communication/src/identityClient.ts#listOperations
 func ListOperations() (map[string]string, *HttpFailure) { return nil, nil }
 
+// CreateSession creates a Session of a game as the signed-in account.
+// endpoint: POST /v1/sessions {game_uuid, idempotency_key} (Bearer)
+// answer: 201 {session_uuid, join_code, lobby_expires_at}; 404 when the game is not playable
+// code: packages/communication/src/sessionsClient.ts#createSession
+func CreateSession(gameUUID, idempotencyKey string) (struct{ SessionUUID, JoinCode string }, *HttpFailure) {
+	return struct{ SessionUUID, JoinCode string }{}, nil
+}
+
+// OpenAdminConnection opens the creator's admin connection to their Session (token in the
+// subprotocol, like a player's). Server messages: lobby_update (with min_players, max_players),
+// session_started (without the creator's participant), player_view of the watched participant (no
+// ack, no errors), start/cancel/select_perspective results, session_ended / lobby_closed, rejected.
+// endpoint: WebSocket /v1/play/join/sessions/{sessionUUID}/admin
+// code: packages/communication/src/adminConnection.ts
+func OpenAdminConnection(sessionUUID string) (Socket, *NoCredential) { return Socket{}, nil }
+
 // CreateGuest creates a guest identity for someone without an account.
 //
 //	POST /v1/guests   (no Authorization header)

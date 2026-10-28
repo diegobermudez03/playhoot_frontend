@@ -1,7 +1,7 @@
 import type { SessionTarget } from '@playhoot/communication';
 import { createJoinSession, type JoinSession } from '@playhoot/feature-session-join';
 import { operations } from '@playhoot/protocol';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { useStore } from 'zustand';
 
@@ -27,33 +27,63 @@ export function SessionRoute() {
 }
 
 function JoinSessionRoute() {
-  const target = useTarget();
-  const join = useJoinSession(target);
-  if (!join) return <AppShell>{null}</AppShell>;
-  return <SessionView join={join} />;
+  return <PlayerSession target={useTarget()} />;
 }
 
-function SessionView({ join }: { join: JoinSession }) {
+// The player's side of a Session inside another screen (the creator who also plays, from the host
+// screen): it never changes the URL, and says when the player's part ended instead of navigating.
+export interface EmbeddedPlayer {
+  // The code to show and share in the player's lobby.
+  joinCode: string | null;
+  onLeft(): void;
+  // Shown above the player's screens (the host's controls).
+  header: ReactNode;
+}
+
+export function PlayerSession({
+  target,
+  embedded,
+}: {
+  target: SessionTarget;
+  embedded?: EmbeddedPlayer;
+}) {
+  const join = useJoinSession(target);
+  if (!join) return <AppShell>{null}</AppShell>;
+  return <SessionView join={join} embedded={embedded} />;
+}
+
+function SessionView({
+  join,
+  embedded,
+}: {
+  join: JoinSession;
+  embedded: EmbeddedPlayer | undefined;
+}) {
   const state = useStore(join.store);
   const auth = useAuth();
   const layout = useLayout();
   const navigate = useNavigate();
   const location = useLocation();
   const target = state.target;
-  const joinCode = target.kind === 'joinCode' ? target.joinCode.toUpperCase() : null;
+  const joinCode =
+    embedded?.joinCode ?? (target.kind === 'joinCode' ? target.joinCode.toUpperCase() : null);
 
   // Once the Session is known, the URL names it, so refresh and reconnection work after the
   // start releases the code. Replace, so going back does not return to a dead code URL.
   useEffect(() => {
-    if (!state.sessionUUID) return;
+    if (!state.sessionUUID || embedded) return;
     const path = sessionPlayPath(state.sessionUUID);
     if (location.pathname !== path) navigate(path, { replace: true });
-  }, [state.sessionUUID, location.pathname, navigate]);
+  }, [state.sessionUUID, location.pathname, navigate, embedded]);
 
+  const onLeft = embedded?.onLeft;
+  // Embedded, any end of the player's part (a leave, a refusal, a stopped game) goes back to the
+  // host; as a route, only a leave navigates away (other endings show their outcome).
   useEffect(() => {
-    if (state.view.phase === 'closed' && state.view.outcome.kind === 'left')
-      navigate(enterCodePath);
-  }, [state.view, navigate]);
+    if (state.view.phase !== 'closed') return;
+    if (onLeft) onLeft();
+    else if (state.view.outcome.kind === 'left') navigate(enterCodePath);
+  }, [state.view, navigate, onLeft]);
 
   const copyInvite = useCallback(async () => {
     const path = joinCode
@@ -75,6 +105,7 @@ function SessionView({ join }: { join: JoinSession }) {
   // The game takes the whole screen on a landscape display (plan §6, §8).
   return (
     <AppShell immersive={state.view.phase === 'started' && layout === 'wide'}>
+      {embedded?.header}
       <SessionScreen
         state={state}
         layout={layout}

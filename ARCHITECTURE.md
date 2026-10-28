@@ -61,6 +61,8 @@ packages/
   features/
     session-join/           # feature logical state + ports
     session-play/
+    session-host/           # the creator's side of a Session (admin connection)
+    sign-in/                # becoming someone the backend accepts (guest; accounts later)
 fixtures/
   games/                    # small real game artifacts for end-to-end work
 ```

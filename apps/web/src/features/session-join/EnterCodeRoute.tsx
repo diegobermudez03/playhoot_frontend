@@ -2,9 +2,11 @@ import { joinCodeAlphabet, joinCodeLength } from '@playhoot/protocol';
 import { useState, type FormEvent } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
+import { operations } from '@playhoot/protocol';
 
+import { useNavigateToOperation } from '../access';
 import { useLayout } from '../layout';
-import { joinPath } from '../paths';
+import { joinPath, newSessionPath } from '../paths';
 import { AppShell, Button, Card, CodeInput, Logo, SplitStage, Stage } from '../../ui';
 import styles from './EnterCodeRoute.module.css';
 
@@ -13,6 +15,8 @@ import styles from './EnterCodeRoute.module.css';
 export function EnterCodeRoute() {
   const intl = useIntl();
   const navigate = useNavigate();
+  // Shown to everyone; without an account, choosing it goes through signing in first.
+  const goTo = useNavigateToOperation();
   const layout = useLayout();
   const [code, setCode] = useState('');
   const complete = code.length === joinCodeLength;
@@ -51,9 +55,14 @@ export function EnterCodeRoute() {
     </Card>
   );
   const footnote = (
-    <p className={styles.footnote}>
-      <FormattedMessage id="enterCode.footnote" />
-    </p>
+    <>
+      <p className={styles.footnote}>
+        <FormattedMessage id="enterCode.footnote" />
+      </p>
+      <Button variant="ghost" block onClick={() => goTo(operations.createSession, newSessionPath)}>
+        <FormattedMessage id="createSession.button" />
+      </Button>
+    </>
   );
 
   // Compact: the logo above the form. Wide: the logo beside it, so a phone held sideways shows the

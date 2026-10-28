@@ -392,7 +392,7 @@ function byteLength(message: PlayerClientMessage): number {
   return new TextEncoder().encode(JSON.stringify(message)).length;
 }
 
-function base64UrlUnpadded(text: string): string {
+export function base64UrlUnpadded(text: string): string {
   let binary = '';
   for (const byte of new TextEncoder().encode(text)) binary += String.fromCharCode(byte);
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
