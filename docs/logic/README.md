@@ -35,7 +35,8 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Every page (top bar), account | Initial → **Cerrar sesión** / Sign out / Sair | `AppShellOnSignedOut` | [view_app_shell.go](mirror/view_app_shell.go) |
 | Enter a code (`/join`) | **Crear una partida** / Host a game / Criar uma partida | `Navigate("/sessions/new")` (sign in first without an account) | [view_enter_code.go](mirror/view_enter_code.go) |
 | Host screen: lobby | **Iniciar partida** / Start game / Começar partida | `host.StartGame()` | [view_host.go](mirror/view_host.go) |
-| Host screen: lobby | **Jugar también** / Play too / Jogar também | `host.PlayToo()` | [view_host.go](mirror/view_host.go) |
+| Host screen: lobby | **Unirme a jugar** / Join the game / Entrar no jogo (the creator's own row, and the "¿Juegas tú?" hint) | `host.PlayToo()` | [view_host.go](mirror/view_host.go) |
+| Host screen: lobby, starting without playing | **Iniciar sin mí** / Start without me / Começar sem mim · **Unirme y empezar** / Join and start / Entrar e começar | `host.StartGame()` · `host.JoinAndStart()` | [view_host.go](mirror/view_host.go) |
 | Host screen (any phase) | **Cancelar partida** → **Sí, cancelar** / Cancel game → Yes, cancel | `host.Cancel()` | [view_host.go](mirror/view_host.go) |
 | Host screen: game | A participant's button ("Viendo a" / Watching / Vendo) | `host.Watch(participantID)` | [view_host.go](mirror/view_host.go) |
 | Host screen: outcome | **Intentar de nuevo** / **Volver al inicio** | `host.Retry()` / `Navigate("/join")` | [view_host.go](mirror/view_host.go) |

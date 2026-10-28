@@ -41,12 +41,22 @@ func HostView(sessionUUID string, joinCode string) {
 		// "Opening your game…" / "Connection lost. Reconnecting…"
 	case host.State.View.Phase == "lobby":
 		// Invite (code tiles + "Copiar enlace de invitación": the code link, or the Session link
-		// when the code is unknown), players, then:
+		// when the code is unknown), players, then (decided by the human, 2026-10-27: the creator is
+		// never a player by default, and cannot miss the choice):
+		// rule: while the creator is not among the players (from here or another device), the list
+		//       ends with their own row "Tú · solo diriges" + "Unirme a jugar" -> host.PlayToo().
+		// rule: when players are missing and the creator does not play, the hint asks "¿Juegas tú?"
+		//       with "Unirme a jugar" -> host.PlayToo().
 		// When: "Iniciar partida" (enabled only when the count is within the game's limits; under
-		//       it "N more players needed" / "at most M" / "from M to N players").
+		//       it "N more players needed" / "at most M" / "from M to N players"):
+		//   - the creator plays: host.StartGame();
+		//   - the creator does not play: asks "No estás jugando. ¿Iniciar sin ti?" with
+		//     "Iniciar sin mí" -> host.StartGame() and "Unirme y empezar" -> host.JoinAndStart().
 		host.StartGame()
-		// When: "Jugar también".
-		host.PlayToo()
+		// rule: a try to play that was refused or could not connect shows "No pudiste unirte como
+		//       jugador" with the player outcome's title, until the next try (a leave, an end of the
+		//       Session or a replaced connection show nothing here). "Iniciar sin mí" follows the
+		//       same player limits as "Iniciar partida".
 		// When: "Cancelar partida" then "Sí, cancelar" (asks once more).
 		host.Cancel()
 	case host.State.View.Phase == "started":

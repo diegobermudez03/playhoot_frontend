@@ -89,6 +89,8 @@ export interface HostSessionState {
   playing: boolean;
   // The backend refuses to show other players to a creator who plays (here or on another device).
   watchBlocked: boolean;
+  // "Join and start": the game starts as soon as the creator's player connection is in the lobby.
+  startWhenJoined: boolean;
   cancelling: boolean;
 }
 
@@ -117,13 +119,25 @@ export interface HostSession {
   watch(participantId: string): Promise<void>;
   // The creator also joins as a player (lobby only): the app opens a player connection for them.
   playToo(): void;
-  // Their player connection ended (they left): back to the admin screens.
+  // Joins as a player (lobby only) and starts once that player connection is in the lobby.
+  joinAndStart(): void;
+  // The creator's current player connection reached the lobby. Told by whoever owns that connection,
+  // never inferred from the admin's lobby updates: an older player connection closing may still be
+  // listed there, and starting then would leave the creator out of the game.
+  playerInLobby(): void;
+  // Their player connection ended (they left, or joining was refused): back to the admin screens,
+  // and a pending "join and start" is dropped.
   stopPlaying(): void;
   retry(): void;
   dispose(): void;
 }
 
 export const hostReconnectDelaysMs = [1000, 2000, 4000] as const;
+
+// Whether the creator is among the lobby's players (from this page or another device).
+export function hostPlays(view: Extract<HostView, { phase: 'lobby' }>): boolean {
+  return view.members.some((member) => member.isYou);
+}
 
 // Whether the lobby has a player count the game can start with, as far as the client knows.
 export function canStart(view: Extract<HostView, { phase: 'lobby' }>): boolean {
@@ -152,6 +166,7 @@ export function createHostSession(
     view: { phase: 'connecting', reconnectAttempt: 0 },
     playing: false,
     watchBlocked: false,
+    startWhenJoined: false,
     cancelling: false,
   }));
   const liveListeners = new Set<(event: SessionConnectionEvent) => void>();
@@ -361,6 +376,22 @@ export function createHostSession(
     });
   };
 
+  const startGame = async () => {
+    const view = store.getState().view;
+    if (view.phase !== 'lobby' || view.starting || !connection) return;
+    setView({ ...view, starting: true, startError: null });
+    const outcome = await connection.startSession();
+    const after = store.getState().view;
+    if (after.phase !== 'lobby') return; // started (session_started) or ended meanwhile
+    const startError: StartError | null =
+      outcome === 'started' || outcome === 'already_started' || outcome === 'start_in_progress'
+        ? null
+        : outcome === 'connection-closed' || outcome === 'unknown'
+          ? 'unavailable'
+          : outcome;
+    setView({ ...after, starting: false, startError });
+  };
+
   const live: HostLive = {
     subscribe(listener) {
       liveListeners.add(listener);
@@ -382,21 +413,7 @@ export function createHostSession(
     store,
     live,
     start: () => connect(0),
-    async startGame() {
-      const view = store.getState().view;
-      if (view.phase !== 'lobby' || view.starting || !connection) return;
-      setView({ ...view, starting: true, startError: null });
-      const outcome = await connection.startSession();
-      const after = store.getState().view;
-      if (after.phase !== 'lobby') return; // started (session_started) or ended meanwhile
-      const startError: StartError | null =
-        outcome === 'started' || outcome === 'already_started' || outcome === 'start_in_progress'
-          ? null
-          : outcome === 'connection-closed' || outcome === 'unknown'
-            ? 'unavailable'
-            : outcome;
-      setView({ ...after, starting: false, startError });
-    },
+    startGame,
     async cancel() {
       if (!connection || store.getState().cancelling) return;
       store.setState({ cancelling: true });
@@ -408,8 +425,17 @@ export function createHostSession(
     playToo() {
       if (store.getState().view.phase === 'lobby') store.setState({ playing: true });
     },
+    joinAndStart() {
+      if (store.getState().view.phase !== 'lobby') return;
+      store.setState({ playing: true, startWhenJoined: true });
+    },
+    playerInLobby() {
+      if (!store.getState().startWhenJoined) return;
+      store.setState({ startWhenJoined: false });
+      void startGame();
+    },
     stopPlaying() {
-      store.setState({ playing: false });
+      store.setState({ playing: false, startWhenJoined: false });
     },
     retry: () => connect(0),
     dispose() {

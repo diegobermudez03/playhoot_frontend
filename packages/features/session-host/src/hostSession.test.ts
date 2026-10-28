@@ -244,4 +244,33 @@ describe('createHostSession', () => {
     await t.host.watch('P9');
     expect(t.state().view).toMatchObject({ watching: 'P1' });
   });
+
+  it('joins and starts once the creator player connection is in the lobby', async () => {
+    const t = setup();
+    t.last().message(lobby(1));
+    t.host.joinAndStart();
+    expect(t.state()).toMatchObject({ playing: true, startWhenJoined: true });
+
+    // The admin's lobby listing the creator is not enough: it may be an older connection closing.
+    t.last().message({ ...lobby(1), members: [{ user_uuid: me, display_name: 'Host' }] });
+    await Promise.resolve();
+    expect(t.last().startSession).not.toHaveBeenCalled();
+
+    t.host.playerInLobby();
+    await Promise.resolve();
+    expect(t.last().startSession).toHaveBeenCalledTimes(1);
+    expect(t.state().startWhenJoined).toBe(false);
+    t.host.playerInLobby();
+    expect(t.last().startSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops a pending join-and-start when joining as a player ends', () => {
+    const t = setup();
+    t.last().message(lobby(1));
+    t.host.joinAndStart();
+    t.host.stopPlaying();
+    t.host.playerInLobby();
+    expect(t.last().startSession).not.toHaveBeenCalled();
+    expect(t.state()).toMatchObject({ playing: false, startWhenJoined: false });
+  });
 });

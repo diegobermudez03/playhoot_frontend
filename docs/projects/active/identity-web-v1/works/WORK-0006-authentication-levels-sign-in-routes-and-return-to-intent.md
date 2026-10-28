@@ -1,8 +1,8 @@
 # WORK-0006: Authentication levels, sign-in routes and return to intent
 
-Status: IMPLEMENTING
+Status: DONE
 Created: 2026-10-27
-Last status change: 2026-10-27 (decided in conversation with the human, which is this repository's approval under the working agreement in `internal/AI_CONTEXT.md`)
+Last status change: 2026-10-27 (DONE after independent review APPROVED on re-review; decided in conversation with the human, which is this repository's approval under the working agreement in `internal/AI_CONTEXT.md`)
 
 Progress (2026-10-27): built and verified by unit tests, `npm run check` and a browser walk-through against the real backend: the catalog read at startup (`app-core` `access.ts`, `services.ts#loadOperations`), `RequireOperation` on the Session routes, `/sign-in` (Google disabled until backend WORK-0060; dev test accounts) and `/sign-in/guest` with a safe `next`, guest creation moved from Join into `@playhoot/feature-sign-in`, the top bar corner (an icon or the initial, with a menu; one 40px control so the bar fits 420px, the logo's wordmark hidden below 440px). Decided while building: the guest page is a separate route; a guest-creation answer that arrives after leaving the page still signs the person in. Committed by the human (`3dbbf0f`). "Create Session" and the host screen built the same day with `session-play-v1` CHECKLIST P; independent review found two issues there (fixed) and hardened this WORK: `safeNext` also refuses control characters and checks the origin, and a late guest answer never replaces an account signed into meanwhile.
 
@@ -37,3 +37,11 @@ Not yet designed. "Create Session" sends a game UUID hardcoded in the frontend f
 ## Blockers
 
 - WORK-0001; backend WORK-0062. The guest and account completions need WORK-0002 and WORK-0003; the catalog-driven redirection can be built first against the current placeholders.
+
+## Completion Record
+
+- Implementation: the backend operation catalog in the global state (`app-core` `access.ts`, loaded with retries at startup), `RequireOperation` / `useNavigateToOperation`, `/sign-in` and `/sign-in/guest` with a safe `next`, guest creation in `@playhoot/feature-sign-in`, the top bar AccountButton, and "Create a game" leading to the host screen (`session-play-v1` CHECKLIST P).
+- Verification: unit tests and `npm run check` (209 tests); browser walk-throughs against the real backend with Edge (sign-in 16/16, host 20/20).
+- Independent review: CHANGES_REQUIRED (two findings in the host work, fixed), then APPROVED. Applied from its notes: `safeNext` refuses control characters and checks the origin; a late guest answer never replaces an account.
+- Left as is (noted by the review): a refused "Play too" returns to the host screen without saying why.
+- Follow-up outside this WORK: real guests and accounts (WORK-0002, WORK-0003), Google (WORK-0004).

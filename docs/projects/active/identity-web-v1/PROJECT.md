@@ -26,7 +26,7 @@ Created 2026-10-25. The human accepted the plan except the refresh token locatio
 | Order | Work | Status |
 |------:|------|--------|
 | 0 | [WORK-0001](works/WORK-0001-client-credential-contract-and-decisions.md) — Client credential contract and decisions | PLANNED |
-| 0b | [WORK-0006](works/WORK-0006-authentication-levels-sign-in-routes-and-return-to-intent.md) — Authentication levels, sign-in routes and return to intent | IMPLEMENTING |
+| 0b | [WORK-0006](works/WORK-0006-authentication-levels-sign-in-routes-and-return-to-intent.md) — Authentication levels, sign-in routes and return to intent | DONE |
 | 1 | [WORK-0002](works/WORK-0002-real-guest-on-the-web.md) — Real guest on the web | PLANNED |
 | 2 | [WORK-0003](works/WORK-0003-account-sign-in-with-the-local-provider.md) — Account sign-in with the local provider | PLANNED |
 | 3 | [WORK-0004](works/WORK-0004-google-sign-in-on-the-web.md) — Google sign-in on the web | PLANNED |

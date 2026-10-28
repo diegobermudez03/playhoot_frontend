@@ -64,7 +64,18 @@ func (h *HostSession) Watch(participantID string) {} // {"type":"select_perspect
 // embedded) beside the admin one; start and cancel stay on the admin connection.
 func (h *HostSession) PlayToo() {}
 
-// StopPlaying: the creator left as a player; back to the admin screens.
+// JoinAndStart: "Unirme y empezar". Plays too, and starts once the creator's player connection is
+// in the lobby (PlayerInLobby, told by that connection's owner). rule: not from the admin's lobby
+// updates: an older player connection that is closing may still be listed there, and starting then
+// would leave the creator out of the game.
+func (h *HostSession) JoinAndStart() {}
+
+// PlayerInLobby: the creator's current player connection reached the lobby; starts a pending
+// "join and start", once.
+func (h *HostSession) PlayerInLobby() {}
+
+// StopPlaying: the creator's player part ended (a leave, a refusal, a failure); back to the admin
+// screens, and a pending "join and start" is dropped.
 func (h *HostSession) StopPlaying() {}
 
 // Retry: "Intentar de nuevo" on the outcome screen.

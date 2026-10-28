@@ -1,5 +1,9 @@
 import type { SessionTarget } from '@playhoot/communication';
-import { createJoinSession, type JoinSession } from '@playhoot/feature-session-join';
+import {
+  createJoinSession,
+  type JoinOutcome,
+  type JoinSession,
+} from '@playhoot/feature-session-join';
 import { operations } from '@playhoot/protocol';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
@@ -35,7 +39,10 @@ function JoinSessionRoute() {
 export interface EmbeddedPlayer {
   // The code to show and share in the player's lobby.
   joinCode: string | null;
-  onLeft(): void;
+  // How the player's part ended: a leave, or a refusal or failure the host may want to show.
+  onLeft(outcome: JoinOutcome): void;
+  // This player connection reached the lobby (each time it does).
+  onLobby(): void;
   // Shown above the player's screens (the host's controls).
   header: ReactNode;
 }
@@ -77,11 +84,16 @@ function SessionView({
   }, [state.sessionUUID, location.pathname, navigate, embedded]);
 
   const onLeft = embedded?.onLeft;
+  const onLobby = embedded?.onLobby;
+  const inLobby = state.view.phase === 'lobby';
+  useEffect(() => {
+    if (inLobby) onLobby?.();
+  }, [inLobby, onLobby]);
   // Embedded, any end of the player's part (a leave, a refusal, a stopped game) goes back to the
   // host; as a route, only a leave navigates away (other endings show their outcome).
   useEffect(() => {
     if (state.view.phase !== 'closed') return;
-    if (onLeft) onLeft();
+    if (onLeft) onLeft(state.view.outcome);
     else if (state.view.outcome.kind === 'left') navigate(enterCodePath);
   }, [state.view, navigate, onLeft]);
 

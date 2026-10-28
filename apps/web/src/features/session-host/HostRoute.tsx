@@ -1,24 +1,27 @@
 import {
   canStart,
   createHostSession,
+  hostPlays,
   type HostLobbyMember,
   type HostOutcome,
   type HostSession,
   type HostSessionState,
   type HostView,
 } from '@playhoot/feature-session-host';
+import type { JoinOutcome } from '@playhoot/feature-session-join';
 import { operations } from '@playhoot/protocol';
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { FormattedMessage, useIntl, type IntlShape } from 'react-intl';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { useStore } from 'zustand';
 
-import { useServices } from '../../app/ServicesContext';
+import { useAuth, useServices } from '../../app/ServicesContext';
 import type { MessageId } from '../../i18n/catalogs';
 import { AppShell, Avatar, Button, Card, CodeTiles, Owl, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout, type Layout } from '../layout';
 import { enterCodePath, joinPath, sessionPlayPath } from '../paths';
+import { outcomeCopy } from '../session-join/outcomeCopy';
 import { PlayerSession } from '../session-join/SessionRoute';
 import { HostGameView } from './HostGameView';
 import styles from './HostScreen.module.css';
@@ -62,6 +65,19 @@ function HostScreen({ host }: { host: HostSession }) {
   const state = useStore(host.store);
   const layout = useLayout();
   const { view } = state;
+  // Why the creator's last try to play ended without playing (a refusal, a failure); shown in the
+  // lobby until they try again.
+  const [playProblem, setPlayProblem] = useState<JoinOutcome | null>(null);
+  const play = {
+    join: () => {
+      setPlayProblem(null);
+      host.playToo();
+    },
+    joinAndStart: () => {
+      setPlayProblem(null);
+      host.joinAndStart();
+    },
+  };
 
   // The creator plays from here: the player's screens, with the host's controls above.
   if (state.playing && view.phase !== 'closed') {
@@ -70,7 +86,15 @@ function HostScreen({ host }: { host: HostSession }) {
         target={{ kind: 'session', sessionUUID: state.sessionUUID }}
         embedded={{
           joinCode: state.joinCode,
-          onLeft: host.stopPlaying,
+          onLobby: host.playerInLobby,
+          onLeft: (outcome) => {
+            host.stopPlaying();
+            // Only a join that did not happen is the creator's to read here; an end of the
+            // Session, a replaced connection or a leave are not.
+            setPlayProblem(
+              outcome.kind === 'rejected' || outcome.kind === 'unreachable' ? outcome : null,
+            );
+          },
           header: <HostBar host={host} state={state} />,
         }}
       />
@@ -81,7 +105,14 @@ function HostScreen({ host }: { host: HostSession }) {
     <AppShell>
       {view.phase === 'connecting' && <Waiting reconnecting={view.reconnectAttempt > 0} />}
       {view.phase === 'lobby' && (
-        <LobbyStep host={host} state={state} view={view} layout={layout} />
+        <LobbyStep
+          host={host}
+          state={state}
+          view={view}
+          layout={layout}
+          play={play}
+          playProblem={playProblem}
+        />
       )}
       {view.phase === 'started' && <StartedStep host={host} state={state} view={view} />}
       {view.phase === 'closed' && <ClosedStep host={host} outcome={view.outcome} />}
@@ -102,19 +133,36 @@ function Waiting({ reconnecting }: { reconnecting: boolean }) {
   );
 }
 
+interface PlayActions {
+  join(): void;
+  joinAndStart(): void;
+}
+
 function LobbyStep({
   host,
   state,
   view,
   layout,
+  play,
+  playProblem,
 }: {
   host: HostSession;
   state: HostSessionState;
   view: Extract<HostView, { phase: 'lobby' }>;
   layout: Layout;
+  play: PlayActions;
+  playProblem: JoinOutcome | null;
 }) {
   const intl = useIntl();
   const ready = canStart(view);
+  // The creator plays when the backend counts them in the lobby (from here or another device).
+  const plays = hostPlays(view);
+  // Starting without having joined asks once: the game cannot be joined after it starts.
+  const [confirmingStart, setConfirmingStart] = useState(false);
+  const needMore =
+    view.minPlayers !== null && view.members.length < view.minPlayers
+      ? view.minPlayers - view.members.length
+      : 0;
   return (
     <Stage wide>
       <div className={styles.lobbyHeader}>
@@ -126,37 +174,97 @@ function LobbyStep({
           <FormattedMessage id="host.lobby.lead" />
         </p>
       </div>
+      {playProblem && (
+        <div className={styles.problem} role="alert">
+          <strong>
+            <FormattedMessage id="host.playError.title" />
+          </strong>
+          <span>
+            <FormattedMessage id={outcomeCopy(playProblem).title} />
+          </span>
+        </div>
+      )}
       <div
         className={
           layout === 'wide' ? `${styles.lobbyGrid} ${styles.lobbyGridWide}` : styles.lobbyGrid
         }
       >
         <Invite sessionUUID={state.sessionUUID} joinCode={state.joinCode} />
-        <Players members={view.members} />
+        <Players members={view.members} hostRow={plays ? null : <HostRow onJoin={play.join} />} />
       </div>
       <div className={styles.controls}>
-        <Button
-          size="lg"
-          block
-          disabled={!ready}
-          loading={view.starting}
-          onClick={() => void host.startGame()}
-          sound="game-start"
-        >
-          <FormattedMessage id="host.start" />
-        </Button>
-        <p className={styles.hint}>{startHint(intl, view)}</p>
+        {confirmingStart && !plays ? (
+          <div className={styles.confirm}>
+            <span className={styles.hint}>
+              <FormattedMessage id="host.start.confirm" />
+            </span>
+            <Button
+              disabled={!ready}
+              loading={view.starting}
+              onClick={() => {
+                setConfirmingStart(false);
+                void host.startGame();
+              }}
+              sound="game-start"
+            >
+              <FormattedMessage id="host.start.withoutMe" />
+            </Button>
+            <Button variant="secondary" onClick={play.joinAndStart}>
+              <FormattedMessage id="host.start.joinAndStart" />
+            </Button>
+          </div>
+        ) : (
+          <Button
+            size="lg"
+            block
+            disabled={!ready}
+            loading={view.starting}
+            onClick={() => (plays ? void host.startGame() : setConfirmingStart(true))}
+            sound={plays ? 'game-start' : 'tap'}
+          >
+            <FormattedMessage id="host.start" />
+          </Button>
+        )}
+        {needMore > 0 && !plays ? (
+          <div className={styles.confirm}>
+            <span className={styles.hint}>
+              {intl.formatMessage({ id: 'host.start.needMoreJoin' }, { count: needMore })}
+            </span>
+            <Button variant="secondary" size="md" onClick={play.join}>
+              <FormattedMessage id="host.you.join" />
+            </Button>
+          </div>
+        ) : (
+          <p className={styles.hint}>{startHint(intl, view)}</p>
+        )}
         {view.startError && (
           <p className={styles.error} role="alert">
             <FormattedMessage id={`host.startError.${view.startError}`} />
           </p>
         )}
-        <Button variant="secondary" block onClick={host.playToo}>
-          <FormattedMessage id="host.playToo" />
-        </Button>
         <CancelControl host={host} cancelling={state.cancelling} />
       </div>
     </Stage>
+  );
+}
+
+// The creator's own place in the players list while they only host: a state, not a hidden option.
+function HostRow({ onJoin }: { onJoin: () => void }) {
+  const intl = useIntl();
+  const auth = useAuth();
+  const name =
+    (auth.status === 'authenticated' || auth.status === 'guest' ? auth.displayName : null) ||
+    intl.formatMessage({ id: 'host.you.notPlaying' });
+  return (
+    <li className={`${styles.player} ${styles.hostRow}`}>
+      <Avatar seat={1} label={name} />
+      <span className={styles.playerName}>
+        <FormattedMessage id="host.you.notPlaying" />
+      </span>
+      <Button variant="secondary" size="md" onClick={onJoin}>
+        <FormattedMessage id="host.you.join" />
+      </Button>
+    </li>
   );
 }
 
@@ -221,7 +329,7 @@ function Invite({ sessionUUID, joinCode }: { sessionUUID: string; joinCode: stri
   );
 }
 
-function Players({ members }: { members: HostLobbyMember[] }) {
+function Players({ members, hostRow }: { members: HostLobbyMember[]; hostRow: ReactNode }) {
   const intl = useIntl();
   return (
     <Card className={styles.playersCard}>
@@ -254,6 +362,7 @@ function Players({ members }: { members: HostLobbyMember[] }) {
             </li>
           );
         })}
+        {hostRow}
       </ul>
     </Card>
   );
@@ -304,6 +413,11 @@ function HostBar({ host, state }: { host: HostSession; state: HostSessionState }
         </Button>
       )}
       <CancelControl host={host} cancelling={state.cancelling} />
+      {view.phase === 'lobby' && view.startError && (
+        <span className={styles.error} role="alert">
+          <FormattedMessage id={`host.startError.${view.startError}`} />
+        </span>
+      )}
     </div>
   );
 }
