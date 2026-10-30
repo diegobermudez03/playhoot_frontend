@@ -2,7 +2,7 @@
 
 Sign In feature (logical state and ports).
 
-Status: IMPLEMENTED for guests: `createGuestSignIn` (name, local validation, guest creation with one idempotency key per name, typed errors). Accounts wait for the backend's sign-in (backend `identity-v1` WORK-0059/0060). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createGuestSignIn` (name, local validation, guest creation with one idempotency key per name, typed errors) and `createAccountSignIn` (a provider sign-in: S256 verifier kept in a `PendingLoginStore` port while the page visits the provider, completion with the one-time code, the guest in use handed over so its session ends). Only the backend's local provider exists until Google (backend `identity-v1` WORK-0060). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
 
 ## Owns
 

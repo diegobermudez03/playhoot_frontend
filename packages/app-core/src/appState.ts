@@ -49,6 +49,11 @@ export interface AppState {
   // meanwhile the auth snapshot stays `unknown`.
   bootstrap(): void;
   signIn(credential: Credential): void;
+  // The refresh token of the identity in use, so signing in as someone else can end its session.
+  currentRefreshToken(): string | null;
+  // The identity in use was renamed on the backend: shows the new name right away. Its access
+  // token still carries the old one until renewed.
+  renamed(displayName: string): void;
   // Forgets the credential, and ends its session on the backend.
   signOut(): void;
   // Renews the access token now if it expires within a minute (when the page becomes visible again
@@ -198,6 +203,15 @@ export function createAppState(options: AppStateOptions): AppState {
       failures = 0;
       options.credentials.save(next);
       activate(next);
+    },
+    currentRefreshToken() {
+      return credential?.refreshToken ?? null;
+    },
+    renamed(displayName) {
+      if (!credential) return;
+      credential = { ...credential, displayName };
+      options.credentials.save(credential);
+      store.setState({ auth: authSnapshotOf(credential) });
     },
     signOut() {
       const refreshToken = credential?.refreshToken;

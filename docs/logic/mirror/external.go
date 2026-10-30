@@ -61,6 +61,22 @@ func RefreshCredentials(refreshToken string) (Credential, *HttpFailure) {
 	return Credential{}, nil
 }
 
+// StartLogin starts an account sign-in; answers where to send the whole page.
+// endpoint: POST /v1/identity/login/start {"provider", "code_challenge"} (no Authorization)
+// answer: 200 {"authorization_url"}; 400 provider_unavailable | invalid_code_challenge;
+//         429 rate_limited
+// code: packages/communication/src/identityClient.ts#startLogin
+func StartLogin(provider, codeChallenge string) (string, *HttpFailure) { return "", nil }
+
+// CompleteLogin exchanges the one-time code and the verifier for the account's credentials; the
+// session of `replaces` (the guest in use) ends with it.
+// endpoint: POST /v1/identity/login/complete {"code", "code_verifier", "replaces_refresh_token"?}
+// answer: 200 credentials body (level "account"); 400 login_code_invalid (start again)
+// code: packages/communication/src/identityClient.ts#completeLogin
+func CompleteLogin(code, verifier, replaces string) (Credential, *HttpFailure) {
+	return Credential{}, nil
+}
+
 // Logout ends the refresh token's session on the backend. Answer ignored.
 // endpoint: POST /v1/identity/logout {"refresh_token"} -> 204
 // code: packages/communication/src/identityClient.ts#logout

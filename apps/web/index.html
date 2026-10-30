@@ -6,6 +6,8 @@
     <!-- No frame may load or navigate anywhere: the game runs in a srcdoc iframe, which this allows,
          and must not carry data away in its frame's URL (ADR-0006). -->
     <meta http-equiv="Content-Security-Policy" content="frame-src 'none'" />
+    <!-- No request tells another site which page it came from (a sign-in's code is in a URL). -->
+    <meta name="referrer" content="no-referrer" />
     <title>Playhoot</title>
     <meta
       name="description"

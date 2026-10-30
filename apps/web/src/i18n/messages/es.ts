@@ -36,6 +36,19 @@ export const es: Messages = {
   'signIn.guestSwitch':
     'Ahora juegas como invitado ({name}). Si entras con una cuenta dejarás de ser ese invitado y sus partidas no pasarán a la cuenta.',
 
+  'signIn.local': 'Cuenta local de prueba (desarrollo)',
+  'signIn.error.cancelled': 'Cancelaste el inicio de sesión. Puedes intentarlo de nuevo.',
+  'signIn.error.providerUnavailable': 'Esa forma de entrar no está disponible ahora.',
+  'signIn.error.failed': 'No se pudo completar el inicio de sesión. Empieza de nuevo.',
+  'signInComplete.working': 'Iniciando sesión…',
+  'signInComplete.failedTitle': 'No iniciaste sesión',
+  'signInComplete.back': 'Volver a iniciar sesión',
+
+  'displayName.title': '¿Cómo quieres que te vean?',
+  'displayName.lead':
+    'Es el nombre que verán los demás jugadores, en cualquier dispositivo donde entres con tu cuenta.',
+  'displayName.submit': 'Continuar',
+
   'account.guest': 'Invitado',
   'account.menu': 'Cuenta: {name}',
   'account.signIn': 'Iniciar sesión',

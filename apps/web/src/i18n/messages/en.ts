@@ -34,6 +34,19 @@ export const en = {
   'signIn.guestSwitch':
     "You're playing as a guest ({name}). Signing in with an account replaces that guest, and its games don't move to the account.",
 
+  'signIn.local': 'Local test account (development)',
+  'signIn.error.cancelled': 'You cancelled signing in. You can try again.',
+  'signIn.error.providerUnavailable': "That way of signing in isn't available right now.",
+  'signIn.error.failed': "Signing in didn't finish. Start again.",
+  'signInComplete.working': 'Signing you in…',
+  'signInComplete.failedTitle': "You're not signed in",
+  'signInComplete.back': 'Back to sign in',
+
+  'displayName.title': 'What should others call you?',
+  'displayName.lead':
+    "It's the name other players see. You can use it on every device you sign in on.",
+  'displayName.submit': 'Continue',
+
   'account.guest': 'Guest',
   'account.menu': 'Account: {name}',
   'account.signIn': 'Sign in',

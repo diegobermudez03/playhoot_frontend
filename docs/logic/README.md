@@ -44,7 +44,8 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Guest page (`/sign-in/guest`) | **¡A jugar!** / Let's play / Bora jogar | `GuestSignInOnSubmitted` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Guest page (`/sign-in/guest`) | **Inicia sesión o regístrate** / Sign in or sign up / Entre ou cadastre-se | `Navigate(SignInURL(next))` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Sign-in page (`/sign-in`) | Continuar con Google / Continue with Google (disabled for now) | — | [view_sign_in.go](mirror/view_sign_in.go) |
-| Sign-in page (dev only) | Test user 1 / Test user 2 | `SignInOnDevAccountPicked` | [view_sign_in.go](mirror/view_sign_in.go) |
+| Sign-in page (dev only) | **Cuenta local de prueba** / Local test account / Conta local de teste | `SignInOnProviderChosen("local", next)` | [view_sign_in.go](mirror/view_sign_in.go) |
+| Sign-in completion (`/sign-in/complete`), failed | **Volver a iniciar sesión** / Back to sign in / Voltar para entrar | `Navigate("/sign-in")` | [view_sign_in_complete.go](mirror/view_sign_in_complete.go) |
 | Session: lobby | **Copiar enlace de invitación** / Copy invite link / Copiar link de convite | `LobbyOnCopyInvite` | [view_session_lobby.go](mirror/view_session_lobby.go) |
 | Session: lobby | **Salir de la partida** / Leave game / Sair da partida | `LobbyOnLeave` | [view_session_lobby.go](mirror/view_session_lobby.go) |
 | Session: game | **Jugador 2 de 3** / Player 2 of 3 / Jogador 2 de 3 | opens the players list (no call) | [view_session_started.go](mirror/view_session_started.go) |

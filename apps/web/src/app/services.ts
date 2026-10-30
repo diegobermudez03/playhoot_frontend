@@ -20,6 +20,7 @@ import {
   type AssetLoader,
 } from '@playhoot/game-host';
 
+import { createAccountSignIn, type AccountSignIn } from '@playhoot/feature-sign-in';
 import { refreshInvalidCode } from '@playhoot/protocol';
 
 import { createSoundPlayer, type SoundPlayer } from '../sound';
@@ -32,6 +33,11 @@ import {
   createBrowserCredentialStore,
   credentialStorageKey,
 } from '../platform/browserCredentialStore';
+import {
+  createBrowserPendingLoginStore,
+  loginChallengeOf,
+  newLoginVerifier,
+} from '../platform/pendingLogin';
 import { loadSoundMuted, saveSoundMuted } from '../platform/browserSoundPreference';
 import {
   browserLanguagePreferences,
@@ -46,6 +52,8 @@ import { config } from './config';
 // Everything app-wide the web host runs on, created once at startup. Features receive what they
 // need from here; nothing else constructs clients or reads the credential.
 export interface Services {
+  // Signing in with an account: one per page, since a sign-in leaves the page and comes back.
+  accountSignIn: AccountSignIn;
   // The creator's admin connections to their Sessions.
   admins: AdminConnector;
   app: AppState;
@@ -111,6 +119,16 @@ export function createServices(): Services {
     import.meta.env.DEV ? (event) => console.debug('[telemetry]', event) : undefined,
   );
   return {
+    accountSignIn: createAccountSignIn({
+      app,
+      identity: identityClient,
+      pending: createBrowserPendingLoginStore(),
+      newVerifier: newLoginVerifier,
+      challengeOf: loginChallengeOf,
+      // The backend answers a path of its own origin.
+      leaveTo: (url) =>
+        window.location.assign(new URL(url, config.apiBaseUrl || window.location.origin).href),
+    }),
     admins: createAdminConnector({
       realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
       credentials: app.credentials,

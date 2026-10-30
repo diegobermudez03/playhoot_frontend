@@ -35,7 +35,7 @@ type AuthSnapshot struct {
 // code: packages/app-core/src/credentials.ts#Credential
 type Credential struct {
 	Token        string // access token (a JWT, 15 min); empty while a stored credential is restored
-	RefreshToken string // absent only for the dev test accounts, whose fixed token never expires
+	RefreshToken string
 	ExpiresAt    int64  // when Token expires (epoch ms)
 	UserUUID     string
 	Kind         string // "guest" | "account"

@@ -61,6 +61,8 @@ func Router(url string) {
 
 	case matches(url, "/sign-in?next={next}"):
 		SignInView(safeNext(url)) // view_sign_in.go
+	case matches(url, "/sign-in/complete"):
+		SignInCompleteView() // view_sign_in_complete.go (its query was removed at load)
 
 	case url == "/design" && developmentBuild:
 		// Living style guide: fake screens, no logic, no calls.

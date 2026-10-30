@@ -112,7 +112,7 @@ function useGuestSignIn(): GuestSignIn {
   return signIn;
 }
 
-function identityErrorText(intl: IntlShape, error: IdentityError): string {
+export function identityErrorText(intl: IntlShape, error: IdentityError): string {
   switch (error.kind) {
     case 'invalid-name':
       return error.reason === 'empty'

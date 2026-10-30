@@ -1,3 +1,5 @@
+// First of all: a sign-in's one-time code leaves the URL before any other module runs.
+import './captureSignIn';
 import '@fontsource-variable/fredoka';
 import '@fontsource-variable/nunito';
 import './ui/tokens.css';

@@ -17,7 +17,7 @@ Rules for this file:
 | --- | --- | --- | --- |
 | G1 | RESOLVED 2026-10-25 (uncommitted in the backend): REST CORS from `CORS_ALLOWED_ORIGINS` and the WebSocket origin check from `WEBSOCKET_ALLOWED_ORIGINS`, same format (comma-separated origins or `*`; local `*`, production the platform's origin); preflight answered, `Retry-After` exposed, no credentials. Formerly: no CORS on REST routes | Browser calls from another origin fail preflight. Dev: handled by the same-origin Vite proxy (`apps/web/vite.config.ts`). | no CORS code in `api/` |
 | G2 | WS origin check | Dev origin must be in `WEBSOCKET_ALLOWED_ORIGINS` (e.g. `localhost:5173`) unless proxied keeping the Host header (what the Vite proxy does). | `api/internal/wsx/wsx.go:32-35`, `main.go:258` |
-| G3 | RESOLVED for guests 2026-10-27 (uncommitted in the backend, `identity-v1` WORK-0057/0058): `POST /v1/guests` persists a distinct guest with its normalized display name and returns real credentials (JWT access token, refresh token); `lobby_update`, `session_started` and `roster_update` carry that name. Accounts are still only the development bypass `test-user-1` / `test-user-2` ("Test user 1", "Test user 2"), accepted only with `IDENTITY_DEV_TEST_USERS=true` and refused in production; `test-guest` no longer exists | The dev account picker on `/sign-in` stays until the backend's local provider (WORK-0059). | `identity/usecases/authorize/service.go`, `main.go#readIdentityVariables` |
+| G3 | RESOLVED for guests 2026-10-27 (uncommitted in the backend, `identity-v1` WORK-0057/0058): `POST /v1/guests` persists a distinct guest with its normalized display name and returns real credentials (JWT access token, refresh token); `lobby_update`, `session_started` and `roster_update` carry that name. Accounts sign in through a provider since the same day (WORK-0059): only the fictitious local provider (`IDENTITY_LOCAL_PROVIDER=true`, refused in production) until Google (WORK-0060); the fixed test tokens no longer exist | Development builds offer the local provider on `/sign-in`; Google stays disabled. | `identity/usecases/authorize/service.go`, `main.go#readIdentityVariables` |
 | G4 | RESOLVED 2026-10-20: the join code is still released at Start, but every `lobby_update` and `session_started` now carries `session_uuid` | The frontend replaces `/join/:joinCode` with `/sessions/:sessionUUID/play` (ADR-0002) and reconnects by Session. | `api/play/live_connection.go`, `api/play/player_join.go`, `api/play/admin_join.go` |
 | G5 | RESOLVED 2026-10-20, changed 2026-10-25 (uncommitted in the backend): the HTML and every asset of a version are signed together as one batch with one expiry, stored and shared by every Session of the version; a Session reuses the batch while it expires after the Session's own `expires_at` plus 5 min, otherwise a new 24 h batch is signed. So a URL a client gets always outlives its Session; there is no refresh endpoint. A failed signing at start fails the start; on reattach it keeps the start's access | The GameHost still caches by hash, so a reload or reconnect usually needs no download at all. | `play/session/usecases/frontendaccess/service.go:36`, `step_start_session.go:404`, `step_reattach_player.go:46` |
 | G6 | Game frontend package is a single self-contained HTML file (Space Drift's seed version `...c2` holds the real one built here, `fixtures/games/space-drift`; `...c3` the one that loads assets); assets solved 2026-10-25 (ADR-0008: `play_game_version_assets`, image/audio/video, closed MIME list, 5/10/50 MiB per type, 100 MiB per version, sent in `frontend.assets`); no frontend fields in the manifest (entry, capabilities); manifest never sent to the client. Aspect ratio: solved 2026-10-20 outside the manifest (`play_game_versions.aspect_ratio`, sent as `frontend.viewport`) | Assets and the SDK contract need backend work. The game must know its own inputs/commands. | `play/session/internal/migrations/seed_objects.go`, `play/session/internal/business/manifest/manifest.go` |
@@ -45,6 +45,22 @@ Every route: observability -> authorization -> rate limit -> route (`api/server.
 ### `POST /v1/identity/logout` (no auth)
 
 - Request `{"refresh_token"}`. `204` always (invalid or not); `503` on failure. Access tokens already issued stay valid until they expire.
+
+### `POST /v1/identity/login/start` (no auth)
+
+- Request `{"provider": "local" | "google", "code_challenge": base64url(SHA-256(verifier)), no padding}`. `200 {"authorization_url"}`, a path of the backend's origin for the local provider: navigate the whole page there. `400` `provider_unavailable` (not enabled here) or `invalid_code_challenge`.
+
+### `GET /v1/identity/login/{provider}/callback` (the provider's redirect)
+
+- Always `302` to `WEB_SIGN_IN_COMPLETE_URL` (backend configuration; default `/sign-in/complete` on its own origin, which the Vite proxy makes ours): `?code=<one-time code, 60 s>` or `?error=cancelled|failed|unavailable`. The local provider's page (`GET /v1/identity/login/local/authorize?state`) offers Ana, Beto, Carla, any typed name, and Cancel; the same name is always the same account.
+
+### `POST /v1/identity/login/complete` (no auth)
+
+- Request `{"code", "code_verifier", "replaces_refresh_token"?}`. `200` credentials body (level `account`); the session of `replaces_refresh_token` is ended in the same transaction. `400` `login_code_invalid` (unknown, used, expired, or another verifier, which also uses the code up): start again.
+
+### `PUT /v1/identity/me/display-name` (Bearer, `SET_OWN_DISPLAY_NAME`)
+
+- Request `{"display_name"}` (1..64 runes). `200 {"user":{...}}` with the name as kept (trimmed); `400` / `400 invalid_display_name`. An account starts with `user.display_name` `""` until its person chooses one (2026-10-29); the access token keeps the old name until renewed, so renew right after (the lobby shows the name the access token carries).
 
 ### `GET /v1/identity/me` (Bearer, `VIEW_OWN_IDENTITY`)
 
@@ -176,4 +192,4 @@ In `../playhoot`: `docker compose up -d` (Postgres, fake-gcs on 4443, adminer on
 
 Against the frontend dev server, use `http://localhost:5173` instead of the backend port: `/v1` is proxied.
 
-Manual flow: `POST /v1/sessions` with `Bearer test-user-1` and Space Drift; players connect to `/v1/play/join/{code}` with `test-user-2` or a guest's access token from `POST /v1/guests`; the admin connects to `/v1/play/join/sessions/{uuid}/admin` with `test-user-1` and sends `start_session`.
+Manual flow: `node scripts/dev-host.mjs` signs in through the local provider, creates a Session of Space Drift and connects as its admin (Enter sends `start_session`); players connect to `/v1/play/join/{code}` with a guest's access token from `POST /v1/guests`.

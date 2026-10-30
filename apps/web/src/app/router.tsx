@@ -8,7 +8,9 @@ import { CreateSessionRoute } from '../features/session-host/CreateSessionRoute'
 import { HostRoute } from '../features/session-host/HostRoute';
 import { SessionRoute } from '../features/session-join/SessionRoute';
 import { GuestSignInRoute } from '../features/sign-in/GuestSignInRoute';
+import { SignInCompleteRoute } from '../features/sign-in/SignInCompleteRoute';
 import { SignInRoute } from '../features/sign-in/SignInRoute';
+import { signInCompleteRoute } from '../platform/signInCompletion';
 import { NotFoundRoute } from './NotFoundRoute';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
@@ -23,6 +25,8 @@ const routes: RouteObject[] = [
   // Where a person is sent to authenticate, with `next` to continue (features/access.tsx).
   { path: signInRoute, element: <SignInRoute /> },
   { path: guestSignInRoute, element: <GuestSignInRoute /> },
+  // Where a provider sends the person back after an account sign-in.
+  { path: signInCompleteRoute, element: <SignInCompleteRoute /> },
   // The creator's side: create a Session (an account's), then its host screen.
   { path: newSessionPath, element: <CreateSessionRoute /> },
   { path: '/sessions/:sessionUUID/host', element: <HostRoute /> },

@@ -34,6 +34,19 @@ export const ptBR: Messages = {
   'signIn.guestSwitch':
     'Você está jogando como convidado ({name}). Se entrar com uma conta, deixará de ser esse convidado e as partidas dele não passam para a conta.',
 
+  'signIn.local': 'Conta local de teste (desenvolvimento)',
+  'signIn.error.cancelled': 'Você cancelou a entrada. Pode tentar de novo.',
+  'signIn.error.providerUnavailable': 'Essa forma de entrar não está disponível agora.',
+  'signIn.error.failed': 'Não foi possível concluir a entrada. Comece de novo.',
+  'signInComplete.working': 'Entrando…',
+  'signInComplete.failedTitle': 'Você não entrou',
+  'signInComplete.back': 'Voltar para entrar',
+
+  'displayName.title': 'Como você quer ser chamado?',
+  'displayName.lead':
+    'É o nome que os outros jogadores veem, em qualquer dispositivo onde você entrar com sua conta.',
+  'displayName.submit': 'Continuar',
+
   'account.guest': 'Convidado',
   'account.menu': 'Conta: {name}',
   'account.signIn': 'Entrar',

@@ -143,3 +143,56 @@ describe('createIdentityClient.listOperations', () => {
     expect(init?.headers).not.toHaveProperty('Authorization');
   });
 });
+
+describe('createIdentityClient sign-in', () => {
+  it('starts a login with the provider and the code challenge', async () => {
+    const t = identityWith(
+      () =>
+        new Response(JSON.stringify({ authorization_url: '/authorize?state=s' }), { status: 200 }),
+    );
+
+    const result = await t.identity.startLogin('local', 'challenge');
+
+    expect(result).toEqual({ ok: true, value: '/authorize?state=s' });
+    const [url, init] = t.fetchImpl.mock.calls[0]!;
+    expect(url).toBe('/v1/identity/login/start');
+    expect(init?.headers).not.toHaveProperty('Authorization');
+    expect(JSON.parse(init?.body as string)).toEqual({
+      provider: 'local',
+      code_challenge: 'challenge',
+    });
+  });
+
+  it('completes a login, naming the session it replaces', async () => {
+    const t = identityWith(
+      () =>
+        new Response(
+          JSON.stringify({
+            ...credentialsBody,
+            user: { ...credentialsBody.user, level: 'account' },
+          }),
+          { status: 200 },
+        ),
+    );
+
+    const result = await t.identity.completeLogin('phl_code', 'verifier', 'r-guest');
+
+    expect(result).toMatchObject({ ok: true, value: { kind: 'account', refreshToken: 'r-1' } });
+    const [url, init] = t.fetchImpl.mock.calls[0]!;
+    expect(url).toBe('/v1/identity/login/complete');
+    expect(JSON.parse(init?.body as string)).toEqual({
+      code: 'phl_code',
+      code_verifier: 'verifier',
+      replaces_refresh_token: 'r-guest',
+    });
+  });
+
+  it('completes a login without a session to replace', async () => {
+    const t = identityWith(() => new Response(JSON.stringify(credentialsBody), { status: 200 }));
+    await t.identity.completeLogin('phl_code', 'verifier');
+    expect(JSON.parse(t.fetchImpl.mock.calls[0]![1]?.body as string)).toEqual({
+      code: 'phl_code',
+      code_verifier: 'verifier',
+    });
+  });
+});

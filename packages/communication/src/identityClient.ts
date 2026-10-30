@@ -2,13 +2,21 @@ import type { Credential } from '@playhoot/app-core';
 import {
   createGuestPath,
   credentialsResponseSchema,
+  displayNamePath,
   listOperationsPath,
   listOperationsResponseSchema,
+  loginCompletePath,
+  loginStartPath,
+  loginStartResponseSchema,
   logoutPath,
+  meResponseSchema,
   refreshPath,
   type CreateGuestRequest,
   type CredentialsResponse,
+  type LoginCompleteRequest,
+  type LoginStartRequest,
   type RefreshTokenRequest,
+  type SetDisplayNameRequest,
 } from '@playhoot/protocol';
 import type { Decoder, HttpClient, HttpFailure } from './http';
 import type { Result } from './result';
@@ -32,6 +40,17 @@ export interface IdentityClient {
   logout(refreshToken: string): Promise<Result<void, HttpFailure>>;
   // Every operation with the minimum authentication level it requires. Needs no credential.
   listOperations(): Promise<Result<OperationRequirement[], HttpFailure>>;
+  // Chooses the caller's display name; answers it as the backend kept it (trimmed).
+  setDisplayName(displayName: string): Promise<Result<string, HttpFailure>>;
+  // Starts an account sign-in with a provider; answers where to send the person.
+  startLogin(provider: string, codeChallenge: string): Promise<Result<string, HttpFailure>>;
+  // Exchanges the one-time code and the verifier for the account's credentials, ending the
+  // session of `replacesRefreshToken` (the guest held until now) if given.
+  completeLogin(
+    code: string,
+    codeVerifier: string,
+    replacesRefreshToken?: string,
+  ): Promise<Result<Credential, HttpFailure>>;
 }
 
 // `now` is the client's clock, which a received token's lifetime is measured on.
@@ -75,6 +94,42 @@ export function createIdentityClient(
         authenticated: false,
       });
       return result.ok ? { ok: true, value: undefined } : result;
+    },
+    async setDisplayName(displayName) {
+      const body: SetDisplayNameRequest = { display_name: displayName };
+      const result = await http.request({
+        method: 'PUT',
+        path: displayNamePath,
+        body,
+        response: meResponseSchema,
+      });
+      return result.ok ? { ok: true, value: result.value.user.display_name } : result;
+    },
+    async startLogin(provider, codeChallenge) {
+      const body: LoginStartRequest = { provider, code_challenge: codeChallenge };
+      const result = await http.request({
+        method: 'POST',
+        path: loginStartPath,
+        body,
+        response: loginStartResponseSchema,
+        authenticated: false,
+      });
+      return result.ok ? { ok: true, value: result.value.authorization_url } : result;
+    },
+    async completeLogin(code, codeVerifier, replacesRefreshToken) {
+      const body: LoginCompleteRequest = {
+        code,
+        code_verifier: codeVerifier,
+        ...(replacesRefreshToken && { replaces_refresh_token: replacesRefreshToken }),
+      };
+      const result = await http.request({
+        method: 'POST',
+        path: loginCompletePath,
+        body,
+        response: credentialsResponseSchema,
+        authenticated: false,
+      });
+      return result.ok ? { ok: true, value: toCredential(result.value, now()) } : result;
     },
     async listOperations() {
       const result = await http.request({
