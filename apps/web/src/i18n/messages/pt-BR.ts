@@ -32,7 +32,7 @@ export const ptBR: Messages = {
   'signIn.google': 'Continuar com o Google',
   'signIn.googleSoon': 'Em breve você poderá entrar com o Google.',
   'signIn.guestSwitch':
-    'Você está jogando como convidado ({name}). Se entrar com uma conta, deixará de ser esse convidado e as partidas dele não passam para a conta.',
+    'Você está jogando como convidado ({name}). Uma conta nova mantém seu nome e suas partidas. Se você já tinha uma conta, vai entrar nela e as partidas deste convidado não passam para a conta.',
 
   'signIn.local': 'Conta local de teste (desenvolvimento)',
   'signIn.error.cancelled': 'Você cancelou a entrada. Pode tentar de novo.',

@@ -145,7 +145,7 @@ describe('createIdentityClient.listOperations', () => {
 });
 
 describe('createIdentityClient sign-in', () => {
-  it('starts a login with the provider and the code challenge', async () => {
+  it('starts a login with the provider, the code challenge and the token in use', async () => {
     const t = identityWith(
       () =>
         new Response(JSON.stringify({ authorization_url: '/authorize?state=s' }), { status: 200 }),
@@ -156,7 +156,7 @@ describe('createIdentityClient sign-in', () => {
     expect(result).toEqual({ ok: true, value: '/authorize?state=s' });
     const [url, init] = t.fetchImpl.mock.calls[0]!;
     expect(url).toBe('/v1/identity/login/start');
-    expect(init?.headers).not.toHaveProperty('Authorization');
+    expect(init?.headers).toHaveProperty('Authorization', 'Bearer old');
     expect(JSON.parse(init?.body as string)).toEqual({
       provider: 'local',
       code_challenge: 'challenge',

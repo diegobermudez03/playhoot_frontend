@@ -31,6 +31,10 @@ None.
 
 An account no longer gets a name from the provider: it starts without one and the person chooses it after signing in. The root layout shows the name screen (`DisplayNameScreen`, `createDisplayNameSetup`) instead of any page while the account has no display name, reloads included, and the page appears once the name is kept (`PUT /v1/identity/me/display-name`, then the access token renewed). Verified in headless Edge: a new account asked its name, still asked after a reload, then continued to `next`.
 
+## Amendment 2 (2026-10-29, decided by the human in conversation)
+
+A guest signing up keeps their User (backend IDENTITY-ADR-0003 amendment): `startLogin` is sent with the access token in use, and the guest notice on the sign-in page says a new account keeps the name and games while an existing one is entered instead. Verified in headless Edge: a guest in a lobby signing up becomes the account with the same user and name, without the name screen, and their guest session ends.
+
 ## Completion Record
 
 - Implementation: `packages/protocol/src/http/guests.ts`, `packages/communication/src/identityClient.ts` (`startLogin`, `completeLogin`), `packages/app-core/src/appState.ts` (`currentRefreshToken`), `packages/features/sign-in/src/accountSignIn.ts`, `apps/web/src/platform/{pendingLogin,signInCompletion}.ts` (SHA-256 in script where `crypto.subtle` is missing: plain HTTP on the local network), `apps/web/src/{captureSignIn.ts,main.tsx}`, `app/{services.ts,router.tsx}`, `features/sign-in/{SignInRoute,SignInCompleteRoute}.tsx`, messages.

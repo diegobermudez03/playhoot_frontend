@@ -32,7 +32,7 @@ export const en = {
   'signIn.google': 'Continue with Google',
   'signIn.googleSoon': 'Signing in with Google is coming soon.',
   'signIn.guestSwitch':
-    "You're playing as a guest ({name}). Signing in with an account replaces that guest, and its games don't move to the account.",
+    "You're playing as a guest ({name}). A new account keeps your name and your games. If you already have an account, you'll enter it and this guest's games won't move to it.",
 
   'signIn.local': 'Local test account (development)',
   'signIn.error.cancelled': 'You cancelled signing in. You can try again.',

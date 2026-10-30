@@ -11,8 +11,9 @@ func SignInView(next string) {
 		ReplaceURL(orHome(next))
 		return
 	}
-	// rule: a guest is warned that signing in with an account replaces that guest, and its games do
-	//       not move to the account.
+	// rule: a guest is told that a new account keeps their name and games (the backend links it to
+	//       the guest, who sent their access token with StartLogin), and that an account that
+	//       already exists is entered instead, the guest's games staying behind.
 
 	// "Continuar con Google" / "Continue with Google" is shown disabled, "coming soon": Google
 	// sign-in arrives with the backend's provider.

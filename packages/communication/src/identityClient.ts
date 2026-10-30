@@ -42,7 +42,8 @@ export interface IdentityClient {
   listOperations(): Promise<Result<OperationRequirement[], HttpFailure>>;
   // Chooses the caller's display name; answers it as the backend kept it (trimmed).
   setDisplayName(displayName: string): Promise<Result<string, HttpFailure>>;
-  // Starts an account sign-in with a provider; answers where to send the person.
+  // Starts an account sign-in with a provider; answers where to send the person. Sent with the
+  // access token in use: a guest's becomes the account if the sign-in creates one.
   startLogin(provider: string, codeChallenge: string): Promise<Result<string, HttpFailure>>;
   // Exchanges the one-time code and the verifier for the account's credentials, ending the
   // session of `replacesRefreshToken` (the guest held until now) if given.
@@ -112,7 +113,6 @@ export function createIdentityClient(
         path: loginStartPath,
         body,
         response: loginStartResponseSchema,
-        authenticated: false,
       });
       return result.ok ? { ok: true, value: result.value.authorization_url } : result;
     },

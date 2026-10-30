@@ -34,7 +34,7 @@ export const es: Messages = {
   'signIn.google': 'Continuar con Google',
   'signIn.googleSoon': 'Muy pronto podrás entrar con Google.',
   'signIn.guestSwitch':
-    'Ahora juegas como invitado ({name}). Si entras con una cuenta dejarás de ser ese invitado y sus partidas no pasarán a la cuenta.',
+    'Ahora juegas como invitado ({name}). Si creas una cuenta nueva, conservarás tu nombre y tus partidas. Si ya tenías una cuenta, entrarás en ella y lo de este invitado no pasará a la cuenta.',
 
   'signIn.local': 'Cuenta local de prueba (desarrollo)',
   'signIn.error.cancelled': 'Cancelaste el inicio de sesión. Puedes intentarlo de nuevo.',
