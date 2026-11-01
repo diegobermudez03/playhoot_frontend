@@ -6,6 +6,8 @@ import {
   listOperationsPath,
   listOperationsResponseSchema,
   loginCompletePath,
+  loginProvidersPath,
+  loginProvidersResponseSchema,
   loginStartPath,
   loginStartResponseSchema,
   logoutPath,
@@ -42,6 +44,8 @@ export interface IdentityClient {
   listOperations(): Promise<Result<OperationRequirement[], HttpFailure>>;
   // Chooses the caller's display name; answers it as the backend kept it (trimmed).
   setDisplayName(displayName: string): Promise<Result<string, HttpFailure>>;
+  // The login providers this backend offers (`google`, `local`...). Needs no credential.
+  listLoginProviders(): Promise<Result<string[], HttpFailure>>;
   // Starts an account sign-in with a provider; answers where to send the person. Sent with the
   // access token in use: a guest's becomes the account if the sign-in creates one.
   startLogin(provider: string, codeChallenge: string): Promise<Result<string, HttpFailure>>;
@@ -105,6 +109,15 @@ export function createIdentityClient(
         response: meResponseSchema,
       });
       return result.ok ? { ok: true, value: result.value.user.display_name } : result;
+    },
+    async listLoginProviders() {
+      const result = await http.request({
+        method: 'GET',
+        path: loginProvidersPath,
+        response: loginProvidersResponseSchema,
+        authenticated: false,
+      });
+      return result.ok ? { ok: true, value: result.value.providers } : result;
     },
     async startLogin(provider, codeChallenge) {
       const body: LoginStartRequest = { provider, code_challenge: codeChallenge };

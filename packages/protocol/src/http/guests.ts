@@ -91,3 +91,9 @@ export const meResponseSchema = z.object({
     level: z.string().min(1),
   }),
 });
+
+// GET /v1/identity/login/providers → 200 {providers}: the login providers this backend offers
+// (`google`, `local` in development; it may add others). Public and cacheable (5 minutes).
+export const loginProvidersPath = '/v1/identity/login/providers';
+
+export const loginProvidersResponseSchema = z.object({ providers: z.array(z.string()) });

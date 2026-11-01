@@ -46,9 +46,14 @@ Every route: observability -> authorization -> rate limit -> route (`api/server.
 
 - Request `{"refresh_token"}`. `204` always (invalid or not); `503` on failure. Access tokens already issued stay valid until they expire.
 
+### `GET /v1/identity/login/providers` (no auth)
+
+- `200 {"providers":["google","local"]}`: the providers this backend offers (2026-10-31); cacheable 5 minutes. Unknown values may appear.
+
 ### `POST /v1/identity/login/start` (optional Bearer)
 
 - Sent with the access token in use, if any (none is anonymous; one sent must be valid, else `401 token_invalid`, which the transport renews and retries). A guest's makes a new account theirs: same `user_uuid` and name, the guest's sessions ended (2026-10-29). An account that already exists is entered as before, the guest left behind.
+- With `google`, `authorization_url` is Google's page (`accounts.google.com`), the callback registered in Google being the backend's `/v1/identity/login/google/callback` (through the Vite proxy in development).
 - Request `{"provider": "local" | "google", "code_challenge": base64url(SHA-256(verifier)), no padding}`. `200 {"authorization_url"}`, a path of the backend's origin for the local provider: navigate the whole page there. `400` `provider_unavailable` (not enabled here) or `invalid_code_challenge`.
 
 ### `GET /v1/identity/login/{provider}/callback` (the provider's redirect)

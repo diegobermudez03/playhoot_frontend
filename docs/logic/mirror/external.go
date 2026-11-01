@@ -61,6 +61,11 @@ func RefreshCredentials(refreshToken string) (Credential, *HttpFailure) {
 	return Credential{}, nil
 }
 
+// ListLoginProviders reads the login providers the backend offers. No credential.
+// endpoint: GET /v1/identity/login/providers -> 200 {"providers":["google","local"]}
+// code: packages/communication/src/identityClient.ts#listLoginProviders
+func ListLoginProviders() ([]string, *HttpFailure) { return nil, nil }
+
 // StartLogin starts an account sign-in; answers where to send the whole page.
 // endpoint: POST /v1/identity/login/start {"provider", "code_challenge"} (no Authorization)
 // answer: 200 {"authorization_url"}; 400 provider_unavailable | invalid_code_challenge;

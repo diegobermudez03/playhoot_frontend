@@ -45,6 +45,7 @@ function setup(identity: Partial<IdentityClient> = {}, signedIn: Credential | nu
     logout: vi.fn(),
     listOperations: vi.fn(),
     setDisplayName: vi.fn(),
+    listLoginProviders: vi.fn(async () => ({ ok: true as const, value: ['google', 'local'] })),
     startLogin: vi.fn(async () => ({ ok: true as const, value: '/authorize?state=s' })),
     completeLogin: vi.fn(async () => ({ ok: true as const, value: account })),
     ...identity,
@@ -132,7 +133,7 @@ describe('createAccountSignIn', () => {
 
     expect(await t.signIn.complete({ code: null, error: 'cancelled' })).toBe(false);
 
-    expect(t.state()).toEqual({ status: 'failed', error: { kind: 'cancelled' } });
+    expect(t.state()).toMatchObject({ status: 'failed', error: { kind: 'cancelled' } });
     expect(t.client.completeLogin).not.toHaveBeenCalled();
     expect(t.app.store.getState().auth).toMatchObject({ status: 'guest' });
     expect(t.pendingNow()).toBeNull();
@@ -193,8 +194,34 @@ describe('createAccountSignIn', () => {
 
     await t.signIn.start('google', null);
 
-    expect(t.state()).toEqual({ status: 'failed', error: { kind: 'provider-unavailable' } });
+    expect(t.state()).toMatchObject({ status: 'failed', error: { kind: 'provider-unavailable' } });
     expect(t.leaveTo).not.toHaveBeenCalled();
     expect(t.pendingNow()).toBeNull();
+  });
+
+  it('learns which providers the backend offers, once', async () => {
+    const t = setup();
+    expect(t.state().providers).toBeNull();
+
+    await Promise.all([t.signIn.loadProviders(), t.signIn.loadProviders()]);
+    await t.signIn.loadProviders();
+
+    expect(t.state().providers).toEqual(['google', 'local']);
+    expect(t.client.listLoginProviders).toHaveBeenCalledOnce();
+  });
+
+  it('asks again for the providers when the backend could not be reached', async () => {
+    let answer: Awaited<ReturnType<IdentityClient['listLoginProviders']>> = {
+      ok: false,
+      error: { kind: 'network', message: 'down' },
+    };
+    const t = setup({ listLoginProviders: vi.fn(async () => answer) });
+
+    expect(await t.signIn.loadProviders()).toBe(false);
+    expect(t.state().providers).toBeNull();
+
+    answer = { ok: true, value: ['local'] };
+    expect(await t.signIn.loadProviders()).toBe(true);
+    expect(t.state().providers).toEqual(['local']);
   });
 });

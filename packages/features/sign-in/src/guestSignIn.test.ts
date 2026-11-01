@@ -27,6 +27,7 @@ function setup(createGuest: IdentityClient['createGuest']) {
     logout: vi.fn(),
     startLogin: vi.fn(),
     setDisplayName: vi.fn(),
+    listLoginProviders: vi.fn(),
     completeLogin: vi.fn(),
   };
   let keys = 0;

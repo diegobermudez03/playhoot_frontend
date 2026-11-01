@@ -24,6 +24,7 @@ Same identity as the UI (`docs/design/DESIGN_SYSTEM.md`): "game night", warm, pl
 | Id | Path | Status | Spec | Where it is used |
 | --- | --- | --- | --- | --- |
 | `icon.favicon` | `/favicon.svg` | DONE (agent) | SVG of Hoot on a night square | Browser tab |
+| `brand.google-g` | `/assets/brand/google-g.svg` | DONE (agent) | Google's standard multicolor "G" mark, unmodified (Google's sign-in branding guidelines: never recolor, stretch or crop it) | "Continuar con Google" button on the sign-in page |
 | `icon.apple-touch` | `/assets/icons/apple-touch-icon.png` | MISSING | 180×180 PNG, opaque night background, Hoot centered, no transparency | iOS home screen |
 | `icon.app-192` | `/assets/icons/icon-192.png` | MISSING | 192×192 PNG, Hoot on night background, rounded square | Android home screen, install |
 | `icon.app-512` | `/assets/icons/icon-512.png` | MISSING | 512×512 PNG, same as 192 | Install splash, stores |

@@ -23,6 +23,8 @@ export type AccountSignInError =
 export interface AccountSignInState {
   status: 'idle' | 'starting' | 'leaving' | 'completing' | 'failed';
   error: AccountSignInError | null;
+  // The providers the backend offers; null until known (or while it cannot be reached).
+  providers: readonly string[] | null;
 }
 
 // A sign-in in progress, kept while the page goes to the provider and back. Holds the verifier,
@@ -61,6 +63,9 @@ export interface LoginCompletion {
 
 export interface AccountSignIn {
   store: StoreApi<AccountSignInState>;
+  // Learns which providers the backend offers, once; false when the backend could not be reached
+  // (the next call tries again).
+  loadProviders(): Promise<boolean>;
   // Sends the person to the provider; `next` is where to go once they are back and signed in.
   start(provider: string, next: string | null): Promise<void>;
   // Finishes the sign-in the provider answered. Signed in: where to go next (null: the default).
@@ -76,7 +81,12 @@ export const pendingLoginLifetimeMs = 10 * 60_000;
 // games stay with the guest.
 export function createAccountSignIn(deps: AccountSignInDeps): AccountSignIn {
   const now = deps.now ?? Date.now;
-  const store = createStore<AccountSignInState>(() => ({ status: 'idle', error: null }));
+  const store = createStore<AccountSignInState>(() => ({
+    status: 'idle',
+    error: null,
+    providers: null,
+  }));
+  let loading: Promise<boolean> | null = null;
   const fail = (error: AccountSignInError) => {
     store.setState({ status: 'failed', error });
     return false as const;
@@ -84,6 +94,15 @@ export function createAccountSignIn(deps: AccountSignInDeps): AccountSignIn {
 
   return {
     store,
+    loadProviders() {
+      if (store.getState().providers) return Promise.resolve(true);
+      loading ??= deps.identity.listLoginProviders().then((result) => {
+        loading = null;
+        if (result.ok) store.setState({ providers: result.value });
+        return result.ok;
+      });
+      return loading;
+    },
     async start(provider, next) {
       store.setState({ status: 'starting', error: null });
       const verifier = deps.newVerifier();

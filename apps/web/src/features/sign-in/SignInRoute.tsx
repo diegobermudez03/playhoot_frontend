@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Navigate, useLocation } from 'react-router';
 import { useStore } from 'zustand';
@@ -7,6 +8,7 @@ import { AppShell, Button, Card, Owl, SplitStage, Stage } from '../../ui';
 import { useLayout } from '../layout';
 import { safeNext } from '../paths';
 import { accountSignInErrorText } from './accountSignInErrors';
+import { GoogleButton } from './GoogleButton';
 import styles from './SignIn.module.css';
 
 // `/sign-in?next=…`: the definitive route to sign in or register (with Google only, both are the
@@ -21,10 +23,33 @@ export function SignInRoute() {
   const { accountSignIn } = useServices();
   const state = useStore(accountSignIn.store);
   const next = safeNext(location.search);
+  const [starting, setStarting] = useState<string | null>(null);
+  // Asked again after 1, 2, 4... seconds (at most 30) while the backend cannot be reached.
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const load = (attempt: number) => {
+      void accountSignIn.loadProviders().then((loaded) => {
+        if (loaded || cancelled) return;
+        timer = setTimeout(() => load(attempt + 1), Math.min(1000 * 2 ** attempt, 30_000));
+      });
+    };
+    load(0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [accountSignIn]);
   if (auth.status === 'authenticated') return <Navigate to={next ?? '/'} replace />;
   // `leaving` is not shown: coming back from the provider with Back may restore this page as it
   // was.
   const busy = state.status === 'starting';
+  // Only the providers this backend offers can be used (the local one only in development).
+  const offers = (provider: string) => state.providers?.includes(provider) ?? false;
+  const start = (provider: string) => {
+    setStarting(provider);
+    void accountSignIn.start(provider, next);
+  };
 
   const hero = (
     <div className={styles.hero}>
@@ -45,18 +70,25 @@ export function SignInRoute() {
             <FormattedMessage id="signIn.guestSwitch" values={{ name: auth.displayName ?? '' }} />
           </p>
         )}
-        <Button size="lg" block disabled>
+        <GoogleButton
+          disabled={!offers('google') || busy}
+          busy={busy && starting === 'google'}
+          onClick={() => start('google')}
+        >
           <FormattedMessage id="signIn.google" />
-        </Button>
-        <p className={styles.soon}>
-          <FormattedMessage id="signIn.googleSoon" />
-        </p>
-        {import.meta.env.DEV && (
+        </GoogleButton>
+        {state.providers && !offers('google') && (
+          <p className={styles.soon}>
+            <FormattedMessage id="signIn.googleSoon" />
+          </p>
+        )}
+        {offers('local') && (
           <Button
             variant="secondary"
             block
-            loading={busy}
-            onClick={() => void accountSignIn.start('local', next)}
+            loading={busy && starting === 'local'}
+            disabled={busy}
+            onClick={() => start('local')}
           >
             <FormattedMessage id="signIn.local" />
           </Button>

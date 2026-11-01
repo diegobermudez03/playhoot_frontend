@@ -1,8 +1,8 @@
 # WORK-0004: Google sign-in on the web
 
-Status: PLANNED
+Status: IMPLEMENTING
 Created: 2026-10-25
-Last status change: 2026-10-25
+Last status change: 2026-10-31 (the human asked for it in conversation; with the backend's WORK-0060; the real Google verification waits for the human's OAuth client)
 
 Related decisions:
 - The decisions of WORK-0001 and of the backend's WORK-0056
@@ -20,8 +20,14 @@ With the refresh token held by the client, the backend cannot finish the login b
 
 ## Scope
 
-Not yet designed. Required (decided by the human 2026-10-27, backend IDENTITY-ADR-0003 point 8 clarification; no browser-binding cookie): the one-time code must never leave the browser. The completion route removes it from the URL before loading anything else, sends no referrer, loads no third-party resources, and never sends it to client telemetry or logs.
+Built 2026-10-31: the sign-in page asks the backend which providers it offers (`GET /v1/identity/login/providers`, `createAccountSignIn.loadProviders`) and shows only those: "Continuar con Google" enabled when Google is offered ("coming soon" otherwise), the local test account only when the backend offers it (instead of development builds). The Google button follows Google's branding guidelines, dark theme, pill shape: the unmodified "G" mark (asset `brand.google-g`, `docs/design/ASSETS.md`), Roboto Medium bundled locally (`@fontsource/roboto`, no third-party request), Google's colors. Pressing it is the same full-page sign-in as the local provider (WORK-0003). Required (decided by the human 2026-10-27, backend IDENTITY-ADR-0003 point 8 clarification; no browser-binding cookie): the one-time code must never leave the browser. The completion route removes it from the URL before loading anything else, sends no referrer, loads no third-party resources, and never sends it to client telemetry or logs.
 
 ## Blockers
 
 - WORK-0003; backend WORK-0060.
+
+## Review
+
+- Independent review (2026-10-31): CHANGES_REQUIRED for one medium finding (every refusal from Google's token endpoint was an invalid answer and nothing was logged, so a misconfigured client would fail silently) and three low ones (the providers list was never retried, both provider buttons could start at once, a refetch failure discarded cached keys); all fixed: only `invalid_grant` is an invalid answer, 5xx/429 are unavailable, any other 4xx is `ErrMisconfigured` (logged, alerted, ended unavailable with reason `provider_misconfigured`), refused answers are logged without secrets, the web retries the providers list with backoff, the Google button is disabled while any sign-in starts, cached keys under 24 hours verify while Google's keys cannot be fetched, and RS256-only is locked by tests. Re-review APPROVED.
+
+Remaining before DONE: verified against the real Google with the human's OAuth client (backend WORK-0060).

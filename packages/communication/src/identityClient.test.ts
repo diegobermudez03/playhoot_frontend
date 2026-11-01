@@ -196,3 +196,18 @@ describe('createIdentityClient sign-in', () => {
     });
   });
 });
+
+describe('createIdentityClient.listLoginProviders', () => {
+  it('reads the providers without a credential', async () => {
+    const t = identityWith(
+      () => new Response(JSON.stringify({ providers: ['google', 'local'] }), { status: 200 }),
+    );
+
+    const result = await t.identity.listLoginProviders();
+
+    expect(result).toEqual({ ok: true, value: ['google', 'local'] });
+    const [url, init] = t.fetchImpl.mock.calls[0]!;
+    expect(url).toBe('/v1/identity/login/providers');
+    expect(init?.headers).not.toHaveProperty('Authorization');
+  });
+});

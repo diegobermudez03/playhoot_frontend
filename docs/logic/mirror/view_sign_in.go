@@ -15,12 +15,12 @@ func SignInView(next string) {
 	//       the guest, who sent their access token with StartLogin), and that an account that
 	//       already exists is entered instead, the guest's games staying behind.
 
-	// "Continuar con Google" / "Continue with Google" is shown disabled, "coming soon": Google
-	// sign-in arrives with the backend's provider.
-
-	// When (development builds only): the person presses "Cuenta local de prueba" (the backend's
-	// fictitious local provider).
-	SignInOnProviderChosen("local", next)
+	// rule: the providers come from ListLoginProviders() (external.go), asked once per page load;
+	//       until they arrive no provider button can be pressed.
+	// "Continuar con Google" (Google's own button: G mark, Roboto, Google's colors) is enabled
+	// when the backend offers "google"; otherwise disabled, with "Muy pronto podrás entrar con
+	// Google." "Cuenta local de prueba" appears only when it offers "local".
+	SignInOnProviderChosen("google", next) // or "local"
 	// rule: a failed start or completion shows its reason under the buttons: cancelled at the
 	//       provider, provider not available here, rate limited (N seconds), unreachable, or
 	//       "didn't finish, start again".

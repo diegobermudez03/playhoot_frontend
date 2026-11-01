@@ -1,0 +1,45 @@
+/* Google's sign-in button, dark theme (developers.google.com/identity/branding-guidelines).
+   Its colors are Google's, not the app's tokens: the guidelines fix them. */
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #8e918f;
+  border-radius: 999px;
+  background: #131314;
+  color: #e3e3e3;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.button:hover:not(:disabled) {
+  background: #2a2a2c;
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-focus, #ffc53d);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.mark {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.label {
+  white-space: nowrap;
+}
