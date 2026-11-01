@@ -1,8 +1,8 @@
 # WORK-0004: Google sign-in on the web
 
-Status: IMPLEMENTING
+Status: DONE
 Created: 2026-10-25
-Last status change: 2026-10-31 (the human asked for it in conversation; with the backend's WORK-0060; the real Google verification waits for the human's OAuth client)
+Last status change: 2026-10-31 (DONE by the human's decision in conversation, with the real Google verification deferred to the end, as in the backend's WORK-0060)
 
 Related decisions:
 - The decisions of WORK-0001 and of the backend's WORK-0056
@@ -30,4 +30,4 @@ Built 2026-10-31: the sign-in page asks the backend which providers it offers (`
 
 - Independent review (2026-10-31): CHANGES_REQUIRED for one medium finding (every refusal from Google's token endpoint was an invalid answer and nothing was logged, so a misconfigured client would fail silently) and three low ones (the providers list was never retried, both provider buttons could start at once, a refetch failure discarded cached keys); all fixed: only `invalid_grant` is an invalid answer, 5xx/429 are unavailable, any other 4xx is `ErrMisconfigured` (logged, alerted, ended unavailable with reason `provider_misconfigured`), refused answers are logged without secrets, the web retries the providers list with backoff, the Google button is disabled while any sign-in starts, cached keys under 24 hours verify while Google's keys cannot be fetched, and RS256-only is locked by tests. Re-review APPROVED.
 
-Remaining before DONE: verified against the real Google with the human's OAuth client (backend WORK-0060).
+Deferred (the human, 2026-10-31, planned): the verification against the real Google, with the backend's WORK-0060 real integration, at the end.

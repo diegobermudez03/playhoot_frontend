@@ -1,6 +1,6 @@
 # Project: Identity Web v1 (basic identity, web client)
 
-Status: ACTIVE
+Status: COMPLETED
 Created: 2026-10-25
 Last updated: 2026-10-25
 
@@ -21,6 +21,14 @@ Decided by the human on 2026-10-25: this project goes before the SDK built-ins (
 
 Created 2026-10-25. The human accepted the plan except the refresh token location: the client keeps it (web `localStorage`) and sends it in the request body instead of an `HttpOnly` cookie, so the web and the future mobile app share one backend contract. The backend's contract (WORK-0056) and operation catalog (WORK-0062) were done 2026-10-27. WORK-0006 IMPLEMENTING since 2026-10-27: the catalog in the global state, `RequireOperation` on the Session routes, `/sign-in` and `/sign-in/guest` with return to `next`, guest creation moved out of Join into `@playhoot/feature-sign-in`, and the top bar corner are built and verified (unit tests, `npm run check`, browser walk-through against the real backend); its "Create Session" button is built together with `session-play-v1` CHECKLIST P (host experience), next. Later on 2026-10-27 the human redesigned the backend's credentials in conversation (see WORK-0001) and WORK-0001 and WORK-0002 were done as one slice with the backend's WORK-0057/0058: real guests end to end. WORK-0003 done the same day with the backend's WORK-0059: accounts through the local provider. Next: WORK-0004 (Google) with the backend's WORK-0060.
 
+## Completion
+
+Completed 2026-10-31 with the backend's identity-v1. Identity phase 2 (after the game creation flow) is planned in the backend's `identity/CURRENT_STATE.md`: on the web, the account screen (display name changes, account data) and the active sessions screen.
+
+## Planned Follow-Up
+
+- With the backend's WORK-0060: Deferred by the human on 2026-10-31 (planned, accepted): the real Google integration (an OAuth client from Google Cloud Console in `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URL`, and the manual check against Google: new login, recurring login, cancellation, refused wrong verifier) is done at the end, before Google sign-in is declared available to people. Until then the code is complete and verified with a fake Google, and production simply does not offer Google.
+
 ## Work
 
 | Order | Work | Status |
@@ -29,8 +37,8 @@ Created 2026-10-25. The human accepted the plan except the refresh token locatio
 | 0b | [WORK-0006](works/WORK-0006-authentication-levels-sign-in-routes-and-return-to-intent.md) — Authentication levels, sign-in routes and return to intent | DONE |
 | 1 | [WORK-0002](works/WORK-0002-real-guest-on-the-web.md) — Real guest on the web | DONE |
 | 2 | [WORK-0003](works/WORK-0003-account-sign-in-with-the-local-provider.md) — Account sign-in with the local provider | DONE |
-| 3 | [WORK-0004](works/WORK-0004-google-sign-in-on-the-web.md) — Google sign-in on the web | PLANNED |
-| 4 | [WORK-0005](works/WORK-0005-identity-web-integration-and-closure.md) — Integration and closure | PLANNED |
+| 3 | [WORK-0004](works/WORK-0004-google-sign-in-on-the-web.md) — Google sign-in on the web | DONE (real Google verification deferred) |
+| 4 | [WORK-0005](works/WORK-0005-identity-web-integration-and-closure.md) — Integration and closure | DONE |
 
 ## Ordering / Dependencies
 

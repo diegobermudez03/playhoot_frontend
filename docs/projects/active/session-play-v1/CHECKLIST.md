@@ -125,7 +125,7 @@ Source of behavior: `docs/Playhoot_Frontend_Architecture_Plan.docx` ("plan", `§
 
 ## L. Global bootstrap and visibility (§14, §18 step 10)
 
-- [-] OUT OF SCOPE (2026-10-21, decided by the human: postponed until the Session flow and play are finished; it moves to the general platform work (plan step 12), when features whose visibility depends on the identity exist; the human already has a direction in mind). Bootstrap/me capabilities consumed when the backend provides them; visibility centralized, never treated as authorization (backend: no endpoint exists yet). 2026-10-27: the human's direction is now owned by `docs/projects/active/identity-web-v1/` WORK-0006 (operation catalog with minimum authentication levels, sign-in redirection and return to intent).
+- [-] OUT OF SCOPE (2026-10-21, decided by the human: postponed until the Session flow and play are finished; it moves to the general platform work (plan step 12), when features whose visibility depends on the identity exist; the human already has a direction in mind). Bootstrap/me capabilities consumed when the backend provides them; visibility centralized, never treated as authorization (backend: no endpoint exists yet). 2026-10-27: the human's direction is now owned by `docs/projects/completed/identity-web-v1/` WORK-0006 (operation catalog with minimum authentication levels, sign-in redirection and return to intent).
 
 ## N. Playhoot SDK built-in functions (the last step of this project, decided by the human 2026-10-25)
 

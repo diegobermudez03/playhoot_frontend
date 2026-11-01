@@ -2,9 +2,9 @@ Process: Project execution (identity-web-v1), WORK per plan stage
 Topic: Web client of basic identity per ../playhoot/plans/identity/05_Playhoot_Plan_de_Identidad_Basica.docx
 Current stage: WORK-0006 committed (3dbbf0f) and extended 2026-10-27 with Create Session + host screen (session-play-v1 CHECKLIST P, backend Z13), uncommitted; independent review CHANGES_REQUIRED (watched view bound to its participant, host rejections mapped), fixed; re-review next, then WORK-0006 DONE. Browser walk-throughs: scratchpad e2e/signin_flow.mjs and e2e/host_flow.mjs (Edge --headless=old)
 Current execution surface: CODEBASE AGENT
-Related durable artifacts: docs/projects/active/identity-web-v1/PROJECT.md, docs/decisions/architecture/ADR-0009-credential-renewal-in-the-transport.md, backend Project ../playhoot/docs/projects/active/identity-v1/
+Related durable artifacts: docs/projects/completed/identity-web-v1/PROJECT.md, docs/decisions/architecture/ADR-0009-credential-renewal-in-the-transport.md, backend Project ../playhoot/docs/projects/completed/identity-v1/
 Blocked by: nothing
-Next action: WORK-0004 (Google button, assets per Google branding) with backend WORK-0060. WORK-0003 DONE 2026-10-27 (local provider sign-in, completion route, dev picker removed, review APPROVED). WORK-0001 + WORK-0002 DONE 2026-10-27 (real guests end to end, credential redesign by the human; cross-tab Web Locks coordinator dropped: no reuse detection, predecessor grace covers races)
+Next action: WORK-0005 closure. WORK-0004 DONE 2026-10-31 (Google button per branding, providers from the backend); the real Google verification is deferred to the end with the backend's WORK-0060. WORK-0003 DONE 2026-10-27 (local provider sign-in, completion route, dev picker removed, review APPROVED). WORK-0001 + WORK-0002 DONE 2026-10-27 (real guests end to end, credential redesign by the human; cross-tab Web Locks coordinator dropped: no reuse detection, predecessor grace covers races)
 Last durable checkpoint: Project and WORK files created, cross-reference in session-play-v1 PROJECT.md (2026-10-25)
 Last updated: 2026-10-27
 
