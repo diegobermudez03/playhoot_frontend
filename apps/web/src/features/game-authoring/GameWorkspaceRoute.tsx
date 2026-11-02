@@ -17,9 +17,10 @@ import { AssetsSection } from './sections/AssetsSection';
 import { BuildSection } from './sections/BuildSection';
 import { FilesSection } from './sections/FilesSection';
 import { HistorySection } from './sections/HistorySection';
+import { ShareSection } from './sections/ShareSection';
 
 // The workspace's sections, by the stable ids the agent guide uses (`?section=`), in order.
-export const workspaceSections = ['ai', 'files', 'assets', 'build', 'history'] as const;
+export const workspaceSections = ['ai', 'files', 'assets', 'build', 'history', 'share'] as const;
 export type WorkspaceSection = (typeof workspaceSections)[number];
 
 const sectionLabels: Record<WorkspaceSection, MessageId> = {
@@ -28,6 +29,7 @@ const sectionLabels: Record<WorkspaceSection, MessageId> = {
   assets: 'section.assets',
   build: 'section.build',
   history: 'section.history',
+  share: 'section.share',
 };
 
 // `/games/:gameUUID/edit?section=…`: a creator's workspace for their game's draft (game-creation
@@ -152,6 +154,7 @@ function WorkspaceScreen({ authoring }: { authoring: GameAuthoring }) {
             {section === 'assets' && <AssetsSection authoring={authoring} />}
             {section === 'build' && <BuildSection authoring={authoring} />}
             {section === 'history' && <HistorySection authoring={authoring} />}
+            {section === 'share' && <ShareSection gameUUID={draft.gameUUID} />}
           </div>
         </div>
       </div>

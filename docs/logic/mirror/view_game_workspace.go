@@ -15,12 +15,12 @@ func CreateGameView() {
 	ReplaceURL("/games/" + created.GameUUID + "/edit") // going back does not create another
 }
 
-// GameWorkspaceView is /games/{id}/edit?section=…: the draft in five sections.
+// GameWorkspaceView is /games/{id}/edit?section=…: the draft in six sections.
 // code: apps/web/src/features/game-authoring/GameWorkspaceRoute.tsx
 func GameWorkspaceView(gameUUID string, section string) {
 	authoring := NewGameAuthoring(gameUUID) // state_gameauthoring.go, disposed when the route closes
 	authoring.Reload()
-	// rule: section is one of ai (default), files, assets, build, history; anything else is ai.
+	// rule: section is one of ai (default), files, assets, build, history, share; anything else is ai.
 	// The header always shows the current revision and its build status.
 
 	// WHEN a section is chosen ("Cambios de mi IA", "Archivos", "Recursos", "Construcción", "Historial")
@@ -37,7 +37,31 @@ func GameWorkspaceView(gameUUID string, section string) {
 	WorkspaceOnRestore(authoring, 1)
 	// WHEN **Recargar el juego** / Reload the game is pressed after a conflict
 	authoring.Reload()
+
+	// "Compartir con mi IA" (section share): its own state, created when the section opens and
+	// forgotten when it closes (state_gameauthoring.go AiLinkSharing).
+	sharing := NewAiLinkSharing(gameUUID)
+	sharing.Load()
+	// WHEN **Crear enlace** is pressed, or **Renovar enlace** and then its confirmation
+	WorkspaceOnCreateAiLink(sharing)
+	// WHEN **Revocar enlace** is pressed and then its confirmation
+	WorkspaceOnRevokeAiLink(sharing)
+	// WHEN **Copiar mensaje para mi IA** / **Copiar solo el enlace** is pressed
+	WorkspaceOnCopyAiLink(sharing, true)
 }
+
+// WorkspaceOnCreateAiLink makes the game's link for the person's AI. With one active, the page first
+// says the old one will stop working and asks to confirm.
+func WorkspaceOnCreateAiLink(sharing *AiLinkSharing) { sharing.Create() }
+
+// WorkspaceOnRevokeAiLink asks once more, then revokes.
+func WorkspaceOnRevokeAiLink(sharing *AiLinkSharing) { sharing.Revoke() }
+
+// WorkspaceOnCopyAiLink copies the message for the AI chat with the link in it (withMessage), or
+// the link alone; the clipboard refusing leaves the link on screen to copy by hand.
+// rule: the message is "Read this link and help me with my Playhoot game: LINK" in the page's
+// language.
+func WorkspaceOnCopyAiLink(sharing *AiLinkSharing, withMessage bool) {}
 
 func WorkspaceOnSectionChosen(section string) {
 	ReplaceURL("?section=" + section) // the URL says which section is open; no call

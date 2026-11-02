@@ -66,3 +66,34 @@ func (a *GameAuthoring) keyFor(action string, args any) string { return "" }
 // not [paths] -> malformed(field); a path twice -> repeated-path.
 // computes: the summary: added (paths not in the draft), modified (paths in it), deleted.
 func ParsePastedChange(text string, currentPaths []string) DraftChange { return DraftChange{} }
+
+// AiLinkSharing is "Compartir con mi IA": the game's link for the person's AI.
+// code: packages/features/game-authoring/src/aiLink.ts
+type AiLinkSharing struct {
+	GameUUID string
+	Load     string // loading | ready | failed
+	Link     struct {
+		Active    bool
+		CreatedAt string
+		ExpiresAt string
+	}
+	// Created is the link just made, shown once; only in memory, forgotten when the section closes,
+	// on Revoke and on ForgetCreated. Never stored, never in the URL.
+	Created *struct{ URL, ExpiresAt string }
+	Busy    string // create | revoke | ""
+	Failed  string // the last action that did not work: create | revoke | ""
+}
+
+func NewAiLinkSharing(gameUUID string) *AiLinkSharing { return &AiLinkSharing{GameUUID: gameUUID} }
+
+// Load reads whether a link is active (ReadAiLink); a failure shows "try again".
+func (s *AiLinkSharing) Load() {}
+
+// Create makes a link (CreateAiLink), replacing the active one; on success Created holds it and
+// Load runs again.
+func (s *AiLinkSharing) Create() {}
+
+// Revoke ends the active link (RevokeAiLink), forgets Created, and runs Load again.
+func (s *AiLinkSharing) Revoke() {}
+
+func (s *AiLinkSharing) ForgetCreated() { s.Created = nil }

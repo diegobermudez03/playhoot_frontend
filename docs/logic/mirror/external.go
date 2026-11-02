@@ -318,6 +318,25 @@ func RemoveAsset(gameUUID, key, idempotencyKey string) (ChangeResult, *GamesFail
 // endpoint: GET /v1/games/{id}/draft/build?revision=N&wait=S -> {revision, status, diagnostics, ...}
 func ReadBuild(gameUUID string, revision, waitSeconds int) (Build, *GamesFailure) { return Build{}, nil }
 
+// CreateAiLink makes the game's link for the creator's AI (7 days), replacing the active one.
+// endpoint: POST /v1/games/{id}/ai-link -> 201 {url, expires_at}; url holds the secret, answered only here
+func CreateAiLink(gameUUID string) (AiLink, *GamesFailure) { return AiLink{}, nil }
+
+// ReadAiLink tells whether the game has an active link, without its secret.
+// endpoint: GET /v1/games/{id}/ai-link -> {active, created_at?, expires_at?}
+func ReadAiLink(gameUUID string) (AiLinkStatus, *GamesFailure) { return AiLinkStatus{}, nil }
+
+// RevokeAiLink ends the active link at once.
+// endpoint: POST /v1/games/{id}/ai-link/revoke -> 204
+func RevokeAiLink(gameUUID string) *GamesFailure { return nil }
+
+type AiLink struct{ URL, ExpiresAt string }
+
+type AiLinkStatus struct {
+	Active               bool
+	CreatedAt, ExpiresAt string
+}
+
 // GamesFailure: not-found | not-editable | conflict(currentRevision) | invalid(diagnostics) |
 // too-large(diagnostics) | not-declared | idempotency-conflict | revision-not-found |
 // build-not-found | busy(retryAfterSeconds) | unavailable (no answer, server failure, an unknown

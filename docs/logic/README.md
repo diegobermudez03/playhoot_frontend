@@ -47,6 +47,9 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Workspace: Archivos | **Guardar como nueva revisión** / Save as a new revision / Salvar como nova revisão | `WorkspaceOnSaveFile` | [view_game_workspace.go](mirror/view_game_workspace.go) |
 | Workspace: Recursos | **Subir** / **Reemplazar** / **Quitar** (Upload / Replace / Remove) | `WorkspaceOnUploadAsset` / `WorkspaceOnRemoveAsset` | [view_game_workspace.go](mirror/view_game_workspace.go) |
 | Workspace: Historial | **Restaurar** / Restore / Restaurar | `WorkspaceOnRestore` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: Compartir con mi IA | **Crear enlace** / **Renovar enlace** / Create link / Renew link / Criar link / Renovar link | `WorkspaceOnCreateAiLink` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: Compartir con mi IA | **Revocar enlace** / Revoke link / Revogar link | `WorkspaceOnRevokeAiLink` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: Compartir con mi IA | **Copiar mensaje para mi IA** / **Copiar solo el enlace** | `WorkspaceOnCopyAiLink` | [view_game_workspace.go](mirror/view_game_workspace.go) |
 | Guest page (`/sign-in/guest`) | Tu nombre / Your name / Seu nome (field) | `GuestSignInState.Name` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Guest page (`/sign-in/guest`) | **¡A jugar!** / Let's play / Bora jogar | `GuestSignInOnSubmitted` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Guest page (`/sign-in/guest`) | **Inicia sesión o regístrate** / Sign in or sign up / Entre ou cadastre-se | `Navigate(SignInURL(next))` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |

@@ -227,6 +227,7 @@ export const es: Messages = {
   'section.assets': 'Recursos',
   'section.build': 'Construcción',
   'section.history': 'Historial',
+  'section.share': 'Compartir con mi IA',
 
   'build.status':
     '{status, select, QUEUED {Esperando para construir} RUNNING {Construyendo…} SUCCEEDED {Se construye bien} FAILED {La construcción falló} SUPERSEDED {Omitida: llegó una revisión más nueva} none {Sin construir} other {Estado desconocido}}',
@@ -306,4 +307,33 @@ export const es: Messages = {
   'history.files': '{count, plural, one {# archivo} other {# archivos}}',
   'history.current': 'Actual',
   'history.restore': 'Restaurar',
+
+  'share.title': 'Compartir con mi IA',
+  'share.intro':
+    'Un enlace para tu chat de IA: con él lee el estado del juego, sus archivos y los errores, y puede enviarte cambios.',
+  'share.loading': 'Revisando el enlace…',
+  'share.loadFailed': 'No pudimos saber si hay un enlace activo.',
+  'share.active': 'Hay un enlace activo hasta el {until}.',
+  'share.none': 'Este juego no tiene un enlace activo.',
+  'share.create': 'Crear enlace',
+  'share.renew': 'Renovar enlace',
+  'share.revoke': 'Revocar enlace',
+  'share.renew.confirm':
+    'Se creará un enlace nuevo y el anterior dejará de funcionar. Tendrás que dárselo de nuevo a tu IA.',
+  'share.renew.yes': 'Crear uno nuevo',
+  'share.revoke.confirm':
+    'El enlace dejará de funcionar de inmediato. Lo que tu IA ya leyó no se puede borrar.',
+  'share.revoke.yes': 'Revocar',
+  'share.cancel': 'Cancelar',
+  'share.created': 'Tu enlace (solo se muestra esta vez)',
+  'share.linkLabel': 'Enlace para tu IA',
+  'share.warning':
+    'Quien tenga este enlace puede leer y cambiar este juego hasta el {until}. Compártelo solo con tu IA.',
+  'share.copyMessage': 'Copiar mensaje para mi IA',
+  'share.copyLink': 'Copiar solo el enlace',
+  'share.copied': '¡Copiado!',
+  'share.hide': 'Ocultar enlace',
+  'share.createFailed': 'No pudimos crear el enlace. Intenta de nuevo.',
+  'share.revokeFailed': 'No pudimos revocar el enlace. Intenta de nuevo.',
+  'share.message': 'Lee este enlace y ayúdame con mi juego de Playhoot: {url}',
 };

@@ -17,6 +17,11 @@ export const draftAssetPath = (gameUUID: string, key: string) =>
 export const draftAssetRemovePath = (gameUUID: string, key: string) =>
   `${draftAssetPath(gameUUID, key)}/remove`;
 
+// A game's link for the creator's AI: one active at a time, valid 7 days. Creating one replaces
+// the previous one; its secret URL is answered only by the creation.
+export const aiLinkPath = (gameUUID: string) => `/v1/games/${encodeURIComponent(gameUUID)}/ai-link`;
+export const aiLinkRevokePath = (gameUUID: string) => `${aiLinkPath(gameUUID)}/revoke`;
+
 // The change envelope: what an AI produces for a person to paste, and what the API takes.
 export const projectChangeFormat = 'playhoot.project-change.v1';
 
@@ -189,6 +194,17 @@ export interface RestoreRevisionRequest {
   base_revision: number;
   idempotency_key: string;
 }
+
+export const aiLinkCreatedSchema = z.object({
+  url: z.string().min(1),
+  expires_at: z.string(),
+});
+
+export const aiLinkStatusSchema = z.object({
+  active: z.boolean(),
+  created_at: z.string().nullish(),
+  expires_at: z.string().nullish(),
+});
 
 export type CreateGameResponse = z.infer<typeof createGameResponseSchema>;
 export type DraftResponse = z.infer<typeof draftResponseSchema>;

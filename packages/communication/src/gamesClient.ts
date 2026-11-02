@@ -1,4 +1,8 @@
 import {
+  aiLinkCreatedSchema,
+  aiLinkPath,
+  aiLinkRevokePath,
+  aiLinkStatusSchema,
   createGamePath,
   createGameResponseSchema,
   draftAssetPath,
@@ -25,7 +29,7 @@ import {
   type RestoreRevisionRequest,
 } from '@playhoot/protocol';
 
-import type { HttpClient, HttpFailure } from './http';
+import type { Decoder, HttpClient, HttpFailure } from './http';
 import { err, ok, type Result } from './result';
 
 // Game authoring over REST (backend `api/games`). Every string the backend lists (statuses,
@@ -130,6 +134,19 @@ export interface DraftChangeResult {
   asset: DraftAsset | null;
 }
 
+// A link for the creator's AI, as created: `url` holds the secret token and is never answered again.
+export interface CreatedAiLink {
+  url: string;
+  expiresAt: string;
+}
+
+// Whether the game has an active link for the creator's AI, without its secret.
+export interface AiLinkStatus {
+  active: boolean;
+  createdAt: string | null;
+  expiresAt: string | null;
+}
+
 // Why a games call did not do what it asked, by what the caller can do about it.
 export type GamesFailure =
   // The game does not exist or is someone else's (the backend never tells them apart).
@@ -190,6 +207,10 @@ export interface GamesClient {
     revision: number,
     waitSeconds?: number,
   ): Promise<Result<DraftBuild, GamesFailure>>;
+  // Creates the game's link for the creator's AI, replacing the active one if any.
+  createAiLink(gameUUID: string): Promise<Result<CreatedAiLink, GamesFailure>>;
+  readAiLink(gameUUID: string): Promise<Result<AiLinkStatus, GamesFailure>>;
+  revokeAiLink(gameUUID: string): Promise<Result<void, GamesFailure>>;
 }
 
 export function createGamesClient(http: HttpClient): GamesClient {
@@ -309,8 +330,45 @@ export function createGamesClient(http: HttpClient): GamesClient {
       if (!result.ok) return err(gamesFailure(result.error));
       return ok(buildOf(result.value));
     },
+
+    async createAiLink(gameUUID) {
+      const result = await http.request({
+        method: 'POST',
+        path: aiLinkPath(gameUUID),
+        response: aiLinkCreatedSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({ url: result.value.url, expiresAt: result.value.expires_at });
+    },
+
+    async readAiLink(gameUUID) {
+      const result = await http.request({
+        method: 'GET',
+        path: aiLinkPath(gameUUID),
+        response: aiLinkStatusSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({
+        active: result.value.active,
+        createdAt: result.value.created_at ?? null,
+        expiresAt: result.value.expires_at ?? null,
+      });
+    },
+
+    async revokeAiLink(gameUUID) {
+      const result = await http.request({
+        method: 'POST',
+        path: aiLinkRevokePath(gameUUID),
+        response: noBody,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok(undefined);
+    },
   };
 }
+
+// Revoking answers 204 without a body.
+const noBody: Decoder<unknown> = { safeParse: (value) => ({ success: true, data: value }) };
 
 function changeResult(
   result: Result<DraftChangeResponse, HttpFailure>,

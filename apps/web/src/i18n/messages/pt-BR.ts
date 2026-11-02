@@ -224,6 +224,7 @@ export const ptBR: Messages = {
   'section.assets': 'Recursos',
   'section.build': 'Compilação',
   'section.history': 'Histórico',
+  'section.share': 'Compartilhar com minha IA',
 
   'build.status':
     '{status, select, QUEUED {Esperando para compilar} RUNNING {Compilando…} SUCCEEDED {Compila bem} FAILED {A compilação falhou} SUPERSEDED {Pulada: chegou uma revisão mais nova} none {Não compilada} other {Estado desconhecido}}',
@@ -302,4 +303,33 @@ export const ptBR: Messages = {
   'history.files': '{count, plural, one {# arquivo} other {# arquivos}}',
   'history.current': 'Atual',
   'history.restore': 'Restaurar',
+
+  'share.title': 'Compartilhar com minha IA',
+  'share.intro':
+    'Um link para o seu chat de IA: com ele, ela lê o estado do jogo, os arquivos e os erros, e pode te enviar mudanças.',
+  'share.loading': 'Verificando o link…',
+  'share.loadFailed': 'Não conseguimos saber se há um link ativo.',
+  'share.active': 'Há um link ativo até {until}.',
+  'share.none': 'Este jogo não tem um link ativo.',
+  'share.create': 'Criar link',
+  'share.renew': 'Renovar link',
+  'share.revoke': 'Revogar link',
+  'share.renew.confirm':
+    'Um link novo será criado e o anterior deixará de funcionar. Você terá que entregá-lo de novo à sua IA.',
+  'share.renew.yes': 'Criar um novo',
+  'share.revoke.confirm':
+    'O link deixará de funcionar na hora. O que sua IA já leu não pode ser apagado.',
+  'share.revoke.yes': 'Revogar',
+  'share.cancel': 'Cancelar',
+  'share.created': 'Seu link (mostrado só desta vez)',
+  'share.linkLabel': 'Link para sua IA',
+  'share.warning':
+    'Quem tiver este link pode ler e mudar este jogo até {until}. Compartilhe só com sua IA.',
+  'share.copyMessage': 'Copiar mensagem para minha IA',
+  'share.copyLink': 'Copiar só o link',
+  'share.copied': 'Copiado!',
+  'share.hide': 'Ocultar link',
+  'share.createFailed': 'Não conseguimos criar o link. Tente de novo.',
+  'share.revokeFailed': 'Não conseguimos revogar o link. Tente de novo.',
+  'share.message': 'Leia este link e me ajude com meu jogo do Playhoot: {url}',
 };

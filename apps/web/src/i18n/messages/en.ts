@@ -220,6 +220,7 @@ export const en = {
   'section.assets': 'Assets',
   'section.build': 'Build',
   'section.history': 'History',
+  'section.share': 'Share with my AI',
 
   'build.status':
     '{status, select, QUEUED {Waiting to build} RUNNING {Building…} SUCCEEDED {Builds fine} FAILED {Build failed} SUPERSEDED {Skipped: a newer revision came} none {Not built} other {Unknown build status}}',
@@ -298,6 +299,35 @@ export const en = {
   'history.files': '{count, plural, one {# file} other {# files}}',
   'history.current': 'Current',
   'history.restore': 'Restore',
+
+  'share.title': 'Share with my AI',
+  'share.intro':
+    'A link for your AI chat: with it, it reads the game’s state, its files and errors, and can send you changes.',
+  'share.loading': 'Checking the link…',
+  'share.loadFailed': 'We could not tell whether there is an active link.',
+  'share.active': 'There is an active link until {until}.',
+  'share.none': 'This game has no active link.',
+  'share.create': 'Create link',
+  'share.renew': 'Renew link',
+  'share.revoke': 'Revoke link',
+  'share.renew.confirm':
+    'A new link will be created and the old one will stop working. You will have to give it to your AI again.',
+  'share.renew.yes': 'Create a new one',
+  'share.revoke.confirm':
+    'The link will stop working right away. What your AI already read cannot be erased.',
+  'share.revoke.yes': 'Revoke',
+  'share.cancel': 'Cancel',
+  'share.created': 'Your link (shown only this once)',
+  'share.linkLabel': 'Link for your AI',
+  'share.warning':
+    'Whoever has this link can read and change this game until {until}. Share it only with your AI.',
+  'share.copyMessage': 'Copy message for my AI',
+  'share.copyLink': 'Copy the link only',
+  'share.copied': 'Copied!',
+  'share.hide': 'Hide link',
+  'share.createFailed': 'We could not create the link. Try again.',
+  'share.revokeFailed': 'We could not revoke the link. Try again.',
+  'share.message': 'Read this link and help me with my Playhoot game: {url}',
 } as const;
 
 export type MessageId = keyof typeof en;

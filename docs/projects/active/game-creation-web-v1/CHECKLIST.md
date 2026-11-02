@@ -16,6 +16,8 @@ Order decided by the human on 2026-11-01. Backend items live in `../playhoot` `g
 
 - [x] B. Authoring workspace (2026-11-02): `GamesClient`, `@playhoot/feature-game-authoring`, "Crear un juego" → `/games/new` → `/games/{id}/edit` with Cambios de mi IA (paste read strictly as data, summary, apply, attempts), Archivos (edit one file), Recursos (declared assets, upload/replace/remove, preview), Construcción (status, diagnostics by line, last good build), Historial (restore). Verified end to end in headless Edge against the real backend.
 
+- [x] F. "Compartir con mi IA" (with backend F): section `share` (active link and expiry, create / renew / revoke with confirmations, the link shown once with copy-message and copy-link, never stored nor in the URL), `GamesClient` AI-link calls. Verified end to end in headless Edge against the real backend 2026-11-02: the link fetched without auth returns the Markdown context page; renewing makes the old link 401 `ai_link_invalid`; after a reload the token appears nowhere (page or storage); revoking makes it 401.
+
 ## Test (plan delivery 2)
 
 - [ ] C. SDK delivery 1: phases, deadlines, submissions, privacy, scoring, React provider and hooks, semantic controls; the quiz and "Cuánto nos conocemos".

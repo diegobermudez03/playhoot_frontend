@@ -35,6 +35,9 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | "Subir" / "Reemplazar" an asset (flow 17) | `PUT /v1/games/{id}/draft/assets/{key}` | the file as the body, `Idempotency-Key` header | attached / unchanged / too large / invalid / busy |
 | "Quitar" an asset (flow 17) | `POST /v1/games/{id}/draft/assets/{key}/remove` | key | removed / unchanged |
 | "Historial" opens, and after every new revision | `GET /v1/games/{id}/draft/revisions` | — | The revisions list |
+| "Compartir con mi IA" opens, and after creating or revoking (flow 17) | `GET /v1/games/{id}/ai-link` | — | Whether a link is active and until when (never the link) |
+| "Crear enlace" / "Renovar enlace" (flow 17) | `POST /v1/games/{id}/ai-link` | — | The new link and its expiry, shown once; the old one stops working |
+| "Revocar enlace" (flow 17) | `POST /v1/games/{id}/ai-link/revoke` | — | The link stops working |
 | Name submitted on the guest page (flow 15) | `POST /v1/guests` | `display_name`, `idempotency_key` | user (uuid, name, level) + access token + refresh token → the credential (stored without the access token) |
 | Page load with a stored credential (flow 1), a minute before the access token expires, the tab shown again near expiry, or a call refused with `token_invalid` (flow 10) | `POST /v1/identity/refresh` | `refresh_token` only | New access token, and the refresh token to keep (may be a new one); `401 refresh_invalid` → signed out |
 | A name chosen on the name screen (flow 15) | `PUT /v1/identity/me/display-name` | `display_name` | The name as kept; then `POST /v1/identity/refresh` so the access token carries it |
@@ -256,7 +259,7 @@ The admin connection reconnects by itself after 1, 2 and 4 seconds when lost aft
 
 ## 17. Creating a game and changing its draft (the workspace)
 
-"Crear un juego" on Enter a code needs `CREATE_GAME` (an account): without one, flow 15 first, then back. `/games/new` creates the game (one idempotency key per visit) and REPLACES the URL with `/games/{uuid}/edit`. The workspace needs `EDIT_GAME`; it reads the current revision with every file's content and shows it in five sections (`?section=` in the URL; none is the first), whose labels the agent guide will name:
+"Crear un juego" on Enter a code needs `CREATE_GAME` (an account): without one, flow 15 first, then back. `/games/new` creates the game (one idempotency key per visit) and REPLACES the URL with `/games/{uuid}/edit`. The workspace needs `EDIT_GAME`; it reads the current revision with every file's content and shows it in six sections (`?section=` in the URL; none is the first), whose labels the agent guide will name:
 
 | Section (`section`) | What the creator sees and can do |
 | --- | --- |
@@ -265,6 +268,7 @@ The admin connection reconnects by itself after 1, 2 and 4 seconds when lost aft
 | **Recursos** (`assets`) | The assets `game.project.json` declares, each missing / ready / no longer declared, with its description and type; a ready one shows a preview (image, audio, video) from its short-lived link. **Subir** / **Reemplazar** sends the chosen file; **Quitar** unbinds it. When `game.project.json` cannot be read, why. |
 | **Construcción** (`build`) | The current revision's build status and what it found, by file:line:column and stage; a note when the failure is the platform's (stage `infrastructure`); the last revision that built. |
 | **Historial** (`history`) | Every revision, newest first, with where it came from and when; **Restaurar** on any but the current one. |
+| **Compartir con mi IA** (`share`) | Whether the game has an active link for the person's AI and until when. **Crear enlace** makes one; with one active the button is **Renovar enlace**, which first says the old one will stop working. The new link is shown ONCE, with **Copiar mensaje para mi IA** (a ready-to-paste "Read this link and help me with my Playhoot game: LINK" in the page's language), **Copiar solo el enlace** and **Ocultar enlace**, and the warning that whoever has it can read and change the game until it expires (7 days). **Revocar enlace** asks once more. The link lives only in memory while the section is open: never stored, never in the URL; leaving the section forgets it. |
 
 The header shows the current revision and its build status everywhere. Every action that made a revision reads the draft again and follows the new revision's build with the backend's long poll (`wait=20`, asked again while it runs, up to 5 failed reads 3 s apart), then reads the draft again. One action at a time. Retrying the same action sends the same idempotency key; any other action takes a new one. Wide: the sections in a rail beside the content; compact: as tabs above it. Mirror: [view_game_workspace.go](mirror/view_game_workspace.go), [state_gameauthoring.go](mirror/state_gameauthoring.go).
 

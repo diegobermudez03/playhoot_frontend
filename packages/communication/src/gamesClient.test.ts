@@ -151,4 +151,45 @@ describe('createGamesClient', () => {
       diagnostics: [],
     });
   });
+
+  it('creates, reads and revokes the AI link', async () => {
+    const created = gamesWith(() =>
+      json(201, {
+        url: 'https://api.example/ai/v1/phl_secret',
+        expires_at: '2026-11-09T10:00:00Z',
+      }),
+    );
+    const link = await created.games.createAiLink('g-1');
+    expect(created.fetchImpl.mock.calls[0]![0]).toBe('/v1/games/g-1/ai-link');
+    expect(created.fetchImpl.mock.calls[0]![1]?.method).toBe('POST');
+    expect(link).toEqual({
+      ok: true,
+      value: { url: 'https://api.example/ai/v1/phl_secret', expiresAt: '2026-11-09T10:00:00Z' },
+    });
+
+    const status = gamesWith(() =>
+      json(200, {
+        active: true,
+        created_at: '2026-11-02T10:00:00Z',
+        expires_at: '2026-11-09T10:00:00Z',
+      }),
+    );
+    expect(await status.games.readAiLink('g-1')).toEqual({
+      ok: true,
+      value: { active: true, createdAt: '2026-11-02T10:00:00Z', expiresAt: '2026-11-09T10:00:00Z' },
+    });
+    const none = gamesWith(() => json(200, { active: false }));
+    expect(await none.games.readAiLink('g-1')).toEqual({
+      ok: true,
+      value: { active: false, createdAt: null, expiresAt: null },
+    });
+
+    const revoked = gamesWith(() => new Response(null, { status: 204 }));
+    expect(await revoked.games.revokeAiLink('g-1')).toEqual({ ok: true, value: undefined });
+    expect(revoked.fetchImpl.mock.calls[0]![0]).toBe('/v1/games/g-1/ai-link/revoke');
+
+    const missing = gamesWith(() => json(404, { code: 'not_found', message: 'm' }));
+    const refused = await missing.games.createAiLink('g-1');
+    expect(!refused.ok && refused.error.kind).toBe('not-found');
+  });
 });

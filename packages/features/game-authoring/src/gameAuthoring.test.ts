@@ -40,6 +40,9 @@ function fakeGames(overrides: Partial<GamesClient> = {}): GamesClient {
     uploadAsset: vi.fn(),
     removeAsset: vi.fn(),
     readBuild: vi.fn(async () => ({ ok: true as const, value: build(1, 'SUCCEEDED') })),
+    createAiLink: vi.fn(),
+    readAiLink: vi.fn(),
+    revokeAiLink: vi.fn(),
     ...overrides,
   } as GamesClient;
 }
