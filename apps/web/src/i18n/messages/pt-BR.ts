@@ -56,6 +56,8 @@ export const ptBR: Messages = {
   'createSession.button': 'Criar uma partida',
   'createSession.creating': 'Criando sua partida…',
   'createSession.error.unavailable': 'Este jogo não está disponível agora.',
+  'createSession.error.activeLimit':
+    'Você já tem uma partida ativa. Encerre-a antes de criar outra.',
   'createSession.error.failed': 'Não conseguimos criar a partida. Tente de novo.',
   'createSession.retry': 'Tentar de novo',
   'host.connecting': 'Abrindo sua partida…',

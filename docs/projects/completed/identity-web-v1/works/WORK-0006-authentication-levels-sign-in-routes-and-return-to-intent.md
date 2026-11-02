@@ -13,7 +13,7 @@ Related decisions:
 Canonical context:
 - `docs/logic/FLOWS.md` (flows 1, 3, 10)
 - `docs/engineering/standards/backend-contract-values.md`
-- `docs/projects/active/session-play-v1/CHECKLIST.md` section L (moved here)
+- `docs/projects/completed/session-play-v1/CHECKLIST.md` section L (moved here)
 
 ## Outcome
 

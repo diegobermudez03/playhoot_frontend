@@ -1,8 +1,11 @@
 import { z } from 'zod';
 
 // POST /v1/sessions (backend `api/play/create_session.go`): an account creates a Session of a game.
-// `404` when the game is not playable; `409` when the idempotency key was used for another request.
+// `404` when the game is not playable; `409` when the idempotency key was used for another request,
+// or `409 active_session_limit` when the account already has as many active Sessions (open lobby
+// or running) as it may have: that key keeps answering so, a later attempt needs a new key.
 export const createSessionPath = '/v1/sessions';
+export const activeSessionLimitCode = 'active_session_limit';
 
 export interface CreateSessionRequest {
   game_uuid: string;

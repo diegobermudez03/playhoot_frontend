@@ -55,10 +55,10 @@ GameHost, the Game SDK and the Game <-> Host bridge.
 
 The repository was scaffolded on 2026-10-19 from the architecture plan
 `docs/Playhoot_Frontend_Architecture_Plan.docx` (the "plan"; `§N` references
-point to its sections). The active Project is
-`docs/projects/active/session-play-v1/`: the first vertical slice (open a
-join link, join, play a Session). `CURRENT_STATE.md` says what actually
-exists.
+point to its sections). Its first vertical slice (open a join link, join,
+play a Session) was completed 2026-11-01 (`docs/projects/completed/session-play-v1/`);
+the next work is the game creation flow. `CURRENT_STATE.md` says what
+actually exists.
 
 The plan is a `.docx`. To read it, extract `word/document.xml` from the zip
 (e.g. with Python `zipfile`) and strip tags; tables and diagrams are inside

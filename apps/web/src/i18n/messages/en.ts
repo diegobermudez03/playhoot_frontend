@@ -56,6 +56,8 @@ export const en = {
   'createSession.button': 'Host a game',
   'createSession.creating': 'Creating your game…',
   'createSession.error.unavailable': "This game isn't available right now.",
+  'createSession.error.activeLimit':
+    'You already have a game going. End it before hosting another.',
   'createSession.error.failed': "We couldn't create the game. Try again.",
   'createSession.retry': 'Try again',
   'host.connecting': 'Opening your game…',

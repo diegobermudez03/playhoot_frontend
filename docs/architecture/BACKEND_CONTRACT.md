@@ -81,7 +81,7 @@ Every route: observability -> authorization -> rate limit -> route (`api/server.
 
 - Request `{"game_uuid": UUID, "idempotency_key": string 1..128}`.
 - `201 {"session_uuid", "join_code", "lobby_expires_at" (RFC3339)}`. Lobby TTL 30 min. Join code: 6 chars from `ABCDEFGHJKMNPQRSTUVWXYZ23456789`, case-insensitive.
-- `404` game not playable; `409`; `400`; `401`/`403`.
+- `404` game not playable; `409` key used for another request; `409 active_session_limit` the account already has as many active Sessions (open lobby or running) as it may have (default one), and that key keeps answering so: retry with a new key; `400`; `401`/`403`.
 - The creator is not a player; to play they also open a player connection.
 
 Seed games (non-production): `11111111-1111-4111-8111-111111111111` (input `move` vector2, 1-8 players); `22222222-...` (unavailable); `33333333-3333-4333-8333-333333333333` **Space Drift** (inputs `move` vector2, `boost` boolean; command `teleport{x,y}`; `update`, `playerRejoined`; 1-8 players); `44444444-4444-4444-8444-444444444444` **Parqués** (no inputs; commands `roll{}` and `move{piece 0-3, die a|b|sum}`, answering `{ok, reason?, dice?}`; `update`, `playerRejoined`; 2-4 players; frontend `fixtures/games/parques`).

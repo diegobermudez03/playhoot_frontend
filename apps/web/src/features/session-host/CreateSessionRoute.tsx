@@ -1,4 +1,4 @@
-import { operations } from '@playhoot/protocol';
+import { activeSessionLimitCode, operations } from '@playhoot/protocol';
 import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
@@ -20,13 +20,16 @@ export function CreateSessionRoute() {
   );
 }
 
-type Creation = { status: 'creating' } | { status: 'failed'; reason: 'game-unavailable' | 'other' };
+type Creation =
+  | { status: 'creating' }
+  | { status: 'failed'; reason: 'game-unavailable' | 'active-limit' | 'other' };
 
 function CreateSession() {
   const services = useServices();
   const navigate = useNavigate();
   // One key per visit: retries, and React's double effect in development, create one Session.
-  const [idempotencyKey] = useState(() => crypto.randomUUID());
+  // Only after the active Session limit does a retry take a new key (the old one keeps refusing).
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
   const [creation, setCreation] = useState<Creation>({ status: 'creating' });
 
   const create = useCallback(async () => {
@@ -37,8 +40,14 @@ function CreateSession() {
       });
       return;
     }
-    const gameUnavailable = result.error.kind === 'http' && result.error.status === 404;
-    setCreation({ status: 'failed', reason: gameUnavailable ? 'game-unavailable' : 'other' });
+    const failure = result.error;
+    const reason =
+      failure.kind === 'http' && failure.status === 404
+        ? 'game-unavailable'
+        : failure.kind === 'http' && failure.code === activeSessionLimitCode
+          ? 'active-limit'
+          : 'other';
+    setCreation({ status: 'failed', reason });
   }, [services, idempotencyKey, navigate]);
 
   useEffect(() => {
@@ -56,6 +65,8 @@ function CreateSession() {
               <FormattedMessage id="createSession.creating" />
             ) : creation.reason === 'game-unavailable' ? (
               <FormattedMessage id="createSession.error.unavailable" />
+            ) : creation.reason === 'active-limit' ? (
+              <FormattedMessage id="createSession.error.activeLimit" />
             ) : (
               <FormattedMessage id="createSession.error.failed" />
             )}
@@ -66,8 +77,11 @@ function CreateSession() {
             size="lg"
             block
             onClick={() => {
+              const activeLimit = creation.reason === 'active-limit';
               setCreation({ status: 'creating' });
-              void create();
+              // A new key changes `create`, and the effect runs it.
+              if (activeLimit) setIdempotencyKey(crypto.randomUUID());
+              else void create();
             }}
           >
             <FormattedMessage id="createSession.retry" />

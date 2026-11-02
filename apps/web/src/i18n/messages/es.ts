@@ -58,6 +58,7 @@ export const es: Messages = {
   'createSession.button': 'Crear una partida',
   'createSession.creating': 'Creando tu partida…',
   'createSession.error.unavailable': 'Este juego no está disponible ahora.',
+  'createSession.error.activeLimit': 'Ya tienes una partida activa. Termínala antes de crear otra.',
   'createSession.error.failed': 'No pudimos crear la partida. Inténtalo de nuevo.',
   'createSession.retry': 'Intentar de nuevo',
   'host.connecting': 'Abriendo tu partida…',
