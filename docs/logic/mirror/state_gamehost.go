@@ -8,7 +8,8 @@
 // connection sample numbers. Bridge contract: ADR-0005.
 //
 // code: packages/game-host/src/gameHost.ts, packages/game-host/src/artifact.ts,
-//       apps/web/src/platform/iframeGameContainer.ts, apps/web/src/platform/browserArtifactCache.ts
+//
+//	apps/web/src/platform/iframeGameContainer.ts, apps/web/src/platform/browserArtifactCache.ts
 package mirror
 
 type GameHost struct {
@@ -115,9 +116,11 @@ func (h *GameHost) OnSessionEvent(e any) {
 
 // OnGameMessage handles what the game posts (ADR-0005, ADR-0006).
 // rule: rates first, before reading the message (packages/game-host/src/bridgeGuard.ts):
-//       every message 240/s and 14,400/min; "sample" 120/s and 7,200/min; "command" and
-//       "request_asset" 20/s and 300/min each. Over a limit -> dropped and counted by kind (the
-//       first of each second is recorded as bridge-rejected).
+//
+//	every message 240/s and 14,400/min; "sample" 120/s and 7,200/min; "command" and
+//	"request_asset" 20/s and 300/min each. Over a limit -> dropped and counted by kind (the
+//	first of each second is recorded as bridge-rejected).
+//
 // rule: messages dropped in each of 5 seconds in a row -> Fail("bridge-abuse").
 // Then every message is validated:
 // rule: exact shape (unknown fields refused), at most 32 KiB, nothing but "ready" before "running".

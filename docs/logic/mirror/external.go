@@ -209,7 +209,7 @@ func SendLeave(s Socket)                                               {} // {"t
 //       | container_violation | bridge_abuse. rule: a detail over 2 KiB is sent as {"truncated": true}.
 // code: packages/communication/src/sessionConnection.ts#reportGameFault
 func SendGameFault(s Socket, kind string, detail map[string]any) {} // {"type":"game_fault","kind","detail"}
-func CloseSocket(s Socket)                                             {} // client closes (code 1000), no leave
+func CloseSocket(s Socket)                                       {} // client closes (code 1000), no leave
 
 // Server -> client messages, as DTOs. The connection validates each one; an unknown type is
 // ignored, a known type with a broken shape is a protocol error.
@@ -222,7 +222,7 @@ type SessionStarted struct { // "session_started": also re-sent on every reattac
 	SessionUUID   string
 	ParticipantID string // "P1".."Pn", this player
 	Participants  []struct{ ParticipantID, UserUUID, DisplayName string }
-	Frontend      struct {                                 // the game's frontend artifact (signed URL)
+	Frontend      struct { // the game's frontend artifact (signed URL)
 		URL, SHA256, ExpiresAt string
 		Viewport               Viewport
 	}
@@ -259,7 +259,7 @@ type CommandResultMsg struct { // "command_result"
 	Response any    // the game's own answer when executed
 }
 
-type Rejected struct{ Reason string }            // "rejected": admission refused, then close
+type Rejected struct{ Reason string }             // "rejected": admission refused, then close
 type SessionEnd struct{ Status, EndCause string } // "session_ended" | "lobby_closed"
 type LeaveResult struct{ Outcome string }         // "leave_result"
 
@@ -316,7 +316,9 @@ func RemoveAsset(gameUUID, key, idempotencyKey string) (ChangeResult, *GamesFail
 
 // ReadBuild reads one revision's build, waiting up to waitSeconds (at most 20) for it to end.
 // endpoint: GET /v1/games/{id}/draft/build?revision=N&wait=S -> {revision, status, diagnostics, ...}
-func ReadBuild(gameUUID string, revision, waitSeconds int) (Build, *GamesFailure) { return Build{}, nil }
+func ReadBuild(gameUUID string, revision, waitSeconds int) (Build, *GamesFailure) {
+	return Build{}, nil
+}
 
 // CreateAiLink makes the game's link for the creator's AI (7 days), replacing the active one.
 // endpoint: POST /v1/games/{id}/ai-link -> 201 {url, expires_at}; url holds the secret, answered only here
@@ -330,6 +332,23 @@ func ReadAiLink(gameUUID string) (AiLinkStatus, *GamesFailure) { return AiLinkSt
 // endpoint: POST /v1/games/{id}/ai-link/revoke -> 204
 func RevokeAiLink(gameUUID string) *GamesFailure { return nil }
 
+// RunSimulation plays a scenario on the build of the current revision and answers its result;
+// nothing is kept.
+// endpoint: POST /v1/games/{id}/draft/simulations (body: the scenario as pasted) ->
+// {format: playhoot.simulation-result.v1, revision, finished, stopped?, observations, final,
+// commands, rejected, events, errors, script_error?, ...}
+func RunSimulation(gameUUID string, scenario any) (SimulationResult, *GamesFailure) {
+	return SimulationResult{}, nil
+}
+
+// SimulationResult keeps the whole answer (Raw) for the person to copy, plus what is summarized.
+type SimulationResult struct {
+	Raw                                any
+	Finished                           *bool
+	Stopped, ScriptError               string
+	Commands, Rejected, Events, Errors int
+}
+
 type AiLink struct{ URL, ExpiresAt string }
 
 type AiLinkStatus struct {
@@ -339,7 +358,6 @@ type AiLinkStatus struct {
 
 // GamesFailure: not-found | not-editable | conflict(currentRevision) | invalid(diagnostics) |
 // too-large(diagnostics) | not-declared | idempotency-conflict | revision-not-found |
-// build-not-found | busy(retryAfterSeconds) | unavailable (no answer, server failure, an unknown
+// build-not-found | build-not-ready(buildStatus) | busy(retryAfterSeconds) | unavailable (no answer, server failure, an unknown
 // code or body).
 type GamesFailure struct{ Kind string }
-

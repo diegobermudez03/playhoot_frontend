@@ -57,8 +57,9 @@ var uiLocale string
 
 // SuggestsRotation: whether to hint turning the device (apps/web/src/features/session-play/rotation.ts).
 // rule: only on a touch device that is not a wide screen (width < 1024 px), held the other way from
-//       the game (a landscape game on a portrait device, or the reverse). Never for a square game.
-//       The game is shown whole either way; turning only makes it bigger.
+//
+//	the game (a landscape game on a portrait device, or the reverse). Never for a square game.
+//	The game is shown whole either way; turning only makes it bigger.
 func SuggestsRotation(device DeviceCapabilities, viewport Viewport) bool {
 	gameLandscape := viewport.Width > viewport.Height
 	gamePortrait := viewport.Width < viewport.Height

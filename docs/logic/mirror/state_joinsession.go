@@ -20,8 +20,8 @@ type JoinSessionState struct {
 type JoinView struct {
 	Phase string // "connecting" | "lobby" | "started" | "leaving" | "closed"
 
-	ReconnectAttempt int            // connecting: 0 first try, 1..3 reconnecting
-	Members          []LobbyMember  // lobby
+	ReconnectAttempt int           // connecting: 0 first try, 1..3 reconnecting
+	Members          []LobbyMember // lobby
 	Started          *StartedSession
 	Connection       string       // started: "connected" | "reconnecting" (the game stays on screen)
 	Outcome          *JoinOutcome // closed
@@ -55,7 +55,7 @@ type JoinOutcome struct {
 }
 
 type JoinSession struct {
-	State      JoinSessionState
+	State JoinSessionState
 	// Live is the link Session Play uses: Sample / Command / CurrentView always go to the CURRENT
 	// connection (nothing while there is none: Command answers "connection-closed"), and it
 	// forwards that connection's "open", "view" and "sample-sent" events. A new connection after a
@@ -131,7 +131,7 @@ func (j *JoinSession) connect(attempt int) {
 	}
 	j.attempt = attempt
 	j.State.View = JoinView{Phase: "connecting", ReconnectAttempt: attempt} // -> ConnectingScreen
-	j.connection = connectionOf(socket)                                      // its events call the On* methods below
+	j.connection = connectionOf(socket)                                     // its events call the On* methods below
 }
 
 // ─── Events from the server (through the connection) ───────────────────────
@@ -222,7 +222,9 @@ func (j *JoinSession) OnConnectionClosed(kind CloseKind, attempt int, opened boo
 
 func (j *JoinSession) dropConnection() {} // cancels a pending reconnect and closes the connection (no leave)
 
-func outcome(kind string) JoinView               { return JoinView{Phase: "closed", Outcome: &JoinOutcome{Kind: kind}} }
+func outcome(kind string) JoinView {
+	return JoinView{Phase: "closed", Outcome: &JoinOutcome{Kind: kind}}
+}
 func membersOf(m LobbyUpdate) []LobbyMember      { return nil } // marks IsYou
 func startedOf(m SessionStarted) *StartedSession { return nil } // marks IsYou by ParticipantID
 func connectionOf(s Socket) *ConnectionState     { return nil }

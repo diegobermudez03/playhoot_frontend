@@ -336,4 +336,36 @@ export const es: Messages = {
   'share.createFailed': 'No pudimos crear el enlace. Intenta de nuevo.',
   'share.revokeFailed': 'No pudimos revocar el enlace. Intenta de nuevo.',
   'share.message': 'Lee este enlace y ayúdame con mi juego de Playhoot: {url}',
+
+  'section.scenarios': 'Escenarios',
+  'scenarios.intro':
+    'Pega un escenario que escribió tu IA: lo que hace cada jugador y cuándo. Se juega sobre la construcción de la revisión {revision} y te devolvemos lo que pasó para que se lo pases a tu IA.',
+  'scenarios.pasteLabel': 'Escenario de tu IA',
+  'scenarios.placeholder': 'Pega el escenario aquí',
+  'scenarios.run': 'Ejecutar escenario',
+  'scenarios.buildNotReady':
+    'La revisión {revision} todavía no se construye bien, y un escenario necesita esa construcción.',
+  'scenarios.openBuild': 'Ver Construcción',
+  'scenarios.error.notAnEnvelope':
+    'Esto no es un escenario. Pega solo el escenario, sin nada alrededor.',
+  'scenarios.error.notJson':
+    'El escenario está incompleto o roto. Pídele a tu IA que lo envíe de nuevo, completo.',
+  'scenarios.error.wrongFormat': 'Esto no es un escenario de Playhoot.',
+  'scenarios.failed.buildNotReady':
+    'La construcción de la revisión actual no terminó bien, así que el escenario no se pudo jugar.',
+  'scenarios.failed.invalid': 'El escenario fue rechazado. Pásale esto a tu IA:',
+  'scenarios.failed.busy': 'Hay demasiados escenarios en curso. Intenta de nuevo en unos segundos.',
+  'scenarios.failed.notFound': 'Este juego ya no existe o no es tuyo.',
+  'scenarios.failed.unavailable': 'No pudimos ejecutar el escenario. Intenta de nuevo.',
+  'scenarios.result.title': 'Resultado',
+  'scenarios.result.finished':
+    '{finished, select, yes {El juego terminó dentro del escenario.} no {El juego no terminó dentro del escenario.} other {}}',
+  'scenarios.result.stopped': 'Se detuvo antes de tiempo: {reason}',
+  'scenarios.result.counts':
+    '{commands, plural, one {# comando} other {# comandos}}, {rejected, plural, one {# rechazado} other {# rechazados}}, {errors, plural, one {# error del juego} other {# errores del juego}}.',
+  'scenarios.result.scriptError': 'El código del juego falló: {message}',
+  'scenarios.copy': 'Copiar resultado para mi IA',
+  'scenarios.copied': '¡Copiado!',
+  'scenarios.resultLabel': 'Resultado completo para tu IA',
+  'scenarios.clear': 'Borrar resultado',
 };

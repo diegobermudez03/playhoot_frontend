@@ -33,16 +33,19 @@ func NewHostSession(sessionUUID, joinCode string) *HostSession { return &HostSes
 
 // Start opens the admin connection. external.go: WebSocket /v1/play/join/sessions/{uuid}/admin.
 // Server messages:
-//   lobby_update     -> View = lobby (members, limits)
-//   session_started  -> View = started; then Watch(the same participant as before a reconnection,
-//                       else the first) unless Playing or WatchBlocked
-//   player_view      -> the watched player's state, reconciled like a player's (patches, revision
-//                       gaps -> resync); handed to the GameHost read only
-//   session_ended / lobby_closed -> View = closed (ended, status, end cause)
-//   rejected         -> View = closed (rejected, reason)
+//
+//	lobby_update     -> View = lobby (members, limits)
+//	session_started  -> View = started; then Watch(the same participant as before a reconnection,
+//	                    else the first) unless Playing or WatchBlocked
+//	player_view      -> the watched player's state, reconciled like a player's (patches, revision
+//	                    gaps -> resync); handed to the GameHost read only
+//	session_ended / lobby_closed -> View = closed (ended, status, end cause)
+//	rejected         -> View = closed (rejected, reason)
+//
 // Connection closed:
-//   rule: first handshake fails -> closed "unreachable"; lost later -> reconnect after 1, 2, 4 s
-//         (the game stays on screen as "reconnecting"), then closed "connection-lost".
+//
+//	rule: first handshake fails -> closed "unreachable"; lost later -> reconnect after 1, 2, 4 s
+//	      (the game stays on screen as "reconnecting"), then closed "connection-lost".
 func (h *HostSession) Start() {}
 
 // StartGame: "Iniciar partida". rule: the button is enabled only when the member count is within
@@ -55,9 +58,12 @@ func (h *HostSession) Cancel() {} // {"type":"cancel_session"} -> cancel_session
 
 // Watch: shows one participant's game.
 // rule: only the watched participant's views reach the game, and its current view is given to a new
-//       game run only once it is that participant's (before their FULL view, the game starts empty).
+//
+//	game run only once it is that participant's (before their FULL view, the game starts empty).
+//
 // rule: creator_is_playing -> WatchBlocked (no more watching); any other answer but "selected" ->
-//       back to the participant watched before.
+//
+//	back to the participant watched before.
 func (h *HostSession) Watch(participantID string) {} // {"type":"select_perspective","participant_id"}
 
 // PlayToo: lobby only. The page opens a player connection for the creator (view_session.go,

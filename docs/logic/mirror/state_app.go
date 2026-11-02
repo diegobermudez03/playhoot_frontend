@@ -36,13 +36,13 @@ type AuthSnapshot struct {
 type Credential struct {
 	Token        string // access token (a JWT, 15 min); empty while a stored credential is restored
 	RefreshToken string
-	ExpiresAt    int64  // when Token expires (epoch ms)
+	ExpiresAt    int64 // when Token expires (epoch ms)
 	UserUUID     string
 	Kind         string // "guest" | "account"
 	DisplayName  string
 }
 
-var global AppGlobalState // starts as {Auth: {Status: "unknown"}, Locale: "en"}
+var global AppGlobalState  // starts as {Auth: {Status: "unknown"}, Locale: "en"}
 var credential *Credential // in memory; the source of the token for every call
 
 // Bootstrap runs once when the page loads, before anything renders.
@@ -64,7 +64,9 @@ func Bootstrap() {
 
 // LoadOperations reads the backend's operation catalog once per page load.
 // rule: while the backend cannot be reached it is asked again after 1, 2, 4... seconds (at most
-//       30); routes that need it show an empty page meanwhile (routes.go#RequireOperation).
+//
+//	30); routes that need it show an empty page meanwhile (routes.go#RequireOperation).
+//
 // code: apps/web/src/app/services.ts#loadOperations
 func LoadOperations() {
 	operations, failure := ListOperations() // external.go: GET /v1/identity/operations
@@ -79,7 +81,9 @@ func LoadOperations() {
 // rule: the person's level: none -> "anonymous", guest -> "guest", authenticated -> "account".
 // rule: an operation missing from the catalog, or a level this code does not know, requires "account".
 // rule: allowed when the person's level is at least the required one; otherwise "needs" that level
-//       (a guest when the operation allows guests).
+//
+//	(a guest when the operation allows guests).
+//
 // code: packages/app-core/src/access.ts#operationAccess
 func OperationAccess(operation string) struct{ Status, Level string } {
 	return struct{ Status, Level string }{} // "pending" | "allowed" | "needs" (+ Level "guest" | "account")
@@ -87,8 +91,10 @@ func OperationAccess(operation string) struct{ Status, Level string } {
 
 // adopt takes a stored credential at load time, or when another tab changed it.
 // rule: a stored credential with a refresh token has no access token: Auth stays "unknown" (routes
-//       wait) while Refresh() renews it; while the backend cannot be reached it tries again after
-//       1, 2, 4, 8, 16, 30, 30... seconds, never creating another identity meanwhile.
+//
+//	wait) while Refresh() renews it; while the backend cannot be reached it tries again after
+//	1, 2, 4, 8, 16, 30, 30... seconds, never creating another identity meanwhile.
+//
 // rule: refused (refresh_invalid) -> forgotten, Auth "none".
 // code: packages/app-core/src/appState.ts#adopt, #restore
 func adopt(stored *Credential) {
@@ -117,13 +123,19 @@ func activate(c Credential) {
 // Refresh renews the access token with the refresh token. Concurrent callers share one call.
 // rule: uses the refresh token stored by another tab if it rotated it meanwhile (same user).
 // rule: "renewed" -> saved (the refresh token may be a new one) and activated; "invalid" -> the
-//       credential is forgotten (Auth "none"); "unavailable" -> kept, and tried again after 1, 2, 4,
-//       8, 16, 30, 30... s.
+//
+//	credential is forgotten (Auth "none"); "unavailable" -> kept, and tried again after 1, 2, 4,
+//	8, 16, 30, 30... s.
+//
 // rule: a renewal started before the person changed (signed out, signed in, another tab's person)
-//       never applies and never counts as renewed; another tab only rotating the refresh token
-//       does not change the person.
+//
+//	never applies and never counts as renewed; another tab only rotating the refresh token
+//	does not change the person.
+//
 // rule: also run when the page becomes visible with the access token expiring within a minute
-//       (its timer may have slept), and by the HTTP client on a 401 token_invalid (external.go).
+//
+//	(its timer may have slept), and by the HTTP client on a 401 token_invalid (external.go).
+//
 // code: packages/app-core/src/appState.ts#refresh, #ensureFresh
 func Refresh() string { // "renewed" | "invalid" | "unavailable"
 	renewed, failure := RefreshCredentials(credential.RefreshToken) // external.go
@@ -142,7 +154,9 @@ func Refresh() string { // "renewed" | "invalid" | "unavailable"
 
 // SyncFromStore follows another tab that changed the stored credential (browser "storage" event).
 // rule: another person, or none -> adopt it; same person with a rotated refresh token -> keep using
-//       our access token with the new refresh token.
+//
+//	our access token with the new refresh token.
+//
 // code: packages/app-core/src/appState.ts#syncFromStore
 func SyncFromStore() {}
 
@@ -190,7 +204,7 @@ func snapshotOf(c *Credential) AuthSnapshot {
 	return AuthSnapshot{Status: status, UserUUID: c.UserUUID, DisplayName: c.DisplayName}
 }
 
-func loadFromBrowser(key string) *Credential   { return nil } // localStorage read, validated
+func loadFromBrowser(key string) *Credential    { return nil } // localStorage read, validated
 func saveToBrowser(key string, value any)       {}             // localStorage write (ignored if blocked)
 func removeFromBrowser(key string)              {}
 func isSupported(locale any) bool               { return false }

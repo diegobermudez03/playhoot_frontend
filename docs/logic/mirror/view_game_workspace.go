@@ -6,7 +6,7 @@ package mirror
 // CreateGameView is /games/new: creates the game and moves to its workspace.
 // code: apps/web/src/features/game-authoring/CreateGameRoute.tsx
 func CreateGameView() {
-	key := NewUUID() // one per visit: a retry or React's double effect creates one game
+	key := NewUUID()                    // one per visit: a retry or React's double effect creates one game
 	created, failure := CreateGame(key) // external.go
 	if failure != nil {
 		// shows "No pudimos crear tu juego" with **Intentar de nuevo** (same key)
@@ -37,6 +37,15 @@ func GameWorkspaceView(gameUUID string, section string) {
 	WorkspaceOnRestore(authoring, 1)
 	// WHEN **Recargar el juego** / Reload the game is pressed after a conflict
 	authoring.Reload()
+
+	// "Escenarios" (section scenarios): its own state, created when the section opens and forgotten
+	// when it closes (state_gameauthoring.go ScenarioRunner).
+	runner := &ScenarioRunner{GameUUID: gameUUID}
+	// WHEN a scenario is pasted and **Ejecutar escenario** / Run scenario is pressed
+	// (enabled only when the current revision's build succeeded)
+	WorkspaceOnRunScenario(runner, "pasted text")
+	// WHEN **Copiar resultado para mi IA** / Copy result for my AI is pressed
+	WorkspaceOnCopyScenarioResult(runner)
 
 	// "Compartir con mi IA" (section share): its own state, created when the section opens and
 	// forgotten when it closes (state_gameauthoring.go AiLinkSharing).
@@ -90,3 +99,13 @@ func WorkspaceOnRemoveAsset(authoring *GameAuthoring, key string) {
 func WorkspaceOnRestore(authoring *GameAuthoring, revision int) {
 	authoring.Restore(revision) // on the current revision as its base
 }
+
+// WorkspaceOnRunScenario reads the pasted scenario (ParsePastedScenario; refused locally with what
+// is wrong) and runs it on the current revision's build.
+func WorkspaceOnRunScenario(runner *ScenarioRunner, text string) {
+	runner.Run(ParsePastedScenario(text))
+}
+
+// WorkspaceOnCopyScenarioResult copies the whole result as JSON (the exact answer, pretty-printed);
+// the clipboard refusing leaves it on screen to copy by hand.
+func WorkspaceOnCopyScenarioResult(runner *ScenarioRunner) {}

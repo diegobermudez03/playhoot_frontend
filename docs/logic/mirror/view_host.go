@@ -1,8 +1,10 @@
 // PSEUDOCODE — Go syntax, not compiled.
 // VIEWS: the creator's side of a Session.
-//   "/sessions/new" — creates a Session and moves to its host screen.
-//   "/sessions/{sessionUUID}/host?code={joinCode}" — the host screen: lobby, start, cancel, watching
-//   the players, or playing too.
+//
+//	"/sessions/new" — creates a Session and moves to its host screen.
+//	"/sessions/{sessionUUID}/host?code={joinCode}" — the host screen: lobby, start, cancel, watching
+//	the players, or playing too.
+//
 // code: apps/web/src/features/session-host/CreateSessionRoute.tsx, HostRoute.tsx, HostGameView.tsx
 package mirror
 

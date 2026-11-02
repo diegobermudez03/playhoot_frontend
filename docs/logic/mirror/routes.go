@@ -118,9 +118,11 @@ const EnterCodeURL = "/join"
 
 func JoinURL(joinCode string) string           { return "/join/" + joinCode }
 func SessionPlayURL(sessionUUID string) string { return "/sessions/" + sessionUUID + "/play" }
-func HostURL(sessionUUID, joinCode string) string { return "/sessions/" + sessionUUID + "/host?code=" + joinCode }
-func SignInURL(next string) string             { return "/sign-in?next=" + urlEncode(next) }
-func GuestSignInURL(next string) string        { return "/sign-in/guest?next=" + urlEncode(next) }
+func HostURL(sessionUUID, joinCode string) string {
+	return "/sessions/" + sessionUUID + "/host?code=" + joinCode
+}
+func SignInURL(next string) string      { return "/sign-in?next=" + urlEncode(next) }
+func GuestSignInURL(next string) string { return "/sign-in/guest?next=" + urlEncode(next) }
 
 // safeNext reads `next` from a sign-in URL. rule: only a path of this app ("/..."), never "//..."
 // or another site, so a crafted link cannot send someone away after signing in; else "".

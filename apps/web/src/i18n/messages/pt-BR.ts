@@ -332,4 +332,35 @@ export const ptBR: Messages = {
   'share.createFailed': 'Não conseguimos criar o link. Tente de novo.',
   'share.revokeFailed': 'Não conseguimos revogar o link. Tente de novo.',
   'share.message': 'Leia este link e me ajude com meu jogo do Playhoot: {url}',
+
+  'section.scenarios': 'Cenários',
+  'scenarios.intro':
+    'Cole um cenário que sua IA escreveu: o que cada jogador faz e quando. Ele é jogado sobre a construção da revisão {revision} e devolvemos o que aconteceu para você passar à sua IA.',
+  'scenarios.pasteLabel': 'Cenário da sua IA',
+  'scenarios.placeholder': 'Cole o cenário aqui',
+  'scenarios.run': 'Executar cenário',
+  'scenarios.buildNotReady':
+    'A revisão {revision} ainda não constrói bem, e um cenário precisa dessa construção.',
+  'scenarios.openBuild': 'Ver Construção',
+  'scenarios.error.notAnEnvelope': 'Isto não é um cenário. Cole só o cenário, sem nada em volta.',
+  'scenarios.error.notJson':
+    'O cenário está incompleto ou quebrado. Peça à sua IA que o envie de novo, completo.',
+  'scenarios.error.wrongFormat': 'Isto não é um cenário do Playhoot.',
+  'scenarios.failed.buildNotReady':
+    'A construção da revisão atual não terminou bem, então o cenário não pôde ser jogado.',
+  'scenarios.failed.invalid': 'O cenário foi recusado. Passe isto à sua IA:',
+  'scenarios.failed.busy': 'Há cenários demais em andamento. Tente de novo em alguns segundos.',
+  'scenarios.failed.notFound': 'Este jogo não existe mais ou não é seu.',
+  'scenarios.failed.unavailable': 'Não conseguimos executar o cenário. Tente de novo.',
+  'scenarios.result.title': 'Resultado',
+  'scenarios.result.finished':
+    '{finished, select, yes {O jogo terminou dentro do cenário.} no {O jogo não terminou dentro do cenário.} other {}}',
+  'scenarios.result.stopped': 'Parou antes do fim: {reason}',
+  'scenarios.result.counts':
+    '{commands, plural, one {# comando} other {# comandos}}, {rejected, plural, one {# recusado} other {# recusados}}, {errors, plural, one {# erro do jogo} other {# erros do jogo}}.',
+  'scenarios.result.scriptError': 'O código do jogo falhou: {message}',
+  'scenarios.copy': 'Copiar resultado para minha IA',
+  'scenarios.copied': 'Copiado!',
+  'scenarios.resultLabel': 'Resultado completo para sua IA',
+  'scenarios.clear': 'Apagar resultado',
 };

@@ -52,11 +52,20 @@ func (a *GameAuthoring) followBuild(revision int) {
 }
 
 // Every action: Busy = action; send with the key; Result = the answer; a new revision -> Reload.
-func (a *GameAuthoring) ApplyChange(change DraftChange)       { ApplyChange(a.GameUUID, change, a.keyFor("change", change)) }
-func (a *GameAuthoring) EditFile(path, content string)        { /* ApplyChange on Draft.CurrentRevision with only that file */ }
-func (a *GameAuthoring) Restore(revision int)                 { RestoreRevision(a.GameUUID, revision, a.Draft.CurrentRevision, a.keyFor("restore", revision)) }
-func (a *GameAuthoring) UploadAsset(key string, file File)    { UploadAsset(a.GameUUID, key, file, a.keyFor("upload", key)) }
-func (a *GameAuthoring) RemoveAsset(key string)               { RemoveAsset(a.GameUUID, key, a.keyFor("remove", key)) }
+func (a *GameAuthoring) ApplyChange(change DraftChange) {
+	ApplyChange(a.GameUUID, change, a.keyFor("change", change))
+}
+func (a *GameAuthoring) EditFile(path, content string) { /* ApplyChange on Draft.CurrentRevision with only that file */
+}
+func (a *GameAuthoring) Restore(revision int) {
+	RestoreRevision(a.GameUUID, revision, a.Draft.CurrentRevision, a.keyFor("restore", revision))
+}
+func (a *GameAuthoring) UploadAsset(key string, file File) {
+	UploadAsset(a.GameUUID, key, file, a.keyFor("upload", key))
+}
+func (a *GameAuthoring) RemoveAsset(key string) {
+	RemoveAsset(a.GameUUID, key, a.keyFor("remove", key))
+}
 func (a *GameAuthoring) keyFor(action string, args any) string { return "" }
 
 // ParsePastedChange reads pasted text strictly as data.
@@ -66,6 +75,23 @@ func (a *GameAuthoring) keyFor(action string, args any) string { return "" }
 // not [paths] -> malformed(field); a path twice -> repeated-path.
 // computes: the summary: added (paths not in the draft), modified (paths in it), deleted.
 func ParsePastedChange(text string, currentPaths []string) DraftChange { return DraftChange{} }
+
+// ScenarioRunner is "Escenarios": runs a pasted scenario and keeps its result in memory only.
+// code: packages/features/game-authoring/src/scenarioRunner.ts
+type ScenarioRunner struct {
+	GameUUID string
+	Run      string // idle | running | done | failed
+	Result   *SimulationResult
+	Failure  *GamesFailure
+}
+
+// ParsePastedScenario reads pasted text strictly as data, like ParsePastedChange: the JSON or it
+// inside ONE code fence; its format must be playhoot.scenario.v1. The backend checks the rest.
+func ParsePastedScenario(text string) any { return nil }
+
+// Run sends the scenario (RunSimulation); a second run while one runs is ignored. Done keeps the
+// result, Failed why not; leaving the section forgets both.
+func (r *ScenarioRunner) Run(scenario any) {}
 
 // AiLinkSharing is "Compartir con mi IA": the game's link for the person's AI.
 // code: packages/features/game-authoring/src/aiLink.ts

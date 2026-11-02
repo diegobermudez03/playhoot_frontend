@@ -18,16 +18,16 @@ package mirror
 // ConnectionState lives as long as one WebSocket. A reconnection creates a new one from zero
 // (sequences, revisions and pending commands are per connection).
 type ConnectionState struct {
-	Socket           Socket
-	Opened           bool
-	Closed           bool
-	SampleSequence   int            // last sent; starts at 0, so the first sample is 1
-	PendingInputs    map[string]any // latest snapshot waiting for its send slot
-	LastSampleAt     Time
-	Views            ViewTracker // the player's state, rebuilt from views
-	ResyncRequested  bool        // one resync per gap
-	PendingCommands  map[string]PendingCommand
-	Listeners        []func(ConnectionEvent) // the feature that owns the connection
+	Socket          Socket
+	Opened          bool
+	Closed          bool
+	SampleSequence  int            // last sent; starts at 0, so the first sample is 1
+	PendingInputs   map[string]any // latest snapshot waiting for its send slot
+	LastSampleAt    Time
+	Views           ViewTracker // the player's state, rebuilt from views
+	ResyncRequested bool        // one resync per gap
+	PendingCommands map[string]PendingCommand
+	Listeners       []func(ConnectionEvent) // the feature that owns the connection
 }
 
 type PendingCommand struct {
@@ -43,7 +43,7 @@ type CommandMessage struct {
 
 // What the feature receives.
 type ConnectionEvent struct {
-	Type    string // "open" | "message" | "view" | "sample-sent" | "protocol-error" | "closed"
+	Type    string     // "open" | "message" | "view" | "sample-sent" | "protocol-error" | "closed"
 	Message any        // lobby_update, session_started, rejected, session_ended, lobby_closed, leave_result
 	View    ViewUpdate // for "view"
 	Seq     int        // for "sample-sent"
@@ -190,9 +190,9 @@ func (t *ViewTracker) Receive(v PlayerView) ViewUpdate {
 	}
 }
 
-func (c *ConnectionState) emit(e ConnectionEvent)              {}
-func (c *ConnectionState) resolveAllPending(outcome string)    {}
-func mergePatch(state any, patch any) any                       { return nil }
-func newUUID() string                                           { return "" }
+func (c *ConnectionState) emit(e ConnectionEvent)           {}
+func (c *ConnectionState) resolveAllPending(outcome string) {}
+func mergePatch(state any, patch any) any                   { return nil }
+func newUUID() string                                       { return "" }
 
 type Time struct{}

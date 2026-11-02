@@ -1,17 +1,12 @@
 import type { DraftChange } from '@playhoot/communication';
 import { projectChangeFormat } from '@playhoot/protocol';
 
-// What a person pasted from their AI, read strictly as data: the change envelope as JSON, or that
-// JSON inside ONE wrapping code fence (how chats show it). Code is never guessed out of free text
-// and truncated JSON is never repaired: either the whole text is an envelope or it is refused.
+import { isRecord, readPastedJson, type PastedJsonError } from './pastedJson';
+
+// The change envelope a person pasted from their AI, read strictly as data (`readPastedJson`).
 
 export type PastedChangeError =
-  // Nothing was pasted.
-  | { kind: 'empty' }
-  // Text around or between code fences, or more than one fence.
-  | { kind: 'not-an-envelope' }
-  // Not valid JSON (often a reply cut off before its end).
-  | { kind: 'not-json' }
+  | PastedJsonError
   // JSON, but another format or none.
   | { kind: 'wrong-format'; found: string | null }
   // The envelope's fields are missing or of the wrong type.
@@ -29,29 +24,11 @@ export type PastedChange =
   | { ok: true; change: DraftChange; summary: ChangeSummary }
   | { ok: false; error: PastedChangeError };
 
-const singleFence = /^```[\w.+-]*[ \t]*\r?\n([\s\S]*?)\r?\n```$/;
-
 // Reads `text` against the paths the draft holds now, which tell added files from modified ones.
 export function parsePastedChange(text: string, currentPaths: readonly string[]): PastedChange {
-  const trimmed = text.trim();
-  if (trimmed === '') return refused({ kind: 'empty' });
-
-  let json = trimmed;
-  if (trimmed.startsWith('```')) {
-    const fenced = singleFence.exec(trimmed);
-    if (!fenced || fenced[1]!.includes('```')) return refused({ kind: 'not-an-envelope' });
-    json = fenced[1]!;
-  } else if (trimmed.includes('```')) {
-    return refused({ kind: 'not-an-envelope' });
-  }
-
-  let value: unknown;
-  try {
-    value = JSON.parse(json);
-  } catch {
-    return refused({ kind: 'not-json' });
-  }
-  if (!isRecord(value)) return refused({ kind: 'not-an-envelope' });
+  const read = readPastedJson(text);
+  if (!read.ok) return refused(read.error);
+  const value = read.value;
   if (value.format !== projectChangeFormat) {
     return refused({
       kind: 'wrong-format',
@@ -96,8 +73,4 @@ export function parsePastedChange(text: string, currentPaths: readonly string[])
 
 function refused(error: PastedChangeError): PastedChange {
   return { ok: false, error };
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

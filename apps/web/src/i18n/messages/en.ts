@@ -328,6 +328,38 @@ export const en = {
   'share.createFailed': 'We could not create the link. Try again.',
   'share.revokeFailed': 'We could not revoke the link. Try again.',
   'share.message': 'Read this link and help me with my Playhoot game: {url}',
+
+  'section.scenarios': 'Scenarios',
+  'scenarios.intro':
+    'Paste a scenario your AI wrote: what each player does and when. It is played on the build of revision {revision}, and you get back what happened to give to your AI.',
+  'scenarios.pasteLabel': "Your AI's scenario",
+  'scenarios.placeholder': 'Paste the scenario here',
+  'scenarios.run': 'Run scenario',
+  'scenarios.buildNotReady':
+    'Revision {revision} does not build yet, and a scenario needs that build.',
+  'scenarios.openBuild': 'Open Build',
+  'scenarios.error.notAnEnvelope':
+    'This is not a scenario. Paste only the scenario, with nothing around it.',
+  'scenarios.error.notJson':
+    'The scenario is incomplete or broken. Ask your AI to send it again, whole.',
+  'scenarios.error.wrongFormat': 'This is not a Playhoot scenario.',
+  'scenarios.failed.buildNotReady':
+    "The current revision's build did not end well, so the scenario could not be played.",
+  'scenarios.failed.invalid': 'The scenario was refused. Give this to your AI:',
+  'scenarios.failed.busy': 'Too many scenarios are running. Try again in a few seconds.',
+  'scenarios.failed.notFound': 'This game no longer exists or is not yours.',
+  'scenarios.failed.unavailable': 'We could not run the scenario. Try again.',
+  'scenarios.result.title': 'Result',
+  'scenarios.result.finished':
+    '{finished, select, yes {The game ended within the scenario.} no {The game did not end within the scenario.} other {}}',
+  'scenarios.result.stopped': 'It stopped early: {reason}',
+  'scenarios.result.counts':
+    '{commands, plural, one {# command} other {# commands}}, {rejected, plural, one {# refused} other {# refused}}, {errors, plural, one {# game error} other {# game errors}}.',
+  'scenarios.result.scriptError': "The game's code failed: {message}",
+  'scenarios.copy': 'Copy result for my AI',
+  'scenarios.copied': 'Copied!',
+  'scenarios.resultLabel': 'Full result for your AI',
+  'scenarios.clear': 'Clear result',
 } as const;
 
 export type MessageId = keyof typeof en;

@@ -22,8 +22,16 @@ export const draftAssetRemovePath = (gameUUID: string, key: string) =>
 export const aiLinkPath = (gameUUID: string) => `/v1/games/${encodeURIComponent(gameUUID)}/ai-link`;
 export const aiLinkRevokePath = (gameUUID: string) => `${aiLinkPath(gameUUID)}/revoke`;
 
+// Runs a scenario against the build of the draft's current revision and answers its result at
+// once; nothing is kept.
+export const draftSimulationsPath = (gameUUID: string) => `${draftPath(gameUUID)}/simulations`;
+
 // The change envelope: what an AI produces for a person to paste, and what the API takes.
 export const projectChangeFormat = 'playhoot.project-change.v1';
+
+// A scenario an AI writes for a simulation, and the result it reads back.
+export const scenarioFormat = 'playhoot.scenario.v1';
+export const simulationResultFormat = 'playhoot.simulation-result.v1';
 
 // The longest `wait` the build read accepts, in seconds.
 export const maxBuildWaitSeconds = 20;
@@ -40,6 +48,9 @@ export const gamesErrorCodes = {
   invalidAsset: 'invalid_asset',
   uploadsBusy: 'uploads_busy',
   buildNotFound: 'build_not_found',
+  buildNotReady: 'build_not_ready',
+  invalidScenario: 'invalid_scenario',
+  simulationsBusy: 'simulations_busy',
 } as const;
 
 // Known outcomes of a change, a restore and an asset upload or removal.
@@ -178,7 +189,26 @@ export const draftRefusalSchema = z.object({
   message: z.string().optional(),
   current_revision: z.number().optional(),
   diagnostics: z.array(draftDiagnosticSchema).optional(),
+  // A simulation refused because the revision's build has not succeeded (yet).
+  build: z.object({ status: z.string() }).passthrough().nullish(),
+  build_status: z.string().optional(),
 });
+
+// What the workspace summarizes of a simulation's result. Every other field is kept untouched:
+// the person copies the whole result back to their AI.
+export const simulationResultSchema = z
+  .object({
+    format: z.string(),
+    revision: z.number().optional(),
+    finished: z.boolean().optional(),
+    stopped: z.unknown().optional(),
+    commands: z.array(z.unknown()).nullish(),
+    rejected: z.array(z.unknown()).nullish(),
+    events: z.array(z.unknown()).nullish(),
+    errors: z.array(z.unknown()).nullish(),
+    script_error: z.unknown().optional(),
+  })
+  .passthrough();
 
 export const draftRevisionsResponseSchema = z.array(
   z.object({
@@ -211,3 +241,4 @@ export type DraftResponse = z.infer<typeof draftResponseSchema>;
 export type BuildResponse = z.infer<typeof buildSchema>;
 export type DraftChangeResponse = z.infer<typeof draftChangeResponseSchema>;
 export type DraftRevisionsResponse = z.infer<typeof draftRevisionsResponseSchema>;
+export type SimulationResultResponse = z.infer<typeof simulationResultSchema>;

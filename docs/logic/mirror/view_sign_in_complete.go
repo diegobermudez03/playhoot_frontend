@@ -40,14 +40,14 @@ func SignInComplete(completion LoginCompletion) {
 		return // the failure and a "Back to sign in" button are shown
 	}
 	// rule: the identity in use (a guest) is handed over so the backend ends its session.
-	replaces := credential.RefreshToken // state_app.go; empty for nobody
+	replaces := credential.RefreshToken                                            // state_app.go; empty for nobody
 	account, failure := CompleteLogin(completion.Code, pending.Verifier, replaces) // external.go
 	if failure != nil {
 		return // network / 5xx -> "couldn't reach"; anything else -> "didn't finish, start again"
 	}
-	SignIn(account)                 // state_app.go
+	SignIn(account)                  // state_app.go
 	ReplaceURL(orHome(pending.Next)) // continues where the sign-in was started from
 }
 
-func path(url string) string            { return "" }
-func query(url, name string) string     { return "" }
+func path(url string) string        { return "" }
+func query(url, name string) string { return "" }

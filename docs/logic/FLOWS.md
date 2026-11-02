@@ -35,6 +35,7 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | "Subir" / "Reemplazar" an asset (flow 17) | `PUT /v1/games/{id}/draft/assets/{key}` | the file as the body, `Idempotency-Key` header | attached / unchanged / too large / invalid / busy |
 | "Quitar" an asset (flow 17) | `POST /v1/games/{id}/draft/assets/{key}/remove` | key | removed / unchanged |
 | "Historial" opens, and after every new revision | `GET /v1/games/{id}/draft/revisions` | — | The revisions list |
+| "Ejecutar escenario" (flow 17) | `POST /v1/games/{id}/draft/simulations` | the pasted scenario, as is | The simulation's result, shown and copied whole; build not ready / refused with diagnostics / busy |
 | "Compartir con mi IA" opens, and after creating or revoking (flow 17) | `GET /v1/games/{id}/ai-link` | — | Whether a link is active and until when (never the link) |
 | "Crear enlace" / "Renovar enlace" (flow 17) | `POST /v1/games/{id}/ai-link` | — | The new link and its expiry, shown once; the old one stops working |
 | "Revocar enlace" (flow 17) | `POST /v1/games/{id}/ai-link/revoke` | — | The link stops working |
@@ -259,7 +260,7 @@ The admin connection reconnects by itself after 1, 2 and 4 seconds when lost aft
 
 ## 17. Creating a game and changing its draft (the workspace)
 
-"Crear un juego" on Enter a code needs `CREATE_GAME` (an account): without one, flow 15 first, then back. `/games/new` creates the game (one idempotency key per visit) and REPLACES the URL with `/games/{uuid}/edit`. The workspace needs `EDIT_GAME`; it reads the current revision with every file's content and shows it in six sections (`?section=` in the URL; none is the first), whose labels the agent guide will name:
+"Crear un juego" on Enter a code needs `CREATE_GAME` (an account): without one, flow 15 first, then back. `/games/new` creates the game (one idempotency key per visit) and REPLACES the URL with `/games/{uuid}/edit`. The workspace needs `EDIT_GAME`; it reads the current revision with every file's content and shows it in seven sections (`?section=` in the URL; none is the first), whose labels the agent guide will name:
 
 | Section (`section`) | What the creator sees and can do |
 | --- | --- |
@@ -267,6 +268,7 @@ The admin connection reconnects by itself after 1, 2 and 4 seconds when lost aft
 | **Archivos** (`files`) | The current revision's files; choosing one shows its content, which can be edited and saved (**Guardar como nueva revisión**: a change with only that file, on the current revision). |
 | **Recursos** (`assets`) | The assets `game.project.json` declares, each missing / ready / no longer declared, with its description and type; a ready one shows a preview (image, audio, video) from its short-lived link. **Subir** / **Reemplazar** sends the chosen file; **Quitar** unbinds it. When `game.project.json` cannot be read, why. |
 | **Construcción** (`build`) | The current revision's build status and what it found, by file:line:column and stage; a note when the failure is the platform's (stage `infrastructure`); the last revision that built. |
+| **Escenarios** (`scenarios`) | A box to paste a scenario the person's AI wrote (what each player does and when), read strictly as data like a change (the JSON, or it in ONE code fence; another format refused locally). **Ejecutar escenario** plays it on the build of the current revision, so it is enabled only when that build succeeded (otherwise a note links to Construcción). The result shows a short summary (whether the game ended, why it stopped early, how many commands, refused and game errors, the script's failure) above the whole result as JSON, with **Copiar resultado para mi IA** (the exact JSON) and **Borrar resultado**. Refusals: the build not ready, the scenario refused with the backend's diagnostics, busy, not found. Nothing is kept: the result lives only while the section is open. |
 | **Historial** (`history`) | Every revision, newest first, with where it came from and when; **Restaurar** on any but the current one. |
 | **Compartir con mi IA** (`share`) | Whether the game has an active link for the person's AI and until when. **Crear enlace** makes one; with one active the button is **Renovar enlace**, which first says the old one will stop working. The new link is shown ONCE, with **Copiar mensaje para mi IA** (a ready-to-paste "Read this link and help me with my Playhoot game: LINK" in the page's language), **Copiar solo el enlace** and **Ocultar enlace**, and the warning that whoever has it can read and change the game until it expires (7 days). **Revocar enlace** asks once more. The link lives only in memory while the section is open: never stored, never in the URL; leaving the section forgets it. |
 

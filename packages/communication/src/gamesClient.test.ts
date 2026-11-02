@@ -192,4 +192,81 @@ describe('createGamesClient', () => {
     const refused = await missing.games.createAiLink('g-1');
     expect(!refused.ok && refused.error.kind).toBe('not-found');
   });
+  it('runs a scenario, sending it as is and keeping the whole result', async () => {
+    const answer = {
+      format: 'playhoot.simulation-result.v1',
+      revision: 3,
+      finished: true,
+      observations: [{ at_ms: 1000, state: { n: 1 }, views: { P1: { me: 'P1' } } }],
+      final: { at_ms: 1500, state: { n: 2 } },
+      commands: [{ at_ms: 100, player: 'P1', response: { ok: true } }, { at_ms: 200 }],
+      rejected: [{ at_ms: 300 }],
+      events: [],
+      errors: [],
+      extra: { kept: true },
+    };
+    const t = gamesWith(() => json(200, answer));
+    const scenario = { format: 'playhoot.scenario.v1', players: 2, steps: [] };
+    const result = await t.games.runSimulation('g-1', scenario);
+    expect(t.fetchImpl.mock.calls[0]![0]).toBe('/v1/games/g-1/draft/simulations');
+    expect(JSON.parse(t.fetchImpl.mock.calls[0]![1]!.body as string)).toEqual(scenario);
+    expect(result.ok && result.value).toEqual({
+      raw: answer,
+      revision: 3,
+      finished: true,
+      stopped: null,
+      commands: 2,
+      rejected: 1,
+      events: 0,
+      errors: 0,
+      scriptError: null,
+    });
+  });
+
+  it('summarizes a script error and an early stop', async () => {
+    const t = gamesWith(() =>
+      json(200, {
+        format: 'playhoot.simulation-result.v1',
+        finished: false,
+        stopped: { reason: 'script_failure' },
+        script_error: { message: 'update() threw: boom' },
+      }),
+    );
+    const result = await t.games.runSimulation('g-1', {});
+    expect(result.ok && result.value).toMatchObject({
+      stopped: 'script_failure',
+      scriptError: 'update() threw: boom',
+      commands: 0,
+    });
+  });
+
+  it('maps the refusals of a simulation', async () => {
+    const notReady = gamesWith(() =>
+      json(409, { code: 'build_not_ready', message: 'm', build: { status: 'FAILED' } }),
+    );
+    const refused = await notReady.games.runSimulation('g-1', {});
+    expect(!refused.ok && refused.error).toEqual({
+      kind: 'build-not-ready',
+      buildStatus: 'FAILED',
+    });
+
+    const invalid = gamesWith(() =>
+      json(422, {
+        code: 'invalid_scenario',
+        message: 'm',
+        diagnostics: [{ path: 'steps[0].player', code: 'unknown_player', message: 'P9' }],
+      }),
+    );
+    const rejected = await invalid.games.runSimulation('g-1', {});
+    expect(!rejected.ok && rejected.error).toEqual({
+      kind: 'invalid',
+      diagnostics: [{ path: 'steps[0].player', code: 'unknown_player', message: 'P9' }],
+    });
+
+    const busy = gamesWith(() =>
+      json(503, { code: 'simulations_busy', message: 'm' }, { 'Retry-After': '3' }),
+    );
+    const waited = await busy.games.runSimulation('g-1', {});
+    expect(!waited.ok && waited.error).toEqual({ kind: 'busy', retryAfterSeconds: 3 });
+  });
 });

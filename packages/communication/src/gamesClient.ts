@@ -16,17 +16,20 @@ import {
   draftRestorePath,
   draftRevisionsPath,
   draftRevisionsResponseSchema,
+  draftSimulationsPath,
   buildSchema,
   gamesErrorCodes,
   maxBuildWaitSeconds,
   projectChangeFormat,
   rateLimitedCode,
+  simulationResultSchema,
   type BuildResponse,
   type CreateGameRequest,
   type DraftChangeResponse,
   type DraftResponse,
   type ProjectChangeRequest,
   type RestoreRevisionRequest,
+  type SimulationResultResponse,
 } from '@playhoot/protocol';
 
 import type { Decoder, HttpClient, HttpFailure } from './http';
@@ -140,6 +143,23 @@ export interface CreatedAiLink {
   expiresAt: string;
 }
 
+// A simulation's result: `raw` is the backend's whole answer, kept as it came for the person to
+// copy back to their AI; the rest is what the workspace summarizes of it.
+export interface SimulationResult {
+  raw: unknown;
+  revision: number | null;
+  // Whether the game ended (`finish()`) within the scenario.
+  finished: boolean | null;
+  // Why the simulation stopped before the scenario's end, when it did.
+  stopped: string | null;
+  commands: number;
+  rejected: number;
+  events: number;
+  errors: number;
+  // The message of the script's failure, when the game's code threw.
+  scriptError: string | null;
+}
+
 // Whether the game has an active link for the creator's AI, without its secret.
 export interface AiLinkStatus {
   active: boolean;
@@ -165,6 +185,8 @@ export type GamesFailure =
   | { kind: 'idempotency-conflict' }
   | { kind: 'revision-not-found' }
   | { kind: 'build-not-found' }
+  // The current revision's build has not succeeded (yet): a simulation needs it.
+  | { kind: 'build-not-ready'; buildStatus: string | null }
   // Too many requests or uploads right now: try again after `retryAfterSeconds`.
   | { kind: 'busy'; retryAfterSeconds: number | undefined }
   // Anything else: no answer, a server failure, an unknown refusal or an unexpected body.
@@ -211,6 +233,12 @@ export interface GamesClient {
   createAiLink(gameUUID: string): Promise<Result<CreatedAiLink, GamesFailure>>;
   readAiLink(gameUUID: string): Promise<Result<AiLinkStatus, GamesFailure>>;
   revokeAiLink(gameUUID: string): Promise<Result<void, GamesFailure>>;
+  // Runs `scenario` (a parsed `playhoot.scenario.v1` document, sent as is) against the build of
+  // the current revision. Nothing is kept: the answer is the only copy of the result.
+  runSimulation(
+    gameUUID: string,
+    scenario: unknown,
+  ): Promise<Result<SimulationResult, GamesFailure>>;
 }
 
 export function createGamesClient(http: HttpClient): GamesClient {
@@ -364,7 +392,54 @@ export function createGamesClient(http: HttpClient): GamesClient {
       if (!result.ok) return err(gamesFailure(result.error));
       return ok(undefined);
     },
+
+    async runSimulation(gameUUID, scenario) {
+      const result = await http.request({
+        method: 'POST',
+        path: draftSimulationsPath(gameUUID),
+        body: scenario,
+        response: simulationDecoder,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok(simulationOf(result.value.raw, result.value.parsed));
+    },
   };
+}
+
+// Checks the fields the workspace summarizes and keeps the body exactly as it came.
+const simulationDecoder: Decoder<{ raw: unknown; parsed: SimulationResultResponse }> = {
+  safeParse(value) {
+    const parsed = simulationResultSchema.safeParse(value);
+    if (!parsed.success) return { success: false, error: parsed.error };
+    return { success: true, data: { raw: value, parsed: parsed.data } };
+  },
+};
+
+function simulationOf(raw: unknown, body: SimulationResultResponse): SimulationResult {
+  return {
+    raw,
+    revision: body.revision ?? null,
+    finished: body.finished ?? null,
+    stopped: reasonOf(body.stopped),
+    commands: body.commands?.length ?? 0,
+    rejected: body.rejected?.length ?? 0,
+    events: body.events?.length ?? 0,
+    errors: body.errors?.length ?? 0,
+    scriptError: reasonOf(body.script_error),
+  };
+}
+
+// A reason given as a string, or as an object with a `message` or `reason`.
+function reasonOf(value: unknown): string | null {
+  if (typeof value === 'string') return value === '' ? null : value;
+  if (typeof value === 'object' && value !== null) {
+    const record = value as Record<string, unknown>;
+    for (const field of ['message', 'reason', 'code']) {
+      if (typeof record[field] === 'string') return record[field] as string;
+    }
+    return JSON.stringify(value);
+  }
+  return null;
 }
 
 // Revoking answers 204 without a body.
@@ -395,6 +470,7 @@ export function gamesFailure(failure: HttpFailure): GamesFailure {
       return { kind: 'conflict', currentRevision: details.current_revision ?? null };
     case gamesErrorCodes.invalidChange:
     case gamesErrorCodes.invalidAsset:
+    case gamesErrorCodes.invalidScenario:
       return { kind: 'invalid', diagnostics };
     case gamesErrorCodes.assetTooLarge:
       return { kind: 'too-large', diagnostics };
@@ -406,7 +482,13 @@ export function gamesFailure(failure: HttpFailure): GamesFailure {
       return { kind: 'revision-not-found' };
     case gamesErrorCodes.buildNotFound:
       return { kind: 'build-not-found' };
+    case gamesErrorCodes.buildNotReady:
+      return {
+        kind: 'build-not-ready',
+        buildStatus: details.build?.status ?? details.build_status ?? null,
+      };
     case gamesErrorCodes.uploadsBusy:
+    case gamesErrorCodes.simulationsBusy:
     case rateLimitedCode:
       return { kind: 'busy', retryAfterSeconds: failure.retryAfterSeconds };
   }

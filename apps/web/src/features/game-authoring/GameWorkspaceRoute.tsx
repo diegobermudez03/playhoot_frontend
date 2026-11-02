@@ -17,10 +17,19 @@ import { AssetsSection } from './sections/AssetsSection';
 import { BuildSection } from './sections/BuildSection';
 import { FilesSection } from './sections/FilesSection';
 import { HistorySection } from './sections/HistorySection';
+import { ScenariosSection } from './sections/ScenariosSection';
 import { ShareSection } from './sections/ShareSection';
 
 // The workspace's sections, by the stable ids the agent guide uses (`?section=`), in order.
-export const workspaceSections = ['ai', 'files', 'assets', 'build', 'history', 'share'] as const;
+export const workspaceSections = [
+  'ai',
+  'files',
+  'assets',
+  'build',
+  'scenarios',
+  'history',
+  'share',
+] as const;
 export type WorkspaceSection = (typeof workspaceSections)[number];
 
 const sectionLabels: Record<WorkspaceSection, MessageId> = {
@@ -28,6 +37,7 @@ const sectionLabels: Record<WorkspaceSection, MessageId> = {
   files: 'section.files',
   assets: 'section.assets',
   build: 'section.build',
+  scenarios: 'section.scenarios',
   history: 'section.history',
   share: 'section.share',
 };
@@ -153,6 +163,9 @@ function WorkspaceScreen({ authoring }: { authoring: GameAuthoring }) {
             {section === 'files' && <FilesSection authoring={authoring} />}
             {section === 'assets' && <AssetsSection authoring={authoring} />}
             {section === 'build' && <BuildSection authoring={authoring} />}
+            {section === 'scenarios' && (
+              <ScenariosSection authoring={authoring} onOpenBuild={() => open('build')} />
+            )}
             {section === 'history' && <HistorySection authoring={authoring} />}
             {section === 'share' && <ShareSection gameUUID={draft.gameUUID} />}
           </div>

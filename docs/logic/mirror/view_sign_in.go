@@ -29,8 +29,8 @@ func SignInView(next string) {
 // SignInOnProviderChosen leaves the app for the provider. The verifier never leaves this tab.
 // code: packages/features/sign-in/src/accountSignIn.ts#start
 func SignInOnProviderChosen(provider string, next string) {
-	verifier := randomVerifier()      // 32 random bytes, base64url
-	challenge := s256(verifier)       // crypto.subtle, or SHA-256 in script over plain HTTP
+	verifier := randomVerifier()                    // 32 random bytes, base64url
+	challenge := s256(verifier)                     // crypto.subtle, or SHA-256 in script over plain HTTP
 	url, failure := StartLogin(provider, challenge) // external.go
 	if failure != nil {
 		return // the reason is shown on the page
@@ -47,9 +47,9 @@ type PendingLogin struct {
 	StartedAt int64
 }
 
-func randomVerifier() string            { return "" }
-func s256(verifier string) string        { return "" }
-func savePendingLogin(p PendingLogin)    {}
-func takePendingLogin() *PendingLogin    { return nil } // returns it once and forgets it
-func LeaveTo(url string)                 {}
-func now() int64                         { return 0 } // Date.now()
+func randomVerifier() string          { return "" }
+func s256(verifier string) string     { return "" }
+func savePendingLogin(p PendingLogin) {}
+func takePendingLogin() *PendingLogin { return nil } // returns it once and forgets it
+func LeaveTo(url string)              {}
+func now() int64                      { return 0 } // Date.now()

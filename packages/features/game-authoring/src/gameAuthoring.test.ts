@@ -43,6 +43,7 @@ function fakeGames(overrides: Partial<GamesClient> = {}): GamesClient {
     createAiLink: vi.fn(),
     readAiLink: vi.fn(),
     revokeAiLink: vi.fn(),
+    runSimulation: vi.fn(),
     ...overrides,
   } as GamesClient;
 }
