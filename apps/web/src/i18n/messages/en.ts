@@ -201,6 +201,103 @@ export const en = {
   'notFound.body': 'This page flew away.',
   'error.title': 'Something went wrong',
   'common.goHome': 'Go home',
+
+  'createGame.button': 'Create a game',
+  'createGame.creating': 'Creating your game…',
+  'createGame.error': "We couldn't create your game. Try again.",
+  'createGame.retry': 'Try again',
+
+  'workspace.title': 'Your game',
+  'workspace.revision': 'Revision {revision}',
+  'workspace.loading': 'Opening your game…',
+  'workspace.error.notFound': "We can't find this game. It doesn't exist or isn't yours.",
+  'workspace.error.notEditable': 'This game has no version being built.',
+  'workspace.error.unavailable': "We couldn't reach Playhoot. Try again in a moment.",
+  'workspace.retry': 'Try again',
+  'workspace.sections': 'Sections of your game',
+  'section.ai': "My AI's changes",
+  'section.files': 'Files',
+  'section.assets': 'Assets',
+  'section.build': 'Build',
+  'section.history': 'History',
+
+  'build.status':
+    '{status, select, QUEUED {Waiting to build} RUNNING {Building…} SUCCEEDED {Builds fine} FAILED {Build failed} SUPERSEDED {Skipped: a newer revision came} none {Not built} other {Unknown build status}}',
+
+  'ai.intro': 'Paste the change your AI gave you, whole and exactly as it wrote it.',
+  'ai.pasteLabel': 'Change from your AI',
+  'ai.placeholder': 'Paste the change here',
+  'ai.summary.title': 'This change will:',
+  'ai.summary.added': '{count, plural, one {Add # file} other {Add # files}}',
+  'ai.summary.modified': '{count, plural, one {Change # file} other {Change # files}}',
+  'ai.summary.deleted': '{count, plural, one {Delete # file} other {Delete # files}}',
+  'ai.summary.baseMismatch':
+    'It was made for revision {base} and the game is at revision {current}, so it will probably be refused. Ask your AI to read the game again.',
+  'ai.apply': 'Apply change',
+  'ai.error.notAnEnvelope':
+    "This isn't a change from your AI. Paste only the change, with nothing around it.",
+  'ai.error.notJson': 'The change is incomplete or broken. Ask your AI to send it again, whole.',
+  'ai.error.wrongFormat': "This isn't a Playhoot change.",
+  'ai.error.malformed':
+    'The change is missing its {field} field or has it wrong. Ask your AI to send it again.',
+  'ai.error.repeatedPath': 'The change names {path} twice.',
+
+  'result.applied': 'Done: the game is now at revision {revision}.',
+  'result.unchanged': 'Nothing changed: the game already had exactly this.',
+  'result.conflict':
+    'The game changed while you were working. Reload it and make the change again.',
+  'result.invalid': 'The change was refused. Your AI can read why:',
+  'result.tooLarge': 'The file is too large for this kind of asset.',
+  'result.notDeclared': "The game doesn't declare this asset anymore.",
+  'result.notEditable': 'This game can no longer change.',
+  'result.busy':
+    '{seconds, plural, =0 {Too many requests right now. Wait a moment and try again.} one {Too many requests right now. Wait # second and try again.} other {Too many requests right now. Wait # seconds and try again.}}',
+  'result.failed': 'Something went wrong. Try again.',
+  'result.reload': 'Reload the game',
+  'result.dismiss': 'Close',
+
+  'attempts.title': 'Latest attempts',
+  'attempts.empty': 'Nothing has been sent yet.',
+  'attempts.kind':
+    '{kind, select, change {Change} restore {Restore} asset_upload {Asset upload} asset_removal {Asset removal} other {Action}}',
+  'attempts.outcome':
+    '{outcome, select, applied {applied} unchanged {no change} attached {attached} removed {removed} invalid {refused} conflict {conflict} not_editable {not editable} not_declared {not declared} too_large {too large} other {other}}',
+
+  'files.title': 'Files at revision {revision}',
+  'files.size': '{size, number} bytes',
+  'files.editLabel': 'Content of {path}',
+  'files.save': 'Save as a new revision',
+  'files.discard': 'Discard changes',
+  'files.pick': 'Choose a file to see it.',
+
+  'assets.title': 'Assets your game declares',
+  'assets.none': 'Your game declares no assets. They go in game.project.json, under "assets".',
+  'assets.declarationError': "game.project.json can't be read, so no assets are listed:",
+  'assets.status':
+    '{status, select, missing {Missing} ready {Ready} undeclared {No longer declared} other {Unknown}}',
+  'assets.type': '{type, select, image {Image} audio {Audio} video {Video} other {File}}',
+  'assets.optional': 'Optional',
+  'assets.upload': 'Upload',
+  'assets.replace': 'Replace',
+  'assets.remove': 'Remove',
+
+  'build.title': 'Build of revision {revision}',
+  'build.none': 'This revision has no build.',
+  'build.reused': 'Reused an identical earlier build.',
+  'build.diagnostics': 'What the build found',
+  'build.infrastructure':
+    "This failure is Playhoot's, not your game's: there is nothing to fix in the code. Make another change or try again later.",
+  'build.lastSuccessful': 'Last revision that built: {revision}',
+  'build.lastSuccessfulNone': 'No revision has built yet.',
+
+  'history.title': 'Revisions',
+  'history.loading': 'Loading the revisions…',
+  'history.item': 'Revision {number}',
+  'history.source':
+    '{source, select, template {starting template} web {from the web} api {from the API} mcp {from an AI tool} restore {restored} asset {assets} other {other}}',
+  'history.files': '{count, plural, one {# file} other {# files}}',
+  'history.current': 'Current',
+  'history.restore': 'Restore',
 } as const;
 
 export type MessageId = keyof typeof en;

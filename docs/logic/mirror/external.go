@@ -264,3 +264,63 @@ type SessionEnd struct{ Status, EndCause string } // "session_ended" | "lobby_cl
 type LeaveResult struct{ Outcome string }         // "leave_result"
 
 type Socket struct{}
+
+// ─── Game authoring (REST, accounts) ────────────────────────────────────────
+// Every answer is no-store. 404: no such game, or not yours (never told apart). 409 not_editable:
+// the game has no version being built. code: packages/communication/src/gamesClient.ts
+
+// CreateGame creates an unpublished game whose draft starts at revision 1 (the SDK template).
+// endpoint: POST /v1/games {idempotency_key} -> 201 {game_uuid, version_uuid, revision}
+func CreateGame(idempotencyKey string) (struct{ GameUUID string }, *GamesFailure) {
+	return struct{ GameUUID string }{}, nil
+}
+
+// ReadDraft reads one revision of the draft (the current one by default), with its files' text.
+// endpoint: GET /v1/games/{id}/draft?content=true[&revision=N]
+// answer: files, assets (missing/ready/undeclared, preview url), attempts (newest first, with
+// diagnostics), build and last_successful_build
+func ReadDraft(gameUUID string) (Draft, *GamesFailure) { return Draft{}, nil }
+
+// ApplyChange sends the change envelope on its base revision, all or nothing.
+// endpoint: POST /v1/games/{id}/draft/changes {format "playhoot.project-change.v1", base_revision,
+// files[{path, content}], delete[], idempotency_key}
+// answer: 200 {outcome applied|unchanged, revision, build{status}}; 409 revision_conflict
+// {current_revision}; 422 invalid_change {diagnostics}; 409 idempotency_conflict
+func ApplyChange(gameUUID string, change DraftChange, idempotencyKey string) (ChangeResult, *GamesFailure) {
+	return ChangeResult{}, nil
+}
+
+// RestoreRevision makes an earlier revision's files and assets the newest revision.
+// endpoint: POST /v1/games/{id}/draft/restore {revision, base_revision, idempotency_key}
+func RestoreRevision(gameUUID string, revision, baseRevision int, idempotencyKey string) (ChangeResult, *GamesFailure) {
+	return ChangeResult{}, nil
+}
+
+// ListRevisions lists every revision, oldest first.
+// endpoint: GET /v1/games/{id}/draft/revisions -> [{number, source, files, created_at}]
+func ListRevisions(gameUUID string) ([]Revision, *GamesFailure) { return nil, nil }
+
+// UploadAsset sends a declared asset's file as the raw body.
+// endpoint: PUT /v1/games/{id}/draft/assets/{key} (header Idempotency-Key)
+// answer: 200 {outcome attached|unchanged, revision, asset}; 413 asset_too_large; 422 invalid_asset
+// {diagnostics}; 404 asset_not_declared; 503 uploads_busy + Retry-After
+func UploadAsset(gameUUID, key string, file File, idempotencyKey string) (ChangeResult, *GamesFailure) {
+	return ChangeResult{}, nil
+}
+
+// RemoveAsset unbinds an asset in a new revision.
+// endpoint: POST /v1/games/{id}/draft/assets/{key}/remove {idempotency_key} -> {outcome removed|unchanged, revision}
+func RemoveAsset(gameUUID, key, idempotencyKey string) (ChangeResult, *GamesFailure) {
+	return ChangeResult{}, nil
+}
+
+// ReadBuild reads one revision's build, waiting up to waitSeconds (at most 20) for it to end.
+// endpoint: GET /v1/games/{id}/draft/build?revision=N&wait=S -> {revision, status, diagnostics, ...}
+func ReadBuild(gameUUID string, revision, waitSeconds int) (Build, *GamesFailure) { return Build{}, nil }
+
+// GamesFailure: not-found | not-editable | conflict(currentRevision) | invalid(diagnostics) |
+// too-large(diagnostics) | not-declared | idempotency-conflict | revision-not-found |
+// build-not-found | busy(retryAfterSeconds) | unavailable (no answer, server failure, an unknown
+// code or body).
+type GamesFailure struct{ Kind string }
+

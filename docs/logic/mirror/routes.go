@@ -56,6 +56,14 @@ func Router(url string) {
 			HostView(param(url, "sessionUUID"), param(url, "joinCode")) // view_host.go
 		})
 
+	case url == "/games/new":
+		RequireOperation("CREATE_GAME", url, func() { CreateGameView() }) // view_game_workspace.go
+
+	case matches(url, "/games/{gameUUID}/edit?section={section}"):
+		RequireOperation("EDIT_GAME", url, func() {
+			GameWorkspaceView(param(url, "gameUUID"), param(url, "section")) // view_game_workspace.go
+		})
+
 	case matches(url, "/sign-in/guest?next={next}"):
 		GuestSignInView(safeNext(url)) // view_sign_in_guest.go
 

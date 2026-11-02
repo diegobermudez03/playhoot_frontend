@@ -75,6 +75,7 @@ describe('createHttpClient', () => {
         code: 'rate_limited',
         message: 'slow down',
         retryAfterSeconds: 3,
+        body: { code: 'rate_limited', message: 'slow down' },
       },
     });
   });

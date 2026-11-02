@@ -1,12 +1,14 @@
 import { createAppState, type AppState, type RefreshOutcome } from '@playhoot/app-core';
 import {
   createAdminConnector,
+  createGamesClient,
   createHttpClient,
   createIdentityClient,
   createSessionConnector,
   createSessionsClient,
   createTelemetryReporter,
   type AdminConnector,
+  type GamesClient,
   type HttpClient,
   type IdentityClient,
   type SessionConnector,
@@ -58,6 +60,8 @@ export interface Services {
   admins: AdminConnector;
   app: AppState;
   device: DeviceCapabilitiesStore;
+  // Game authoring (REST): creating games and changing their drafts.
+  gamesApi: GamesClient;
   // Loads GameVersion frontend artifacts, verified by hash and cached in the browser.
   gameArtifacts: ArtifactLoader;
   // Downloads game assets for the GameHost, verified by hash and cached in the browser (ADR-0008).
@@ -137,6 +141,7 @@ export function createServices(): Services {
     device,
     gameArtifacts,
     gameAssets,
+    gamesApi: createGamesClient(http),
     http,
     identity: identityClient,
     sessions,

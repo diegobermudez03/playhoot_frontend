@@ -27,6 +27,14 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | Page load (flow 1), retried until it answers | `GET /v1/identity/operations` | no credential | Each operation's minimum level → where to send a person to authenticate (flow 15) |
 | "Crear una partida" (flow 16) | `POST /v1/sessions` | `game_uuid` (fixed for now), `idempotency_key` (one per visit) | `session_uuid` + `join_code` → the host screen's URL |
 | The host screen opens (flow 16) | WebSocket `/v1/play/join/sessions/{sessionUUID}/admin` | token in subprotocol | Lobby with player limits, start / cancel / perspective results, the watched player's views |
+| "Crear un juego" (flow 17) | `POST /v1/games` | `idempotency_key` (one per visit) | `game_uuid` → the workspace URL |
+| The workspace opens, and after every new revision (flow 17) | `GET /v1/games/{id}/draft?content=true` | — | The current revision: files with content, assets, attempts, build, last successful build |
+| A new revision's build is running (flow 17) | `GET /v1/games/{id}/draft/build?revision=N&wait=20` | — | The build's status and diagnostics; asked again while it runs, then the draft is read again |
+| "Aplicar cambio" / "Guardar como nueva revisión" (flow 17) | `POST /v1/games/{id}/draft/changes` | the envelope on the current base, `idempotency_key` (the same while the same action is retried) | applied / unchanged / conflict / invalid |
+| "Restaurar" (flow 17) | `POST /v1/games/{id}/draft/restore` | revision, base revision, key | Same as a change |
+| "Subir" / "Reemplazar" an asset (flow 17) | `PUT /v1/games/{id}/draft/assets/{key}` | the file as the body, `Idempotency-Key` header | attached / unchanged / too large / invalid / busy |
+| "Quitar" an asset (flow 17) | `POST /v1/games/{id}/draft/assets/{key}/remove` | key | removed / unchanged |
+| "Historial" opens, and after every new revision | `GET /v1/games/{id}/draft/revisions` | — | The revisions list |
 | Name submitted on the guest page (flow 15) | `POST /v1/guests` | `display_name`, `idempotency_key` | user (uuid, name, level) + access token + refresh token → the credential (stored without the access token) |
 | Page load with a stored credential (flow 1), a minute before the access token expires, the tab shown again near expiry, or a call refused with `token_invalid` (flow 10) | `POST /v1/identity/refresh` | `refresh_token` only | New access token, and the refresh token to keep (may be a new one); `401 refresh_invalid` → signed out |
 | A name chosen on the name screen (flow 15) | `PUT /v1/identity/me/display-name` | `display_name` | The name as kept; then `POST /v1/identity/refresh` so the access token carries it |
@@ -245,3 +253,18 @@ The host screen opens the creator's admin connection (needs `JOIN_SESSION_AS_ADM
 | Closed | Cancelled, ended, refused (each known reason with its own text: not the creator, no such game, the lobby closed, a limit reached, open in too many tabs), unreachable or connection lost; "Try again" for limits, too many tabs, unreachable, connection lost and unknown refusals; "Back to the start". |
 
 The admin connection reconnects by itself after 1, 2 and 4 seconds when lost after opening; a reload rebuilds the screen from the URL. Mirror: [view_host.go](mirror/view_host.go), [state_hostsession.go](mirror/state_hostsession.go).
+
+## 17. Creating a game and changing its draft (the workspace)
+
+"Crear un juego" on Enter a code needs `CREATE_GAME` (an account): without one, flow 15 first, then back. `/games/new` creates the game (one idempotency key per visit) and REPLACES the URL with `/games/{uuid}/edit`. The workspace needs `EDIT_GAME`; it reads the current revision with every file's content and shows it in five sections (`?section=` in the URL; none is the first), whose labels the agent guide will name:
+
+| Section (`section`) | What the creator sees and can do |
+| --- | --- |
+| **Cambios de mi IA** (`ai`, default) | A box to paste the change the AI wrote. The text is read as data only: the JSON envelope, or that JSON inside ONE code fence; anything else (text around it, two fences, broken or cut JSON, another format, missing fields, a path twice) is refused locally with what is wrong, never guessed or repaired. A valid change shows what it will add, change and delete, and warns when it was made for another revision than the current one. **Aplicar cambio** sends it; the answer shows below (applied → new revision; no change; conflict with **Recargar el juego**; refused with the backend's diagnostics; busy; failed). Under it, the latest attempts (kind, outcome, time, diagnostics) the AI also reads. |
+| **Archivos** (`files`) | The current revision's files; choosing one shows its content, which can be edited and saved (**Guardar como nueva revisión**: a change with only that file, on the current revision). |
+| **Recursos** (`assets`) | The assets `game.project.json` declares, each missing / ready / no longer declared, with its description and type; a ready one shows a preview (image, audio, video) from its short-lived link. **Subir** / **Reemplazar** sends the chosen file; **Quitar** unbinds it. When `game.project.json` cannot be read, why. |
+| **Construcción** (`build`) | The current revision's build status and what it found, by file:line:column and stage; a note when the failure is the platform's (stage `infrastructure`); the last revision that built. |
+| **Historial** (`history`) | Every revision, newest first, with where it came from and when; **Restaurar** on any but the current one. |
+
+The header shows the current revision and its build status everywhere. Every action that made a revision reads the draft again and follows the new revision's build with the backend's long poll (`wait=20`, asked again while it runs, up to 5 failed reads 3 s apart), then reads the draft again. One action at a time. Retrying the same action sends the same idempotency key; any other action takes a new one. Wide: the sections in a rail beside the content; compact: as tabs above it. Mirror: [view_game_workspace.go](mirror/view_game_workspace.go), [state_gameauthoring.go](mirror/state_gameauthoring.go).
+

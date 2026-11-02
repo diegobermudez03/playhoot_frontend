@@ -10,6 +10,8 @@ export const listOperationsPath = '/v1/identity/operations';
 // values the client does not know. The operations the frontend asks for by name. The catalog may list others.
 export const operations = {
   createSession: 'CREATE_SESSION',
+  createGame: 'CREATE_GAME',
+  editGame: 'EDIT_GAME',
   joinSessionAsAdmin: 'JOIN_SESSION_AS_ADMIN',
   joinSessionAsPlayer: 'JOIN_SESSION_AS_PLAYER',
   reportClientTelemetry: 'REPORT_CLIENT_TELEMETRY',

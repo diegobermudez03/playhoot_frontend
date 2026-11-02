@@ -16,7 +16,7 @@ It is pseudocode with Go syntax: it does not compile and never runs, it only mir
 1. **[mirror/routes.go](mirror/routes.go)** — start here. Every URL and the view it runs. Navigating anywhere is just a call to `Router(url)`, so you can keep following.
 2. **`view_*.go`** — one per screen. The view function only lists what can happen on that screen; each call has a comment saying WHEN (a click, a submit, a message from the server). The Session route (`view_session.go`) picks one of its screens (`view_session_connecting.go`, `_lobby`, `_started`, `_outcome`) by the feature's phase.
 3. **Event functions** (`EnterCodeOnJoinPressed`, `GuestSignInOnSubmitted`, `LobbyOnLeave`…) — right below each view. They call the logic, and `Navigate(...)` when the screen changes.
-4. **`state_*.go`** — what the events do to state: `state_app.go` (global state and browser storage), `state_joinsession.go` (the Session route's feature: phases, transitions, rules), `state_connection.go` (one live WebSocket), `state_sessionplay.go` (the started game's feature), `state_gamehost.go` (a game running in its sandboxed iframe).
+4. **`state_*.go`** — what the events do to state: `state_app.go` (global state and browser storage), `state_joinsession.go` (the Session route's feature: phases, transitions, rules), `state_connection.go` (one live WebSocket), `state_sessionplay.go` (the started game's feature), `state_gamehost.go` (a game running in its sandboxed iframe), `state_gameauthoring.go` (a game's draft in the workspace).
 5. **[mirror/external.go](mirror/external.go)** — every backend call as a bare function: endpoint in the comment, inputs in, DTO out.
 
 ## Where is each button?
@@ -40,6 +40,13 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Host screen (any phase) | **Cancelar partida** → **Sí, cancelar** / Cancel game → Yes, cancel | `host.Cancel()` | [view_host.go](mirror/view_host.go) |
 | Host screen: game | A participant's button ("Viendo a" / Watching / Vendo) | `host.Watch(participantID)` | [view_host.go](mirror/view_host.go) |
 | Host screen: outcome | **Intentar de nuevo** / **Volver al inicio** | `host.Retry()` / `Navigate("/join")` | [view_host.go](mirror/view_host.go) |
+| Enter a code (`/join`) | **Crear un juego** / Create a game / Criar um jogo | `Navigate("/games/new")` (sign in first without an account) | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace (`/games/{id}/edit`) | A section: **Cambios de mi IA** / **Archivos** / **Recursos** / **Construcción** / **Historial** | `WorkspaceOnSectionChosen` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: Cambios de mi IA | **Aplicar cambio** / Apply change / Aplicar mudança | `WorkspaceOnApplyChange` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: a refused change (conflict) | **Recargar el juego** / Reload the game / Recarregar o jogo | `authoring.Reload()` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: Archivos | **Guardar como nueva revisión** / Save as a new revision / Salvar como nova revisão | `WorkspaceOnSaveFile` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: Recursos | **Subir** / **Reemplazar** / **Quitar** (Upload / Replace / Remove) | `WorkspaceOnUploadAsset` / `WorkspaceOnRemoveAsset` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Workspace: Historial | **Restaurar** / Restore / Restaurar | `WorkspaceOnRestore` | [view_game_workspace.go](mirror/view_game_workspace.go) |
 | Guest page (`/sign-in/guest`) | Tu nombre / Your name / Seu nome (field) | `GuestSignInState.Name` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Guest page (`/sign-in/guest`) | **¡A jugar!** / Let's play / Bora jogar | `GuestSignInOnSubmitted` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |
 | Guest page (`/sign-in/guest`) | **Inicia sesión o regístrate** / Sign in or sign up / Entre ou cadastre-se | `Navigate(SignInURL(next))` | [view_sign_in_guest.go](mirror/view_sign_in_guest.go) |

@@ -18,6 +18,15 @@ export const sessionHostPath = (sessionUUID: string, joinCode?: string | null) =
   `/sessions/${encodeURIComponent(sessionUUID)}/host` +
   (joinCode ? `?${new URLSearchParams({ code: joinCode }).toString()}` : '');
 
+// Creating a game (an account's operation): the route creates it and moves to its workspace.
+export const newGamePath = '/games/new';
+
+// A game's workspace, where its draft is changed. `section` picks the open section.
+export const gameWorkspaceRoute = '/games/:gameUUID/edit';
+export const gameWorkspacePath = (gameUUID: string, section?: string) =>
+  `/games/${encodeURIComponent(gameUUID)}/edit` +
+  (section ? `?${new URLSearchParams({ section }).toString()}` : '');
+
 // Signing in or registering with an account: the definitive route. `next` is where to continue.
 export const signInRoute = '/sign-in';
 // Playing as a guest, with the account option. Only for operations that allow guests.

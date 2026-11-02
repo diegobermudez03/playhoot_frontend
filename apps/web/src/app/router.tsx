@@ -2,7 +2,16 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 
 import { DesignRoute } from '../dev/DesignRoute';
 import { GameHostLabRoute } from '../dev/GameHostLabRoute';
-import { enterCodePath, guestSignInRoute, newSessionPath, signInRoute } from '../features/paths';
+import {
+  enterCodePath,
+  gameWorkspaceRoute,
+  guestSignInRoute,
+  newGamePath,
+  newSessionPath,
+  signInRoute,
+} from '../features/paths';
+import { CreateGameRoute } from '../features/game-authoring/CreateGameRoute';
+import { GameWorkspaceRoute } from '../features/game-authoring/GameWorkspaceRoute';
 import { EnterCodeRoute } from '../features/session-join/EnterCodeRoute';
 import { CreateSessionRoute } from '../features/session-host/CreateSessionRoute';
 import { HostRoute } from '../features/session-host/HostRoute';
@@ -30,6 +39,9 @@ const routes: RouteObject[] = [
   // The creator's side: create a Session (an account's), then its host screen.
   { path: newSessionPath, element: <CreateSessionRoute /> },
   { path: '/sessions/:sessionUUID/host', element: <HostRoute /> },
+  // A creator's games: create one (an account's), then change its draft in its workspace.
+  { path: newGamePath, element: <CreateGameRoute /> },
+  { path: gameWorkspaceRoute, element: <GameWorkspaceRoute /> },
   {
     // One pathless parent for both Session URLs, so moving from the code URL to the UUID URL
     // keeps the same mounted feature (and its connection).

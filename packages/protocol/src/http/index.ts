@@ -3,3 +3,4 @@ export * from './errorBody';
 export * from './guests';
 export * from './operations';
 export * from './sessions';
+export * from './games';

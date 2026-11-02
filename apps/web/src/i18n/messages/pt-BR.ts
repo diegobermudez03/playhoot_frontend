@@ -204,4 +204,102 @@ export const ptBR: Messages = {
   'notFound.body': 'Esta página saiu voando.',
   'error.title': 'Algo deu errado',
   'common.goHome': 'Ir para o início',
+
+  'createGame.button': 'Criar um jogo',
+  'createGame.creating': 'Criando seu jogo…',
+  'createGame.error': 'Não conseguimos criar seu jogo. Tente de novo.',
+  'createGame.retry': 'Tentar de novo',
+
+  'workspace.title': 'Seu jogo',
+  'workspace.revision': 'Revisão {revision}',
+  'workspace.loading': 'Abrindo seu jogo…',
+  'workspace.error.notFound': 'Não encontramos este jogo. Ele não existe ou não é seu.',
+  'workspace.error.notEditable': 'Este jogo não tem uma versão em construção.',
+  'workspace.error.unavailable':
+    'Não conseguimos falar com o Playhoot. Tente de novo em um momento.',
+  'workspace.retry': 'Tentar de novo',
+  'workspace.sections': 'Seções do seu jogo',
+  'section.ai': 'Mudanças da minha IA',
+  'section.files': 'Arquivos',
+  'section.assets': 'Recursos',
+  'section.build': 'Compilação',
+  'section.history': 'Histórico',
+
+  'build.status':
+    '{status, select, QUEUED {Esperando para compilar} RUNNING {Compilando…} SUCCEEDED {Compila bem} FAILED {A compilação falhou} SUPERSEDED {Pulada: chegou uma revisão mais nova} none {Não compilada} other {Estado desconhecido}}',
+
+  'ai.intro': 'Cole a mudança que sua IA te deu, inteira e do jeito que ela escreveu.',
+  'ai.pasteLabel': 'Mudança da sua IA',
+  'ai.placeholder': 'Cole a mudança aqui',
+  'ai.summary.title': 'Esta mudança vai:',
+  'ai.summary.added': '{count, plural, one {Adicionar # arquivo} other {Adicionar # arquivos}}',
+  'ai.summary.modified': '{count, plural, one {Alterar # arquivo} other {Alterar # arquivos}}',
+  'ai.summary.deleted': '{count, plural, one {Apagar # arquivo} other {Apagar # arquivos}}',
+  'ai.summary.baseMismatch':
+    'Ela foi feita para a revisão {base} e o jogo está na revisão {current}, então provavelmente será recusada. Peça para sua IA ler o jogo de novo.',
+  'ai.apply': 'Aplicar mudança',
+  'ai.error.notAnEnvelope':
+    'Isto não é uma mudança da sua IA. Cole só a mudança, sem nada em volta.',
+  'ai.error.notJson':
+    'A mudança está incompleta ou quebrada. Peça para sua IA enviar de novo, inteira.',
+  'ai.error.wrongFormat': 'Isto não é uma mudança do Playhoot.',
+  'ai.error.malformed':
+    'Falta o campo {field} na mudança, ou ele está errado. Peça para sua IA enviar de novo.',
+  'ai.error.repeatedPath': 'A mudança cita {path} duas vezes.',
+
+  'result.applied': 'Pronto: o jogo agora está na revisão {revision}.',
+  'result.unchanged': 'Nada mudou: o jogo já tinha exatamente isto.',
+  'result.conflict': 'O jogo mudou enquanto você trabalhava. Recarregue e faça a mudança de novo.',
+  'result.invalid': 'A mudança foi recusada. Sua IA pode ler por quê:',
+  'result.tooLarge': 'O arquivo é grande demais para este tipo de recurso.',
+  'result.notDeclared': 'O jogo não declara mais este recurso.',
+  'result.notEditable': 'Este jogo não pode mais mudar.',
+  'result.busy':
+    '{seconds, plural, =0 {Muitas solicitações agora. Espere um momento e tente de novo.} one {Muitas solicitações agora. Espere # segundo e tente de novo.} other {Muitas solicitações agora. Espere # segundos e tente de novo.}}',
+  'result.failed': 'Algo deu errado. Tente de novo.',
+  'result.reload': 'Recarregar o jogo',
+  'result.dismiss': 'Fechar',
+
+  'attempts.title': 'Últimas tentativas',
+  'attempts.empty': 'Nada foi enviado ainda.',
+  'attempts.kind':
+    '{kind, select, change {Mudança} restore {Restauração} asset_upload {Envio de recurso} asset_removal {Recurso removido} other {Ação}}',
+  'attempts.outcome':
+    '{outcome, select, applied {aplicada} unchanged {sem mudanças} attached {associado} removed {removido} invalid {recusada} conflict {conflito} not_editable {não editável} not_declared {não declarado} too_large {grande demais} other {outro}}',
+
+  'files.title': 'Arquivos da revisão {revision}',
+  'files.size': '{size, number} bytes',
+  'files.editLabel': 'Conteúdo de {path}',
+  'files.save': 'Salvar como nova revisão',
+  'files.discard': 'Descartar mudanças',
+  'files.pick': 'Escolha um arquivo para vê-lo.',
+
+  'assets.title': 'Recursos que seu jogo declara',
+  'assets.none': 'Seu jogo não declara recursos. Eles vão em game.project.json, em "assets".',
+  'assets.declarationError': 'Não dá para ler game.project.json, então nenhum recurso é listado:',
+  'assets.status':
+    '{status, select, missing {Falta} ready {Pronto} undeclared {Não declarado mais} other {Desconhecido}}',
+  'assets.type': '{type, select, image {Imagem} audio {Áudio} video {Vídeo} other {Arquivo}}',
+  'assets.optional': 'Opcional',
+  'assets.upload': 'Enviar',
+  'assets.replace': 'Substituir',
+  'assets.remove': 'Remover',
+
+  'build.title': 'Compilação da revisão {revision}',
+  'build.none': 'Esta revisão não tem compilação.',
+  'build.reused': 'Reaproveitou uma compilação idêntica anterior.',
+  'build.diagnostics': 'O que a compilação encontrou',
+  'build.infrastructure':
+    'Esta falha é do Playhoot, não do seu jogo: não há nada para corrigir no código. Faça outra mudança ou tente mais tarde.',
+  'build.lastSuccessful': 'Última revisão que compilou: {revision}',
+  'build.lastSuccessfulNone': 'Nenhuma revisão compilou ainda.',
+
+  'history.title': 'Revisões',
+  'history.loading': 'Carregando as revisões…',
+  'history.item': 'Revisão {number}',
+  'history.source':
+    '{source, select, template {modelo inicial} web {pela web} api {pela API} mcp {por uma ferramenta de IA} restore {restaurada} asset {recursos} other {outro}}',
+  'history.files': '{count, plural, one {# arquivo} other {# arquivos}}',
+  'history.current': 'Atual',
+  'history.restore': 'Restaurar',
 };

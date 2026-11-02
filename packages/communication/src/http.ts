@@ -14,6 +14,8 @@ export type HttpFailure =
       code: string | undefined;
       message: string;
       retryAfterSeconds: number | undefined;
+      // The error body as it came, for routes that add fields to it (a conflict's current revision).
+      body?: unknown;
     }
   // The backend answered successfully but the body does not match the contract.
   | { kind: 'decode'; status: number; message: string };
@@ -26,7 +28,12 @@ export interface Decoder<T> {
 export interface HttpRequest<T> {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   path: string;
+  // Sent as JSON.
   body?: unknown;
+  // Sent as is instead of `body` (a file), with its own Content-Type.
+  rawBody?: { content: Blob | ArrayBuffer | Uint8Array; contentType: string };
+  // Extra headers (an Idempotency-Key).
+  headers?: Record<string, string>;
   response: Decoder<T>;
   // Attach the current credential. Defaults to true.
   authenticated?: boolean;
@@ -55,8 +62,9 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     request: HttpRequest<T>,
     afterRefresh: boolean,
   ): Promise<Result<T, HttpFailure>> => {
-    const headers: Record<string, string> = { Accept: 'application/json' };
+    const headers: Record<string, string> = { Accept: 'application/json', ...request.headers };
     if (request.body !== undefined) headers['Content-Type'] = 'application/json';
+    if (request.rawBody) headers['Content-Type'] = request.rawBody.contentType;
 
     const token = request.authenticated === false ? null : options.credentials.currentToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -68,6 +76,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         headers,
         ...(request.keepalive && { keepalive: true }),
         ...(request.body !== undefined && { body: JSON.stringify(request.body) }),
+        ...(request.rawBody && { body: request.rawBody.content as BodyInit }),
       });
     } catch (cause) {
       return err({
@@ -95,6 +104,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         code,
         message: parsed.success ? parsed.data.message : response.statusText,
         retryAfterSeconds: retryAfterSeconds(response.headers.get('Retry-After')),
+        body,
       });
     }
 

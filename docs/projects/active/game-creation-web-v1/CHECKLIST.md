@@ -14,7 +14,7 @@ Order decided by the human on 2026-11-01. Backend items live in `../playhoot` `g
 
 ## Drafts (plan delivery 1)
 
-- [ ] B. Authoring workspace: create a game, paste changes, file editor, resources, build, status.
+- [x] B. Authoring workspace (2026-11-02): `GamesClient`, `@playhoot/feature-game-authoring`, "Crear un juego" → `/games/new` → `/games/{id}/edit` with Cambios de mi IA (paste read strictly as data, summary, apply, attempts), Archivos (edit one file), Recursos (declared assets, upload/replace/remove, preview), Construcción (status, diagnostics by line, last good build), Historial (restore). Verified end to end in headless Edge against the real backend.
 
 ## Test (plan delivery 2)
 

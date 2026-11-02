@@ -94,6 +94,8 @@
   /* Type */
   --font-display: 'Fredoka Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
   --font-body: 'Nunito Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  /* Source code and file paths in the game workspace. */
+  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
   --text-xs: 0.8125rem;
   --text-sm: 0.9375rem;
   --text-md: 1.0625rem;
