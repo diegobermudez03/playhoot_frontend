@@ -10,7 +10,7 @@ Order decided by the human on 2026-11-01. Backend items live in `../playhoot` `g
 - [x] `@playhoot/game-tools` (`npm run game -- build <project>`): both targets with rolldown (already in the workspace through Vite, instead of the plan's esbuild): `server.js` in the `sdk-v1` shape (flat, `export default` bound by a const, generated entrypoints, `__playhoot_module_values()`), `client.html` single page, `manifest.json` derived from `defineGame`, `build.json` with hashes; smoke run of start/project. 2026-11-01.
 - [x] Per-file source check and type check before bundling, with file/line diagnostics. 2026-11-01.
 - [x] `fixtures/sdk-games/tap-race`: one command, `update` deadline, finish, a view per player, a small React UI. Built and run through the generated entrypoints in tests. 2026-11-01.
-- [ ] Played in a real Session once the backend accepts `sdk-v1` scripts (backend B).
+- [x] Played in a real Session: backend B done, Tap Race seeded in the backend (`55555555-5555-4555-8555-555555555555`) and played end to end against it (two guests, 20 commands, finished with the right winner, the served frontend byte-identical to the build). 2026-11-01.
 
 ## Drafts (plan delivery 1)
 
