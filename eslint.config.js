@@ -86,6 +86,46 @@ export default tseslint.config(
     },
   },
   {
+    // The game logic packages are bundled into the backend sandbox script: no UI, no browser, no
+    // Host code (docs/projects/active/game-creation-web-v1).
+    files: ['packages/game-core/**/*.{ts,tsx}', 'packages/game-server/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@playhoot/*', '!@playhoot/game-core'],
+              message: 'Game logic packages depend only on @playhoot/game-core.',
+            },
+            {
+              group: ['react', 'react-*', 'react/*'],
+              message: 'Game logic runs in the backend sandbox, without a UI framework.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The React surface of a game's client renders inside the untrusted game frame, so it owns its
+    // renderer (react-dom), and reaches the Host only through the Game SDK.
+    files: ['packages/game-react/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [...hostOnlyPackages, '@playhoot/protocol', '@playhoot/protocol/*'],
+              message: 'A game client uses Playhoot only through @playhoot/game-sdk.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // Fixture games are untrusted game artifacts: they see Playhoot only through the Game SDK.
     files: ['fixtures/games/**/*.{ts,tsx}'],
     rules: {

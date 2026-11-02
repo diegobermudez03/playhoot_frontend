@@ -23,7 +23,8 @@
     "test:watch": "vitest",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && node scripts/check-assets.mjs",
     "assets": "node scripts/check-assets.mjs",
-    "fixtures": "npm run build -w @playhoot/fixture-space-drift -w @playhoot/fixture-parques"
+    "fixtures": "npm run build -w @playhoot/fixture-space-drift -w @playhoot/fixture-parques",
+    "game": "node --experimental-strip-types --no-warnings=ExperimentalWarning packages/game-tools/src/cli.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

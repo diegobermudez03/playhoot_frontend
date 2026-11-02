@@ -1,0 +1,26 @@
+{
+  "name": "@playhoot/game-tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/build.ts"
+  },
+  "bin": {
+    "playhoot-game": "./src/cli.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@playhoot/game-core": "*",
+    "@playhoot/game-react": "*",
+    "@playhoot/game-server": "*",
+    "acorn": "^8.19.0",
+    "rolldown": "^1.2.14",
+    "typescript": "~6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5"
+  }
+}
