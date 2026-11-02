@@ -124,7 +124,7 @@ export const sessionEndSchema = z.object({
 // A view of the player's own state. FULL replaces the state and starts a new baseline; otherwise
 // `state` is a patch (only changed fields, nested objects patched the same way, anything else sent
 // whole). A view with the previous revision only carries a new ack and/or errors and events.
-const playerViewSchema = z.object({
+export const playerViewSchema = z.object({
   type: z.literal('player_view'),
   participant_id: z.string().min(1),
   full: z.boolean(),
@@ -141,10 +141,12 @@ export const commandOutcomes = [
   'invalid',
   'session_not_running',
   'rate_limited',
+  // Only on preview connections: the preview is paused, nothing was executed.
+  'paused',
 ] as const;
 export type CommandOutcome = (typeof commandOutcomes)[number];
 
-const commandResultSchema = z.object({
+export const commandResultSchema = z.object({
   type: z.literal('command_result'),
   token: z.string().min(1),
   // Any text: the backend may add outcomes; the ones not in `commandOutcomes` are handled as

@@ -330,6 +330,7 @@ export const en = {
   'share.message': 'Read this link and help me with my Playhoot game: {url}',
 
   'section.scenarios': 'Scenarios',
+  'section.preview': 'Test game',
   'scenarios.intro':
     'Paste a scenario your AI wrote: what each player does and when. It is played on the build of revision {revision}, and you get back what happened to give to your AI.',
   'scenarios.pasteLabel': "Your AI's scenario",
@@ -360,6 +361,47 @@ export const en = {
   'scenarios.copied': 'Copied!',
   'scenarios.resultLabel': 'Full result for your AI',
   'scenarios.clear': 'Clear result',
+  'preview.intro':
+    'Play your draft as each participant, one at a time. It tests the build of revision {revision}.',
+  'preview.players': 'Participants',
+  'preview.range': 'This game takes {min} to {max} participants.',
+  'preview.start': 'Start test',
+  'preview.startAgain': 'Start another test',
+  'preview.buildNotReady':
+    'The current revision has not built successfully yet: a test needs a successful build.',
+  'preview.openBuild': 'See Build',
+  'preview.failed.buildNotReady': "This revision's build is not ready. Check Build.",
+  'preview.failed.invalidPlayers': "That number of participants doesn't work for this game.",
+  'preview.failed.busy': 'There is no room for another test right now. Try again in a few seconds.',
+  'preview.failed.scriptFailure':
+    'The game failed while starting the test. Run a scenario in Scenarios to see the error.',
+  'preview.notice.invalidGameData':
+    "The game sent an input or command it doesn't declare. The test goes on; fix the game:",
+  'preview.notice.unknownParticipant': "That participant isn't in this test.",
+  'preview.notice.other': 'The test reported a problem:',
+  'preview.notice.dismiss': 'Close',
+  'preview.failed.notFound': 'This game no longer exists or is not yours.',
+  'preview.failed.unavailable': "We couldn't start the test. Try again.",
+  'preview.ended.finished': 'The game ended.',
+  'preview.ended.idle': 'The test closed after being idle.',
+  'preview.ended.byOwner': 'You ended the test.',
+  'preview.ended.replaced': 'This test closed because another one was opened.',
+  'preview.ended.scriptFailure':
+    "The game's code failed and the test stopped. Check Build or simulate a scenario.",
+  'preview.ended.unavailable': 'The test was interrupted. You can start another one.',
+  'preview.testing': 'Testing revision {revision}',
+  'preview.paused': 'Paused',
+  'preview.outdated':
+    'You are testing revision {tested}; the draft is now at {current}. Restart to test it.',
+  'preview.actingAs': 'Play as',
+  'preview.pause': 'Pause',
+  'preview.resume': 'Resume',
+  'preview.restart': 'Restart',
+  'preview.end': 'End',
+  'preview.connecting': 'Connecting to the test…',
+  'preview.loadingGame': 'Loading the game…',
+  'preview.gameFailed': "The game couldn't load.",
+  'preview.reloadGame': 'Try again',
 } as const;
 
 export type MessageId = keyof typeof en;

@@ -93,6 +93,42 @@ func ParsePastedScenario(text string) any { return nil }
 // result, Failed why not; leaving the section forgets both.
 func (r *ScenarioRunner) Run(scenario any) {}
 
+// GamePreview is "Probar juego": a private test game of the current revision's build that the
+// creator plays as each synthetic participant in turn. It lives as long as the workspace, not the
+// section: leaving "Probar juego" (to change the draft) keeps the test running, and coming back
+// starts the game again on its current view.
+// code: packages/features/game-authoring/src/preview.ts
+type GamePreview struct {
+	GameUUID string
+	Phase    string // idle | starting | running | ended
+	Players  int    // how many participants the next preview has (2 by default)
+	// Range the game accepts, once the backend refused a number of players.
+	Range *struct{ Min, Max int }
+	// While running: the tested revision, the participants, who is played and whether paused.
+	Revision     int
+	Participants []string
+	ActingAs     string
+	Paused       bool
+	// When ended: the backend's reason, a refusal, or the connection ending without one.
+	Ended        string
+	StartFailure string // build-not-ready | invalid-players | script-failure | busy | not-found | unavailable | ""
+	// Notice is the last problem the backend reported while the preview goes on (it keeps
+	// running): invalid-game-data (a SAMPLE or COMMAND the game does not declare; its command is
+	// answered invalid), unknown-participant (act_as named none), or another code; with its detail.
+	Notice *struct{ Kind, Detail string }
+}
+
+// DismissNotice hides the notice.
+func (p *GamePreview) DismissNotice() {}
+
+// Start opens a preview (CreatePreview; it ends the game's previous one) and connects to it
+// (PreviewConnect). Running once the backend sends preview_started.
+func (p *GamePreview) Start() {}
+
+// ActAs plays as another participant: act_as is sent and, once the backend answers acting_as, the
+// game runs anew for them. A game still shown for the previous participant can no longer act.
+func (p *GamePreview) ActAs(participantID string) {}
+
 // AiLinkSharing is "Compartir con mi IA": the game's link for the person's AI.
 // code: packages/features/game-authoring/src/aiLink.ts
 type AiLinkSharing struct {

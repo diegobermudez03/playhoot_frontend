@@ -269,4 +269,14 @@ describe('createGamesClient', () => {
     const waited = await busy.games.runSimulation('g-1', {});
     expect(!waited.ok && waited.error).toEqual({ kind: 'busy', retryAfterSeconds: 3 });
   });
+
+  it('maps a start the game failed in its script, and a malformed preview request', async () => {
+    const failed = gamesWith(() => json(422, { code: 'preview_script_failure', message: 'm' }));
+    const scriptFailure = await failed.games.createPreview('g-1', 2);
+    expect(!scriptFailure.ok && scriptFailure.error).toEqual({ kind: 'script-failure' });
+
+    const malformed = gamesWith(() => json(400, { error: 'players must be at least 1' }));
+    const badRequest = await malformed.games.createPreview('g-1', 0);
+    expect(!badRequest.ok && badRequest.error).toEqual({ kind: 'bad-request' });
+  });
 });

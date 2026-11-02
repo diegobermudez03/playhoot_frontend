@@ -17,6 +17,9 @@ import {
   draftRevisionsPath,
   draftRevisionsResponseSchema,
   draftSimulationsPath,
+  draftPreviewsPath,
+  previewCreatedSchema,
+  type CreatePreviewRequest,
   buildSchema,
   gamesErrorCodes,
   maxBuildWaitSeconds,
@@ -160,6 +163,13 @@ export interface SimulationResult {
   scriptError: string | null;
 }
 
+// A preview opened for the creator: its connection is `PreviewConnector.connect(previewUUID)`.
+export interface CreatedPreview {
+  previewUUID: string;
+  revision: number;
+  participants: string[];
+}
+
 // Whether the game has an active link for the creator's AI, without its secret.
 export interface AiLinkStatus {
   active: boolean;
@@ -187,6 +197,12 @@ export type GamesFailure =
   | { kind: 'build-not-found' }
   // The current revision's build has not succeeded (yet): a simulation needs it.
   | { kind: 'build-not-ready'; buildStatus: string | null }
+  // A preview asked for a number of players the game does not accept: it takes `min`..`max`.
+  | { kind: 'invalid-players'; min: number | null; max: number | null }
+  // The game's start() failed in its script when the preview began: simulating shows why.
+  | { kind: 'script-failure' }
+  // The request was malformed (a client bug, never the person's doing).
+  | { kind: 'bad-request' }
   // Too many requests or uploads right now: try again after `retryAfterSeconds`.
   | { kind: 'busy'; retryAfterSeconds: number | undefined }
   // Anything else: no answer, a server failure, an unknown refusal or an unexpected body.
@@ -233,6 +249,14 @@ export interface GamesClient {
   createAiLink(gameUUID: string): Promise<Result<CreatedAiLink, GamesFailure>>;
   readAiLink(gameUUID: string): Promise<Result<AiLinkStatus, GamesFailure>>;
   revokeAiLink(gameUUID: string): Promise<Result<void, GamesFailure>>;
+  // Opens a preview of `revision` (the current one by default) with `players` synthetic
+  // participants; it needs that revision's build to have succeeded. Opening one ends the game's
+  // previous preview.
+  createPreview(
+    gameUUID: string,
+    players: number,
+    revision?: number,
+  ): Promise<Result<CreatedPreview, GamesFailure>>;
   // Runs `scenario` (a parsed `playhoot.scenario.v1` document, sent as is) against the build of
   // the current revision. Nothing is kept: the answer is the only copy of the result.
   runSimulation(
@@ -393,6 +417,23 @@ export function createGamesClient(http: HttpClient): GamesClient {
       return ok(undefined);
     },
 
+    async createPreview(gameUUID, players, revision) {
+      const body: CreatePreviewRequest =
+        revision === undefined ? { players } : { players, revision };
+      const result = await http.request({
+        method: 'POST',
+        path: draftPreviewsPath(gameUUID),
+        body,
+        response: previewCreatedSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({
+        previewUUID: result.value.preview_uuid,
+        revision: result.value.revision,
+        participants: result.value.participants,
+      });
+    },
+
     async runSimulation(gameUUID, scenario) {
       const result = await http.request({
         method: 'POST',
@@ -487,11 +528,17 @@ export function gamesFailure(failure: HttpFailure): GamesFailure {
         kind: 'build-not-ready',
         buildStatus: details.build?.status ?? details.build_status ?? null,
       };
+    case gamesErrorCodes.invalidPlayers:
+      return { kind: 'invalid-players', min: details.min ?? null, max: details.max ?? null };
+    case gamesErrorCodes.previewScriptFailure:
+      return { kind: 'script-failure' };
     case gamesErrorCodes.uploadsBusy:
     case gamesErrorCodes.simulationsBusy:
+    case gamesErrorCodes.previewUnavailable:
     case rateLimitedCode:
       return { kind: 'busy', retryAfterSeconds: failure.retryAfterSeconds };
   }
+  if (failure.status === 400) return { kind: 'bad-request' };
   if (failure.status === 404) return { kind: 'not-found' };
   if (failure.status === 413) return { kind: 'too-large', diagnostics };
   if (failure.status === 429 || failure.status === 503) {

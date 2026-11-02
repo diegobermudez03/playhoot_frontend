@@ -26,6 +26,10 @@ export const aiLinkRevokePath = (gameUUID: string) => `${aiLinkPath(gameUUID)}/r
 // once; nothing is kept.
 export const draftSimulationsPath = (gameUUID: string) => `${draftPath(gameUUID)}/simulations`;
 
+// Opens a preview: a private test game of a revision's succeeded build, played by its creator as
+// each synthetic participant in turn over one live connection (`previewConnectPath`).
+export const draftPreviewsPath = (gameUUID: string) => `${draftPath(gameUUID)}/previews`;
+
 // The change envelope: what an AI produces for a person to paste, and what the API takes.
 export const projectChangeFormat = 'playhoot.project-change.v1';
 
@@ -51,6 +55,9 @@ export const gamesErrorCodes = {
   buildNotReady: 'build_not_ready',
   invalidScenario: 'invalid_scenario',
   simulationsBusy: 'simulations_busy',
+  invalidPlayers: 'invalid_players',
+  previewUnavailable: 'preview_unavailable',
+  previewScriptFailure: 'preview_script_failure',
 } as const;
 
 // Known outcomes of a change, a restore and an asset upload or removal.
@@ -192,6 +199,9 @@ export const draftRefusalSchema = z.object({
   // A simulation refused because the revision's build has not succeeded (yet).
   build: z.object({ status: z.string() }).passthrough().nullish(),
   build_status: z.string().optional(),
+  // A preview refused for its number of players: the range the game accepts.
+  min: z.number().int().optional(),
+  max: z.number().int().optional(),
 });
 
 // What the workspace summarizes of a simulation's result. Every other field is kept untouched:
@@ -234,6 +244,17 @@ export const aiLinkStatusSchema = z.object({
   active: z.boolean(),
   created_at: z.string().nullish(),
   expires_at: z.string().nullish(),
+});
+
+export interface CreatePreviewRequest {
+  revision?: number;
+  players: number;
+}
+
+export const previewCreatedSchema = z.object({
+  preview_uuid: z.string().min(1),
+  revision: z.number().int(),
+  participants: z.array(z.string().min(1)),
 });
 
 export type CreateGameResponse = z.infer<typeof createGameResponseSchema>;

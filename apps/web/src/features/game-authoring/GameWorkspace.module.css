@@ -351,3 +351,79 @@
   border-radius: var(--radius-sm);
   background: var(--color-surface-raised);
 }
+
+/* "Probar juego": the preview's controls and its game, shown like a Session's. */
+.numberInput {
+  width: 8rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-size: var(--text-md);
+}
+
+.previewBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pausedChip {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.participant {
+  min-width: 3.5rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.participant:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.participantActive {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.gameArea {
+  position: relative;
+  min-height: min(60vh, 560px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.gameFrame {
+  position: absolute;
+  inset: 0;
+}
+
+.gameStatus {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  pointer-events: none;
+}

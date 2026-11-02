@@ -1,4 +1,9 @@
-import { createGameAuthoring, type GameAuthoring } from '@playhoot/feature-game-authoring';
+import {
+  createGameAuthoring,
+  createGamePreview,
+  type GameAuthoring,
+  type GamePreview,
+} from '@playhoot/feature-game-authoring';
 import { operations } from '@playhoot/protocol';
 import { useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
@@ -17,6 +22,7 @@ import { AssetsSection } from './sections/AssetsSection';
 import { BuildSection } from './sections/BuildSection';
 import { FilesSection } from './sections/FilesSection';
 import { HistorySection } from './sections/HistorySection';
+import { PreviewSection } from './sections/PreviewSection';
 import { ScenariosSection } from './sections/ScenariosSection';
 import { ShareSection } from './sections/ShareSection';
 
@@ -26,6 +32,7 @@ export const workspaceSections = [
   'files',
   'assets',
   'build',
+  'preview',
   'scenarios',
   'history',
   'share',
@@ -37,6 +44,7 @@ const sectionLabels: Record<WorkspaceSection, MessageId> = {
   files: 'section.files',
   assets: 'section.assets',
   build: 'section.build',
+  preview: 'section.preview',
   scenarios: 'section.scenarios',
   history: 'section.history',
   share: 'section.share',
@@ -65,14 +73,38 @@ function useGameAuthoring(gameUUID: string): GameAuthoring | null {
   return authoring;
 }
 
+// The game's preview lives as long as the workspace, not the section: the creator can leave
+// "Probar juego" to change the draft and come back to the same running test.
+function useGamePreview(gameUUID: string): GamePreview | null {
+  const services = useServices();
+  const [preview, setPreview] = useState<GamePreview | null>(null);
+  useEffect(() => {
+    const next = createGamePreview(gameUUID, {
+      games: services.gamesApi,
+      previews: services.previews,
+    });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- created and disposed by this effect
+    setPreview(next);
+    return () => next.dispose();
+  }, [gameUUID, services]);
+  return preview;
+}
+
 function Workspace() {
   const { gameUUID = '' } = useParams();
   const authoring = useGameAuthoring(gameUUID);
-  if (!authoring) return <AppShell>{null}</AppShell>;
-  return <WorkspaceScreen authoring={authoring} />;
+  const preview = useGamePreview(gameUUID);
+  if (!authoring || !preview) return <AppShell>{null}</AppShell>;
+  return <WorkspaceScreen authoring={authoring} preview={preview} />;
 }
 
-function WorkspaceScreen({ authoring }: { authoring: GameAuthoring }) {
+function WorkspaceScreen({
+  authoring,
+  preview,
+}: {
+  authoring: GameAuthoring;
+  preview: GamePreview;
+}) {
   const intl = useIntl();
   const layout = useLayout();
   const [search, setSearch] = useSearchParams();
@@ -163,6 +195,13 @@ function WorkspaceScreen({ authoring }: { authoring: GameAuthoring }) {
             {section === 'files' && <FilesSection authoring={authoring} />}
             {section === 'assets' && <AssetsSection authoring={authoring} />}
             {section === 'build' && <BuildSection authoring={authoring} />}
+            {section === 'preview' && (
+              <PreviewSection
+                authoring={authoring}
+                preview={preview}
+                onOpenBuild={() => open('build')}
+              />
+            )}
             {section === 'scenarios' && (
               <ScenariosSection authoring={authoring} onOpenBuild={() => open('build')} />
             )}

@@ -332,6 +332,19 @@ func ReadAiLink(gameUUID string) (AiLinkStatus, *GamesFailure) { return AiLinkSt
 // endpoint: POST /v1/games/{id}/ai-link/revoke -> 204
 func RevokeAiLink(gameUUID string) *GamesFailure { return nil }
 
+// CreatePreview opens a private test game of a revision's succeeded build (the current one by
+// default) with `players` synthetic participants; opening one ends the game's previous preview.
+// endpoint: POST /v1/games/{id}/draft/previews {revision?, players} ->
+// 201 {preview_uuid, revision, participants}; 409 build_not_ready; 422 invalid_players {min, max};
+// 503 preview_unavailable
+func CreatePreview(gameUUID string, players int) (string, *GamesFailure) { return "", nil }
+
+// PreviewConnect is the creator's live connection to a preview.
+// endpoint: WebSocket /v1/play/previews/{id}/connect (token subprotocol). In: preview_started,
+// player_view (the participant acted as), acting_as, paused, resumed, command_result,
+// preview_ended {reason}, rejected. Out: act_as, sample, command, resync, pause, resume, end.
+func PreviewConnect(previewUUID string) {}
+
 // RunSimulation plays a scenario on the build of the current revision and answers its result;
 // nothing is kept.
 // endpoint: POST /v1/games/{id}/draft/simulations (body: the scenario as pasted) ->

@@ -4,6 +4,7 @@ import {
   createGamesClient,
   createHttpClient,
   createIdentityClient,
+  createPreviewConnector,
   createSessionConnector,
   createSessionsClient,
   createTelemetryReporter,
@@ -11,6 +12,7 @@ import {
   type GamesClient,
   type HttpClient,
   type IdentityClient,
+  type PreviewConnector,
   type SessionConnector,
   type SessionsClient,
 } from '@playhoot/communication';
@@ -68,6 +70,8 @@ export interface Services {
   gameAssets: AssetLoader;
   http: HttpClient;
   identity: IdentityClient;
+  // The creator's live connections to previews of their drafts.
+  previews: PreviewConnector;
   sessions: SessionConnector;
   // Session creation (REST).
   sessionsApi: SessionsClient;
@@ -144,6 +148,10 @@ export function createServices(): Services {
     gamesApi: createGamesClient(http),
     http,
     identity: identityClient,
+    previews: createPreviewConnector({
+      realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
+      credentials: app.credentials,
+    }),
     sessions,
     sessionsApi: createSessionsClient(http),
     sound,

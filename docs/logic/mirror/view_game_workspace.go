@@ -47,6 +47,18 @@ func GameWorkspaceView(gameUUID string, section string) {
 	// WHEN **Copiar resultado para mi IA** / Copy result for my AI is pressed
 	WorkspaceOnCopyScenarioResult(runner)
 
+	// "Probar juego" (section preview): its own state, created when the section opens and
+	// forgotten (the preview's connection closed) when it closes (state_gameauthoring.go GamePreview).
+	preview := NewGamePreview(gameUUID)
+	// WHEN **Iniciar prueba** or **Reiniciar** is pressed
+	WorkspaceOnStartPreview(preview)
+	// WHEN a participant's button (P1, P2, ...) is pressed
+	WorkspaceOnActAs(preview, "P2")
+	// WHEN **Pausar** / **Reanudar** / **Terminar** is pressed
+	WorkspaceOnPausePreview(preview)
+	WorkspaceOnResumePreview(preview)
+	WorkspaceOnEndPreview(preview)
+
 	// "Compartir con mi IA" (section share): its own state, created when the section opens and
 	// forgotten when it closes (state_gameauthoring.go AiLinkSharing).
 	sharing := NewAiLinkSharing(gameUUID)
@@ -99,6 +111,19 @@ func WorkspaceOnRemoveAsset(authoring *GameAuthoring, key string) {
 func WorkspaceOnRestore(authoring *GameAuthoring, revision int) {
 	authoring.Restore(revision) // on the current revision as its base
 }
+
+// WorkspaceOnStartPreview opens a new preview with the chosen number of participants on the
+// current revision's build (only enabled when it succeeded) and shows its game.
+func WorkspaceOnStartPreview(preview *GamePreview) { preview.Start() }
+
+// WorkspaceOnActAs plays as that participant; the game is run anew for them.
+func WorkspaceOnActAs(preview *GamePreview, participantID string) { preview.ActAs(participantID) }
+
+// WorkspaceOnPausePreview / WorkspaceOnResumePreview freeze and continue the preview's game time;
+// WorkspaceOnEndPreview ends it (the backend answers preview_ended ended_by_owner).
+func WorkspaceOnPausePreview(preview *GamePreview)  {}
+func WorkspaceOnResumePreview(preview *GamePreview) {}
+func WorkspaceOnEndPreview(preview *GamePreview)    {}
 
 // WorkspaceOnRunScenario reads the pasted scenario (ParsePastedScenario; refused locally with what
 // is wrong) and runs it on the current revision's build.

@@ -21,7 +21,7 @@ Order decided by the human on 2026-11-01. Backend items live in `../playhoot` `g
 ## Test (plan delivery 2)
 
 - [ ] C. SDK delivery 1: phases, deadlines, submissions, privacy, scoring, React provider and hooks, semantic controls; the quiz and "Cuánto nos conocemos".
-- [ ] D. Human preview UI: synthetic participants, perspective switching.
+- [x] D. Human preview UI (2026-11-02): "Probar juego" (`?section=preview`) on the backend's previews: players count, the real GameHost per participant (switching restarts it with the other participant's context), pause/resume, restart, end with its reason, the outdated-revision notice, start script failures and in-game `error` notices (`invalid_game_data`, `unknown_participant`); the preview lives with the workspace so changing the draft in another section keeps it. Verified end to end in headless Edge against the real backend (P1:3/P2:2 across switches, the counter frozen while paused, outdated after a new revision, ended by owner, replaced by a second tab).
 - [x] H. "Escenarios" (with backend H): section `scenarios` (paste a scenario the AI wrote, run it on the current revision's build, the result summarized and copied whole for the AI; nothing kept), `GamesClient.runSimulation`. 2026-11-02; verified end to end in headless Edge against the real backend (fenced Tap Race scenario finished with winner P1, result copied as JSON, truncated paste refused locally, a failed build shows the not-ready note linking to Construcción).
 
 ## Publish (plan delivery 3)

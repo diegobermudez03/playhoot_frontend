@@ -338,6 +338,7 @@ export const es: Messages = {
   'share.message': 'Lee este enlace y ayúdame con mi juego de Playhoot: {url}',
 
   'section.scenarios': 'Escenarios',
+  'section.preview': 'Probar juego',
   'scenarios.intro':
     'Pega un escenario que escribió tu IA: lo que hace cada jugador y cuándo. Se juega sobre la construcción de la revisión {revision} y te devolvemos lo que pasó para que se lo pases a tu IA.',
   'scenarios.pasteLabel': 'Escenario de tu IA',
@@ -368,4 +369,45 @@ export const es: Messages = {
   'scenarios.copied': '¡Copiado!',
   'scenarios.resultLabel': 'Resultado completo para tu IA',
   'scenarios.clear': 'Borrar resultado',
+  'preview.intro':
+    'Juega tu borrador como cada participante, uno a la vez. Se prueba el build de la revisión {revision}.',
+  'preview.players': 'Participantes',
+  'preview.range': 'Este juego acepta de {min} a {max} participantes.',
+  'preview.start': 'Iniciar prueba',
+  'preview.startAgain': 'Iniciar otra prueba',
+  'preview.buildNotReady':
+    'La revisión actual todavía no se construyó bien: la prueba necesita un build exitoso.',
+  'preview.openBuild': 'Ver Construcción',
+  'preview.failed.buildNotReady': 'El build de esta revisión no está listo. Revisa Construcción.',
+  'preview.failed.invalidPlayers': 'Ese número de participantes no sirve para este juego.',
+  'preview.failed.busy': 'No hay lugar para otra prueba ahora. Intenta de nuevo en unos segundos.',
+  'preview.failed.scriptFailure':
+    'El juego falló al iniciar la prueba. Ejecuta un escenario en Escenarios para ver el error.',
+  'preview.notice.invalidGameData':
+    'El juego envió un input o comando que no declara. La prueba sigue; corrige el juego:',
+  'preview.notice.unknownParticipant': 'Ese participante no existe en esta prueba.',
+  'preview.notice.other': 'La prueba informó un problema:',
+  'preview.notice.dismiss': 'Cerrar',
+  'preview.failed.notFound': 'Este juego ya no existe o no es tuyo.',
+  'preview.failed.unavailable': 'No pudimos iniciar la prueba. Intenta de nuevo.',
+  'preview.ended.finished': 'El juego terminó.',
+  'preview.ended.idle': 'La prueba se cerró por inactividad.',
+  'preview.ended.byOwner': 'Terminaste la prueba.',
+  'preview.ended.replaced': 'Esta prueba se cerró porque se abrió otra.',
+  'preview.ended.scriptFailure':
+    'El código del juego falló y la prueba se detuvo. Revisa Construcción o simula un escenario.',
+  'preview.ended.unavailable': 'La prueba se interrumpió. Puedes iniciar otra.',
+  'preview.testing': 'Probando la revisión {revision}',
+  'preview.paused': 'En pausa',
+  'preview.outdated':
+    'Estás probando la revisión {tested}; el borrador ya va en la {current}. Reinicia para probarla.',
+  'preview.actingAs': 'Jugar como',
+  'preview.pause': 'Pausar',
+  'preview.resume': 'Reanudar',
+  'preview.restart': 'Reiniciar',
+  'preview.end': 'Terminar',
+  'preview.connecting': 'Conectando con la prueba…',
+  'preview.loadingGame': 'Cargando el juego…',
+  'preview.gameFailed': 'El juego no pudo cargarse.',
+  'preview.reloadGame': 'Intentar de nuevo',
 };
