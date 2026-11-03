@@ -16,7 +16,6 @@ export type SourceArea = (typeof sourceAreas)[number];
 
 export interface Project {
   root: string;
-  name: string;
   aspectRatio: AspectRatio;
   // Source files relative to root, with forward slashes.
   files: string[];
@@ -56,9 +55,6 @@ export async function loadProject(root: string): Promise<Project> {
     problem(`game.project.json is missing or is not JSON: ${(error as Error).message}`);
   }
   if (declared.format !== projectFormat) problem(`"format" must be "${projectFormat}"`);
-  if (typeof declared.name !== 'string' || declared.name.trim() === '') {
-    problem('"name" must be a non-empty string');
-  }
   const aspectRatio = declared.aspectRatio ?? '16:9';
   if (!(aspectRatios as readonly unknown[]).includes(aspectRatio)) {
     problem(`"aspectRatio" must be one of ${aspectRatios.join(', ')}`);
@@ -78,7 +74,6 @@ export async function loadProject(root: string): Promise<Project> {
   if (problems.length > 0) throw new ProjectError(problems);
   return {
     root,
-    name: (declared.name as string).trim(),
     aspectRatio: aspectRatio as AspectRatio,
     files: files.sort(),
   };

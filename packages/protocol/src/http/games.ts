@@ -30,6 +30,41 @@ export const draftSimulationsPath = (gameUUID: string) => `${draftPath(gameUUID)
 // each synthetic participant in turn over one live connection (`previewConnectPath`).
 export const draftPreviewsPath = (gameUUID: string) => `${draftPath(gameUUID)}/previews`;
 
+// The game's card (Game Management): name, description, logo, discovery photos, visibility and
+// publication. Its images are read from signed URLs, uploaded as raw bodies through the API.
+export const gamePath = (gameUUID: string) => `/v1/games/${encodeURIComponent(gameUUID)}`;
+export const gameLogoPath = (gameUUID: string) => `${gamePath(gameUUID)}/logo`;
+export const gameLogoRemovePath = (gameUUID: string) => `${gameLogoPath(gameUUID)}/remove`;
+export const gamePhotosPath = (gameUUID: string) => `${gamePath(gameUUID)}/photos`;
+export const gamePhotoRemovePath = (gameUUID: string, photoUUID: string) =>
+  `${gamePhotosPath(gameUUID)}/${encodeURIComponent(photoUUID)}/remove`;
+// Publishes the CURRENT revision of the open edition; only the owner can.
+export const gamePublishPath = (gameUUID: string) => `${gamePath(gameUUID)}/publish`;
+// Opens a new edition of a published game, starting from the published sources.
+export const gameEditionsPath = (gameUUID: string) => `${gamePath(gameUUID)}/editions`;
+
+// Card limits the backend enforces (Game Management).
+export const cardLimits = {
+  nameMax: 80,
+  descriptionMax: 2000,
+  logoBytes: 2 << 20,
+  photoBytes: 5 << 20,
+  photosMax: 8,
+} as const;
+
+// Who may create Sessions of a published game.
+export const gameVisibilities = { public: 'public', private: 'private' } as const;
+
+// Known reasons a game is not ready to publish (`409 not_ready` blockers).
+export const publishBlockers = {
+  buildNotSucceeded: 'build_not_succeeded',
+  buildNotForCurrentRevision: 'build_not_for_current_revision',
+  missingRequiredAssets: 'missing_required_assets',
+  nameRequired: 'name_required',
+  invalidName: 'invalid_name',
+  revisionChanged: 'revision_changed',
+} as const;
+
 // The change envelope: what an AI produces for a person to paste, and what the API takes.
 export const projectChangeFormat = 'playhoot.project-change.v1';
 
@@ -58,6 +93,14 @@ export const gamesErrorCodes = {
   invalidPlayers: 'invalid_players',
   previewUnavailable: 'preview_unavailable',
   previewScriptFailure: 'preview_script_failure',
+  invalidCard: 'invalid_card',
+  imageTooLarge: 'image_too_large',
+  tooManyPhotos: 'too_many_photos',
+  imageNotFound: 'image_not_found',
+  notReady: 'not_ready',
+  notPublished: 'not_published',
+  editionOpen: 'edition_open',
+  publishing: 'publishing',
 } as const;
 
 // Known outcomes of a change, a restore and an asset upload or removal.
@@ -92,6 +135,8 @@ export const assetStatuses = {
 export const assetTypes = ['image', 'audio', 'video'] as const;
 
 export interface CreateGameRequest {
+  // The game's preliminary name (1..80 characters), confirmed or replaced when it is published.
+  name: string;
   idempotency_key: string;
 }
 
@@ -263,3 +308,70 @@ export type BuildResponse = z.infer<typeof buildSchema>;
 export type DraftChangeResponse = z.infer<typeof draftChangeResponseSchema>;
 export type DraftRevisionsResponse = z.infer<typeof draftRevisionsResponseSchema>;
 export type SimulationResultResponse = z.infer<typeof simulationResultSchema>;
+
+const cardImageSchema = z.object({
+  uuid: z.string(),
+  mime_type: z.string(),
+  size: z.number(),
+  url: z.string().optional(),
+  url_expires_at: z.string().optional(),
+});
+
+export const gameCardSchema = z.object({
+  game_uuid: z.string(),
+  name: z.string(),
+  description: z.string(),
+  logo: cardImageSchema.nullish(),
+  photos: z.array(cardImageSchema).nullish(),
+  visibility: z.string(),
+  published: z.boolean(),
+  published_at: z.string().nullish(),
+  // Whether an edition is open (its draft can change) and whether a publication is under way.
+  editing: z.boolean(),
+  publishing: z.boolean(),
+});
+
+export interface UpdateCardRequest {
+  name?: string;
+  description?: string;
+}
+
+export const cardOutcomeSchema = z.object({
+  outcome: z.string(),
+  image: z.object({ uuid: z.string(), mime_type: z.string(), size: z.number() }).optional(),
+});
+
+export interface PublishRequest {
+  visibility: string;
+  name?: string;
+  idempotency_key: string;
+}
+
+export const publishedSchema = z.object({
+  outcome: z.string(),
+  release_uuid: z.string(),
+  sequence: z.number(),
+  version_uuid: z.string(),
+  revision: z.number(),
+  visibility: z.string(),
+});
+
+// Why a publication was refused: each blocker names what to fix.
+export const publishRefusalSchema = z.object({
+  code: z.string().optional(),
+  blockers: z
+    .array(
+      z
+        .object({
+          code: z.string(),
+          build_status: z.string().optional(),
+          keys: z.array(z.string()).optional(),
+        })
+        .passthrough(),
+    )
+    .optional(),
+});
+
+export const editionOpenedSchema = z.object({ version_uuid: z.string(), revision: z.number() });
+
+export type GameCardResponse = z.infer<typeof gameCardSchema>;

@@ -25,7 +25,7 @@ if (values.json) {
   console.log(JSON.stringify(result.ok ? { ok: true, record: result.record } : result));
 } else if (result.ok) {
   const { server, client } = result.record;
-  console.log(`${result.record.name}: server.js ${server.bytes} B, client.html ${client.bytes} B`);
+  console.log(`built: server.js ${server.bytes} B, client.html ${client.bytes} B`);
 } else {
   for (const d of result.diagnostics) {
     const where = d.file ? `${d.file}${d.line ? `:${d.line}:${d.column}` : ''}: ` : '';

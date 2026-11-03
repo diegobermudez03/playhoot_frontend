@@ -1,8 +1,10 @@
 import {
   createGameAuthoring,
   createGamePreview,
+  createGamePublishing,
   type GameAuthoring,
   type GamePreview,
+  type GamePublishing,
 } from '@playhoot/feature-game-authoring';
 import { operations } from '@playhoot/protocol';
 import { useEffect, useState } from 'react';
@@ -12,7 +14,7 @@ import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
 import type { MessageId } from '../../i18n/catalogs';
-import { AppShell, Button, Owl, Stage } from '../../ui';
+import { AppShell, Button, Card, Owl, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
 import { BuildStatusBadge } from './BuildStatusBadge';
@@ -23,6 +25,7 @@ import { BuildSection } from './sections/BuildSection';
 import { FilesSection } from './sections/FilesSection';
 import { HistorySection } from './sections/HistorySection';
 import { PreviewSection } from './sections/PreviewSection';
+import { PublishSection } from './sections/PublishSection';
 import { ScenariosSection } from './sections/ScenariosSection';
 import { ShareSection } from './sections/ShareSection';
 
@@ -36,6 +39,7 @@ export const workspaceSections = [
   'scenarios',
   'history',
   'share',
+  'publish',
 ] as const;
 export type WorkspaceSection = (typeof workspaceSections)[number];
 
@@ -48,7 +52,19 @@ const sectionLabels: Record<WorkspaceSection, MessageId> = {
   scenarios: 'section.scenarios',
   history: 'section.history',
   share: 'section.share',
+  publish: 'section.publish',
 };
+
+// Sections that read or change the open edition's draft; without one they explain how to open it.
+const draftSections: readonly WorkspaceSection[] = [
+  'ai',
+  'files',
+  'assets',
+  'build',
+  'preview',
+  'scenarios',
+  'history',
+];
 
 // `/games/:gameUUID/edit?section=…`: a creator's workspace for their game's draft (game-creation
 // CHECKLIST B). Everything is read again from the backend when the route opens.
@@ -90,20 +106,46 @@ function useGamePreview(gameUUID: string): GamePreview | null {
   return preview;
 }
 
+// The game's card and publication, read when the workspace opens and after each action.
+function useGamePublishing(gameUUID: string): GamePublishing | null {
+  const services = useServices();
+  const [publishing, setPublishing] = useState<GamePublishing | null>(null);
+  useEffect(() => {
+    const next = createGamePublishing({ games: services.gamesApi, gameUUID });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- created and disposed by this effect
+    setPublishing(next);
+    void next.load();
+    return () => next.dispose();
+  }, [gameUUID, services]);
+  return publishing;
+}
+
 function Workspace() {
   const { gameUUID = '' } = useParams();
   const authoring = useGameAuthoring(gameUUID);
   const preview = useGamePreview(gameUUID);
-  if (!authoring || !preview) return <AppShell>{null}</AppShell>;
-  return <WorkspaceScreen authoring={authoring} preview={preview} />;
+  const publishing = useGamePublishing(gameUUID);
+  if (!authoring || !preview || !publishing) return <AppShell>{null}</AppShell>;
+  return (
+    <WorkspaceScreen
+      gameUUID={gameUUID}
+      authoring={authoring}
+      preview={preview}
+      publishing={publishing}
+    />
+  );
 }
 
 function WorkspaceScreen({
+  gameUUID,
   authoring,
   preview,
+  publishing,
 }: {
+  gameUUID: string;
   authoring: GameAuthoring;
   preview: GamePreview;
+  publishing: GamePublishing;
 }) {
   const intl = useIntl();
   const layout = useLayout();
@@ -111,11 +153,15 @@ function WorkspaceScreen({
   const load = useStore(authoring.store, (state) => state.load);
   const draft = useStore(authoring.store, (state) => state.draft);
   const asked = search.get('section');
+  // A published game without an open edition has no draft: the workspace still opens, on its card.
+  const noEdition = load.status === 'failed' && load.reason === 'not-editable';
   const section: WorkspaceSection = (workspaceSections as readonly string[]).includes(asked ?? '')
     ? (asked as WorkspaceSection)
-    : 'ai';
+    : noEdition
+      ? 'publish'
+      : 'ai';
 
-  if (load.status !== 'ready' || !draft) {
+  if (!noEdition && (load.status !== 'ready' || !draft)) {
     const failed = load.status === 'failed';
     return (
       <AppShell>
@@ -128,9 +174,7 @@ function WorkspaceScreen({
                   id={
                     load.reason === 'not-found'
                       ? 'workspace.error.notFound'
-                      : load.reason === 'not-editable'
-                        ? 'workspace.error.notEditable'
-                        : 'workspace.error.unavailable'
+                      : 'workspace.error.unavailable'
                   }
                 />
               ) : (
@@ -149,7 +193,11 @@ function WorkspaceScreen({
   }
 
   const open = (next: WorkspaceSection) =>
-    setSearch(next === 'ai' ? {} : { section: next }, { replace: true });
+    setSearch(next === 'ai' && !noEdition ? {} : { section: next }, { replace: true });
+  const reloadAll = () => {
+    void authoring.reload();
+    void publishing.load();
+  };
 
   const nav = (
     <nav
@@ -180,36 +228,93 @@ function WorkspaceScreen({
           <h1 className={styles.title}>
             <FormattedMessage id="workspace.title" />
           </h1>
-          <span className={styles.revisionChip} data-testid="current-revision">
-            <FormattedMessage
-              id="workspace.revision"
-              values={{ revision: draft.currentRevision }}
-            />
-          </span>
-          <BuildStatusBadge status={draft.build?.status ?? null} />
+          {draft && !noEdition ? (
+            <>
+              <span className={styles.revisionChip} data-testid="current-revision">
+                <FormattedMessage
+                  id="workspace.revision"
+                  values={{ revision: draft.currentRevision }}
+                />
+              </span>
+              <BuildStatusBadge status={draft.build?.status ?? null} />
+            </>
+          ) : (
+            <span className={styles.revisionChip} data-testid="published-chip">
+              <FormattedMessage id="workspace.published" />
+            </span>
+          )}
         </header>
         <div className={layout === 'wide' ? styles.bodyWide : styles.bodyCompact}>
           {nav}
           <div className={styles.content}>
-            {section === 'ai' && <AiChangesSection authoring={authoring} />}
-            {section === 'files' && <FilesSection authoring={authoring} />}
-            {section === 'assets' && <AssetsSection authoring={authoring} />}
-            {section === 'build' && <BuildSection authoring={authoring} />}
-            {section === 'preview' && (
-              <PreviewSection
+            {noEdition && draftSections.includes(section) && (
+              <PublishedNotice onOpenPublish={() => open('publish')} />
+            )}
+            {!noEdition && (
+              <DraftSections
+                section={section}
                 authoring={authoring}
                 preview={preview}
-                onOpenBuild={() => open('build')}
+                open={open}
               />
             )}
-            {section === 'scenarios' && (
-              <ScenariosSection authoring={authoring} onOpenBuild={() => open('build')} />
+            {section === 'publish' && (
+              <PublishSection
+                publishing={publishing}
+                draft={noEdition ? null : draft}
+                onOpenSection={open}
+                onEditionOpened={reloadAll}
+                onPublished={reloadAll}
+              />
             )}
-            {section === 'history' && <HistorySection authoring={authoring} />}
-            {section === 'share' && <ShareSection gameUUID={draft.gameUUID} />}
+            {section === 'share' && <ShareSection gameUUID={gameUUID} />}
           </div>
         </div>
       </div>
     </AppShell>
+  );
+}
+
+// What a draft section shows while the game is published without an open edition.
+function PublishedNotice({ onOpenPublish }: { onOpenPublish: () => void }) {
+  return (
+    <Card className={styles.panel} data-testid="published-notice">
+      <p>
+        <FormattedMessage id="workspace.publishedNotice" />
+      </p>
+      <div className={styles.rowActions}>
+        <Button onClick={onOpenPublish}>
+          <FormattedMessage id="workspace.openPublish" />
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+function DraftSections({
+  section,
+  authoring,
+  preview,
+  open,
+}: {
+  section: WorkspaceSection;
+  authoring: GameAuthoring;
+  preview: GamePreview;
+  open: (section: WorkspaceSection) => void;
+}) {
+  return (
+    <>
+      {section === 'ai' && <AiChangesSection authoring={authoring} />}
+      {section === 'files' && <FilesSection authoring={authoring} />}
+      {section === 'assets' && <AssetsSection authoring={authoring} />}
+      {section === 'build' && <BuildSection authoring={authoring} />}
+      {section === 'preview' && (
+        <PreviewSection authoring={authoring} preview={preview} onOpenBuild={() => open('build')} />
+      )}
+      {section === 'scenarios' && (
+        <ScenariosSection authoring={authoring} onOpenBuild={() => open('build')} />
+      )}
+      {section === 'history' && <HistorySection authoring={authoring} />}
+    </>
   );
 }

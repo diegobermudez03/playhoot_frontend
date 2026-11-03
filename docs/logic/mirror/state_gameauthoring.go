@@ -159,3 +159,24 @@ func (s *AiLinkSharing) Create() {}
 func (s *AiLinkSharing) Revoke() {}
 
 func (s *AiLinkSharing) ForgetCreated() { s.Created = nil }
+
+// GameCard is what ReadCard answers: the card Game Management keeps for the game.
+type GameCard struct {
+	Name, Description string
+	Logo              *CardImage
+	Photos            []CardImage
+	Visibility        string // public | private (may grow)
+	Published         bool
+	PublishedAt       *string
+	Editing           bool // an edition is open: the draft can change
+	Publishing        bool // a publication is under way
+}
+
+// CardImage is one card image; URL is a signed read valid a few minutes.
+type CardImage struct{ UUID, MIMEType, URL string }
+
+// Publication is what Publish answers.
+type Publication struct {
+	ReleaseUUID, VersionUUID, Visibility string
+	Sequence, Revision                   int
+}

@@ -1,7 +1,7 @@
 import { activeSessionLimitCode, operations } from '@playhoot/protocol';
 import { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 import { useServices } from '../../app/ServicesContext';
 import { AppShell, Button, Owl, Stage } from '../../ui';
@@ -27,13 +27,16 @@ type Creation =
 function CreateSession() {
   const services = useServices();
   const navigate = useNavigate();
+  // A game's own "create a Session" link names it; otherwise the host's default game.
+  const [search] = useSearchParams();
+  const gameUUID = search.get('game') ?? hostedGameUUID;
   // One key per visit: retries, and React's double effect in development, create one Session.
   // Only after the active Session limit does a retry take a new key (the old one keeps refusing).
   const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID());
   const [creation, setCreation] = useState<Creation>({ status: 'creating' });
 
   const create = useCallback(async () => {
-    const result = await services.sessionsApi.createSession(hostedGameUUID, idempotencyKey);
+    const result = await services.sessionsApi.createSession(gameUUID, idempotencyKey);
     if (result.ok) {
       navigate(sessionHostPath(result.value.sessionUUID, result.value.joinCode), {
         replace: true,
@@ -48,7 +51,7 @@ function CreateSession() {
           ? 'active-limit'
           : 'other';
     setCreation({ status: 'failed', reason });
-  }, [services, idempotencyKey, navigate]);
+  }, [services, gameUUID, idempotencyKey, navigate]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- state changes only after the request answers

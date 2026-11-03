@@ -26,6 +26,6 @@ Order decided by the human on 2026-11-01. Backend items live in `../playhoot` `g
 
 ## Publish (plan delivery 3)
 
-- [ ] E. Game card and publishing UI.
+- [x] E. Game card and publishing UI (2026-11-02): "Crear un juego" asks the name; "Ficha y publicación" (`?section=publish`) edits the card (name, description, logo, up to 8 discovery photos), publishes the current revision as public or private with each not-ready blocker linked to its section, shows the published state with a "create a Session of it" link (`/sessions/new?game=`), opens a new version; the draft sections explain the published state. `game.project.json` no longer has `name` (the card owns it). Verified end to end in headless Edge against the real backend.
 - [ ] F. Templates and remix UI.
 - [ ] G. Creation guide for agents and versioned SDK index.

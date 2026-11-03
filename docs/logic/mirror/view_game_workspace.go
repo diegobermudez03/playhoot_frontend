@@ -15,12 +15,16 @@ func CreateGameView() {
 	ReplaceURL("/games/" + created.GameUUID + "/edit") // going back does not create another
 }
 
-// GameWorkspaceView is /games/{id}/edit?section=…: the draft in six sections.
+// GameWorkspaceView is /games/{id}/edit?section=…: the draft's sections plus the card and publication.
 // code: apps/web/src/features/game-authoring/GameWorkspaceRoute.tsx
 func GameWorkspaceView(gameUUID string, section string) {
 	authoring := NewGameAuthoring(gameUUID) // state_gameauthoring.go, disposed when the route closes
 	authoring.Reload()
-	// rule: section is one of ai (default), files, assets, build, history, share; anything else is ai.
+	// rule: section is one of ai (default), files, assets, build, preview, scenarios, history, share,
+	// publish; anything else is ai, or publish when the game is published without an open edition.
+	// rule: with no edition open (the draft read answers not_editable) the draft sections show
+	// "this game is published; create a new version" with a button to publish, and the header shows
+	// "Publicado" instead of the revision.
 	// The header always shows the current revision and its build status.
 
 	// WHEN a section is chosen ("Cambios de mi IA", "Archivos", "Recursos", "Construcción", "Historial")
@@ -134,3 +138,21 @@ func WorkspaceOnRunScenario(runner *ScenarioRunner, text string) {
 // WorkspaceOnCopyScenarioResult copies the whole result as JSON (the exact answer, pretty-printed);
 // the clipboard refusing leaves it on screen to copy by hand.
 func WorkspaceOnCopyScenarioResult(runner *ScenarioRunner) {}
+
+// PublishSection is "Ficha y publicación" (section publish): its state lives as long as the workspace.
+func PublishSection(gameUUID string) {
+	card, failure := ReadCard(gameUUID) // shows the card form, logo, photos and the publication
+	_ = failure
+	// WHEN "Guardar ficha": UpdateCard with the changed fields, then ReadCard.
+	// WHEN a logo or photo is picked: UploadLogo / UploadPhoto (one key per picked file), then ReadCard.
+	// WHEN "Quitar": RemoveLogo / RemovePhoto, then ReadCard.
+	if card.Editing || card.Publishing {
+		// rule: publishes only the draft's current revision; shows its build status.
+		// WHEN "Publicar esta revisión": Publish(visibility, name if changed); published → ReadCard and
+		// read the draft again (now not editable); not ready → each blocker with a link to
+		// Construcción or Recursos.
+	} else {
+		// rule: published, no edition open: "Publicado el … como …", a link to
+		// /sessions/new?game={gameUUID}, and "Crear nueva versión" → OpenEdition, then ReadCard and the draft.
+	}
+}

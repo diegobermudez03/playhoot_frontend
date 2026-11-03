@@ -5,3 +5,4 @@ export * from './pastedChange';
 export * from './pastedJson';
 export * from './preview';
 export * from './scenarioRunner';
+export * from './publishing';

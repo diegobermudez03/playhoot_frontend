@@ -6,7 +6,7 @@ Builds an authoring project into a game version:
 node --experimental-strip-types packages/game-tools/src/cli.ts build <project> [--out <dir>] [--json]
 ```
 
-A project is `game.project.json` (`format`, `name`, `aspectRatio`) plus `shared/` (optional), `server/game.ts` (default export: `defineGame(...)`) and `client/Game.tsx` (default export: the React component). See `fixtures/sdk-games/tap-race`.
+A project is `game.project.json` (`format`, `aspectRatio`, optional `assets`; the game's name lives in its Game Management card, never here) plus `shared/` (optional), `server/game.ts` (default export: `defineGame(...)`) and `client/Game.tsx` (default export: the React component). See `fixtures/sdk-games/tap-race`.
 
 Steps, stopping at the first that fails with diagnostics (stage, file, line):
 

@@ -30,7 +30,7 @@ export async function buildClient(project: Project): Promise<string> {
     '<html>',
     '<head>',
     '<meta charset="utf-8">',
-    `<title>${escapeHtml(project.name)}</title>`,
+    '<title>Playhoot game</title>',
     '<style>html,body,#root{margin:0;width:100%;height:100%;overflow:hidden}</style>',
     '</head>',
     '<body>',
@@ -63,11 +63,4 @@ function entryPlugin(project: Project): Plugin {
       ].join('\n');
     },
   };
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(
-    /[&<>"]/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c,
-  );
 }

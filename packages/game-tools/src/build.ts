@@ -25,7 +25,6 @@ export interface Artifact {
 
 export interface BuildRecord {
   format: typeof buildFormat;
-  name: string;
   profile: typeof compileProfile;
   aspectRatio: string;
   server: Artifact;
@@ -76,7 +75,6 @@ export async function build(root: string): Promise<BuildResult> {
     manifest: server.manifest,
     record: {
       format: buildFormat,
-      name: project.name,
       profile: compileProfile,
       aspectRatio: project.aspectRatio,
       server: artifact(server.script),

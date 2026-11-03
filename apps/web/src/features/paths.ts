@@ -11,6 +11,9 @@ export const sessionPlayPath = (sessionUUID: string) =>
 
 // Creating a Session (an account's operation): the route creates it and moves to its host screen.
 export const newSessionPath = '/sessions/new';
+// The same, for a given published game (the host's default game otherwise).
+export const newSessionPathFor = (gameUUID: string) =>
+  `${newSessionPath}?${new URLSearchParams({ game: gameUUID }).toString()}`;
 
 // The creator's screen of their Session. The join code travels in the URL because the backend
 // tells it only when the Session is created; without it the invite uses the Session's link.

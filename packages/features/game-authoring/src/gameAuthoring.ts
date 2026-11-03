@@ -118,8 +118,13 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
           : result.error.kind === 'not-editable'
             ? 'not-editable'
             : 'unavailable';
-      // A draft already shown stays; only a first read fails the page.
-      if (store.getState().draft === null) store.setState({ load: { status: 'failed', reason } });
+      // A draft already shown stays through a passing failure; only a first read fails the page.
+      // No version being built (the game was just published) is for good: the draft goes.
+      if (reason === 'not-editable') {
+        store.setState({ draft: null, revisions: null, load: { status: 'failed', reason } });
+      } else if (store.getState().draft === null) {
+        store.setState({ load: { status: 'failed', reason } });
+      }
       return;
     }
     store.setState({ draft: result.value, load: { status: 'ready' } });

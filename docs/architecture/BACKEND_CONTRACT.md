@@ -90,7 +90,7 @@ Seed games (non-production): `11111111-1111-4111-8111-111111111111` (input `move
 
 The source of truth is the backend's `api/README.md` ("The games route group"); this is what the frontend uses. Every answer is `Cache-Control: no-store`. A game that does not exist or is someone else's is `404` (never told apart); a game without a version being built is `409 not_editable`. Default request limits (5/s, 30/min per user per route) may answer `429 rate_limited` with `Retry-After`.
 
-- `POST /v1/games` (`CREATE_GAME`) `{idempotency_key}` -> `201 {game_uuid, version_uuid, revision}` (unpublished, private, empty name, revision 1 = the SDK starter template).
+- `POST /v1/games` (`CREATE_GAME`) `{name, idempotency_key}` (name 1..80, the preliminary card name; 2026-11-02) -> `201 {game_uuid, version_uuid, revision}` (unpublished, private, revision 1 = the SDK starter template); `422 invalid_card`; `409 idempotency_conflict` (same key, another name).
 - `GET /v1/games/{id}/draft[?revision=N][&content=true]` (`EDIT_GAME`) -> `{game_uuid, version_uuid, status, current_revision, revision, files[{path, sha256, size, content?}], assets[{key, type, description, optional, status missing|ready|undeclared, sha256?, size?, mime_type?, url? (15-min signed preview), url_expires_at?}], asset_diagnostics[], attempts[{kind change|restore|asset_upload|asset_removal, outcome, base_revision, revision?, origin, diagnostics[{path, code, message}], created_at}] (newest first), build, last_successful_build}`. `404 revision_not_found` past the current revision.
 - `POST /v1/games/{id}/draft/changes` (`EDIT_GAME`) the envelope `{format: "playhoot.project-change.v1", base_revision, files[{path, content}], delete[], idempotency_key}` (<= 4 MiB) -> `200 {outcome applied|unchanged, revision, build: {status}}`; `409 revision_conflict {current_revision}`; `422 invalid_change {diagnostics}`; `409 idempotency_conflict`; `400` unknown format or missing fields.
 - `GET /v1/games/{id}/draft/revisions` -> `[{number, source, files, created_at}]` oldest first. Sources seen: `template`, `web`, `restore`, `asset` (the list may grow).
@@ -108,6 +108,17 @@ The source of truth is the backend's `api/README.md` ("The games route group"); 
 The AI-facing surface behind that `url` (`/ai/v1/{token}...`, served by the backend for the creator's AI, not used by this frontend): a Markdown context page (`?format=json` for agents) with the game's current revision, `notes.md`, build status and diagnostics, assets, latest attempts and how to send a change; the sources inline when the project is small, else one link per file pinned to the revision shown; `POST .../changes` and `PUT .../assets/{key}` take the same envelope and files as above, recorded with origin `api`. The token is the credential, so those requests carry no `Authorization`. The section labels the page names ("Cambios de mi IA", "Recursos", ...) are this frontend's.
 
 CORS: the preflight allows `Authorization, Content-Type, Idempotency-Key` (resolved 2026-11-02 in the backend, `api/internal/cors`), so the asset upload works cross-origin too.
+
+#### Card and publishing (game-creation-web-v1 E, 2026-11-02)
+
+Game Management's card and the publication (backend `api/README.md`, games group). Owner only; anyone else is `404`.
+
+- `GET /v1/games/{id}` -> `{game_uuid, name, description, logo {uuid, mime_type, size, url, url_expires_at}|null, photos[same], visibility, published, published_at?, editing, publishing}`; image URLs are signed reads valid 15 minutes. `editing` false with `published` true means no edition is open: the draft routes answer `409 not_editable`, and the workspace shows the published state.
+- `PATCH /v1/games/{id}` `{name?, description?}` -> `200 {outcome done|unchanged}`; `422 invalid_card` (name 1..80, description <= 2000).
+- `PUT /v1/games/{id}/logo`, `POST /v1/games/{id}/photos`: raw image body, `Idempotency-Key` header; PNG, JPEG or WebP by their bytes; logo <= 2 MiB, photo <= 5 MiB, at most 8 photos -> `200 {outcome, image}`; `413 image_too_large`; `422 invalid_card`; `409 too_many_photos` / `idempotency_conflict`. `POST .../logo/remove`, `POST .../photos/{photoID}/remove` -> `200`; `404 image_not_found`.
+- `POST /v1/games/{id}/publish` `{visibility public|private, name?, idempotency_key}` publishes the CURRENT revision of the open edition (a `name` replaces the card name first) -> `200 {outcome published, release_uuid, sequence, version_uuid, revision, visibility}`; `409 not_ready {blockers[{code, build_status?, keys?}]}` with codes `build_not_succeeded`, `build_not_for_current_revision`, `missing_required_assets` (keys), `invalid_name`, `name_required`, `revision_changed` (the list may grow: an unknown one is shown with its code); `409 not_editable`; `409 idempotency_conflict`. The same key answers the same release.
+- `POST /v1/games/{id}/editions` `{idempotency_key}` -> `201 {version_uuid, revision}` (revision 1 copies the published sources and assets); `409 not_published` / `edition_open` / `publishing`.
+- `POST /v1/sessions` checks playability for real (published, not deleted, public or the caller's own; otherwise `404`). The host's "Create Session" takes `?game=<uuid>` (a published game's own link), the default seed game otherwise.
 
 ### Auth (`api/internal/auth/auth.go`)
 

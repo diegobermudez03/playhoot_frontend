@@ -21,6 +21,21 @@ import {
   previewCreatedSchema,
   type CreatePreviewRequest,
   buildSchema,
+  cardOutcomeSchema,
+  editionOpenedSchema,
+  gameCardSchema,
+  gameEditionsPath,
+  gameLogoPath,
+  gameLogoRemovePath,
+  gamePath,
+  gamePhotoRemovePath,
+  gamePhotosPath,
+  gamePublishPath,
+  publishedSchema,
+  publishRefusalSchema,
+  type GameCardResponse,
+  type PublishRequest,
+  type UpdateCardRequest,
   gamesErrorCodes,
   maxBuildWaitSeconds,
   projectChangeFormat,
@@ -178,6 +193,44 @@ export interface AiLinkStatus {
 }
 
 // Why a games call did not do what it asked, by what the caller can do about it.
+// An image of the game's card: the URL is a signed read valid a few minutes.
+export interface CardImage {
+  uuid: string;
+  mimeType: string;
+  size: number;
+  url: string | null;
+}
+
+export interface GameCard {
+  gameUUID: string;
+  name: string;
+  description: string;
+  logo: CardImage | null;
+  photos: CardImage[];
+  visibility: string;
+  published: boolean;
+  publishedAt: string | null;
+  // An edition is open: the draft can change.
+  editing: boolean;
+  // A publication is under way (it completes on the next publish or edit).
+  publishing: boolean;
+}
+
+export interface Publication {
+  releaseUUID: string;
+  sequence: number;
+  versionUUID: string;
+  revision: number;
+  visibility: string;
+}
+
+// Why the game cannot be published yet: what to fix for each.
+export interface PublishBlocker {
+  code: string;
+  buildStatus: string | null;
+  keys: string[];
+}
+
 export type GamesFailure =
   // The game does not exist or is someone else's (the backend never tells them apart).
   | { kind: 'not-found' }
@@ -205,11 +258,51 @@ export type GamesFailure =
   | { kind: 'bad-request' }
   // Too many requests or uploads right now: try again after `retryAfterSeconds`.
   | { kind: 'busy'; retryAfterSeconds: number | undefined }
+  // The card's name or description breaks its limits, or an image is not PNG, JPEG or WebP.
+  | { kind: 'invalid-card' }
+  | { kind: 'too-many-photos' }
+  | { kind: 'image-not-found' }
+  // The game cannot be published yet: each blocker says what is missing.
+  | { kind: 'not-ready'; blockers: PublishBlocker[] }
+  // A new edition needs a published game, no edition open and no publication under way.
+  | { kind: 'not-published' }
+  | { kind: 'edition-open' }
+  | { kind: 'publishing' }
   // Anything else: no answer, a server failure, an unknown refusal or an unexpected body.
   | { kind: 'unavailable'; failure: HttpFailure };
 
 export interface GamesClient {
-  createGame(idempotencyKey: string): Promise<Result<CreatedGame, GamesFailure>>;
+  createGame(name: string, idempotencyKey: string): Promise<Result<CreatedGame, GamesFailure>>;
+  readCard(gameUUID: string): Promise<Result<GameCard, GamesFailure>>;
+  // Changes the card's name and/or description; allowed published or not.
+  updateCard(
+    gameUUID: string,
+    change: { name?: string; description?: string },
+  ): Promise<Result<void, GamesFailure>>;
+  // Sends the image's bytes; the backend reads their real type and checks the size.
+  uploadLogo(
+    gameUUID: string,
+    file: Blob,
+    idempotencyKey: string,
+  ): Promise<Result<void, GamesFailure>>;
+  removeLogo(gameUUID: string): Promise<Result<void, GamesFailure>>;
+  uploadPhoto(
+    gameUUID: string,
+    file: Blob,
+    idempotencyKey: string,
+  ): Promise<Result<void, GamesFailure>>;
+  removePhoto(gameUUID: string, photoUUID: string): Promise<Result<void, GamesFailure>>;
+  // Publishes the current revision of the open edition; `name` replaces the card name first.
+  publish(
+    gameUUID: string,
+    request: { visibility: string; name?: string },
+    idempotencyKey: string,
+  ): Promise<Result<Publication, GamesFailure>>;
+  // Opens a new edition of a published game, its draft starting from the published sources.
+  openEdition(
+    gameUUID: string,
+    idempotencyKey: string,
+  ): Promise<Result<{ versionUUID: string; revision: number }, GamesFailure>>;
   readDraft(
     gameUUID: string,
     options?: { revision?: number; content?: boolean },
@@ -267,8 +360,8 @@ export interface GamesClient {
 
 export function createGamesClient(http: HttpClient): GamesClient {
   return {
-    async createGame(idempotencyKey) {
-      const body: CreateGameRequest = { idempotency_key: idempotencyKey };
+    async createGame(name, idempotencyKey) {
+      const body: CreateGameRequest = { name, idempotency_key: idempotencyKey };
       const result = await http.request({
         method: 'POST',
         path: createGamePath,
@@ -281,6 +374,101 @@ export function createGamesClient(http: HttpClient): GamesClient {
         versionUUID: result.value.version_uuid,
         revision: result.value.revision,
       });
+    },
+
+    async readCard(gameUUID) {
+      const result = await http.request({
+        method: 'GET',
+        path: gamePath(gameUUID),
+        response: gameCardSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok(cardOf(result.value));
+    },
+
+    async updateCard(gameUUID, change) {
+      const body: UpdateCardRequest = change;
+      return done(
+        await http.request({
+          method: 'PATCH',
+          path: gamePath(gameUUID),
+          body,
+          response: cardOutcomeSchema,
+        }),
+      );
+    },
+
+    async uploadLogo(gameUUID, file, idempotencyKey) {
+      return done(
+        await http.request({
+          method: 'PUT',
+          path: gameLogoPath(gameUUID),
+          rawBody: { content: file, contentType: file.type || 'application/octet-stream' },
+          headers: { 'Idempotency-Key': idempotencyKey },
+          response: cardOutcomeSchema,
+        }),
+      );
+    },
+
+    async removeLogo(gameUUID) {
+      return done(
+        await http.request({
+          method: 'POST',
+          path: gameLogoRemovePath(gameUUID),
+          response: cardOutcomeSchema,
+        }),
+      );
+    },
+
+    async uploadPhoto(gameUUID, file, idempotencyKey) {
+      return done(
+        await http.request({
+          method: 'POST',
+          path: gamePhotosPath(gameUUID),
+          rawBody: { content: file, contentType: file.type || 'application/octet-stream' },
+          headers: { 'Idempotency-Key': idempotencyKey },
+          response: cardOutcomeSchema,
+        }),
+      );
+    },
+
+    async removePhoto(gameUUID, photoUUID) {
+      return done(
+        await http.request({
+          method: 'POST',
+          path: gamePhotoRemovePath(gameUUID, photoUUID),
+          response: cardOutcomeSchema,
+        }),
+      );
+    },
+
+    async publish(gameUUID, request, idempotencyKey) {
+      const body: PublishRequest = { ...request, idempotency_key: idempotencyKey };
+      const result = await http.request({
+        method: 'POST',
+        path: gamePublishPath(gameUUID),
+        body,
+        response: publishedSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({
+        releaseUUID: result.value.release_uuid,
+        sequence: result.value.sequence,
+        versionUUID: result.value.version_uuid,
+        revision: result.value.revision,
+        visibility: result.value.visibility,
+      });
+    },
+
+    async openEdition(gameUUID, idempotencyKey) {
+      const result = await http.request({
+        method: 'POST',
+        path: gameEditionsPath(gameUUID),
+        body: { idempotency_key: idempotencyKey },
+        response: editionOpenedSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({ versionUUID: result.value.version_uuid, revision: result.value.revision });
     },
 
     async readDraft(gameUUID, options = {}) {
@@ -447,6 +635,31 @@ export function createGamesClient(http: HttpClient): GamesClient {
   };
 }
 
+function done(result: Result<unknown, HttpFailure>): Result<void, GamesFailure> {
+  return result.ok ? ok(undefined) : err(gamesFailure(result.error));
+}
+
+function cardOf(body: GameCardResponse): GameCard {
+  const image = (value: NonNullable<GameCardResponse['logo']>): CardImage => ({
+    uuid: value.uuid,
+    mimeType: value.mime_type,
+    size: value.size,
+    url: value.url ?? null,
+  });
+  return {
+    gameUUID: body.game_uuid,
+    name: body.name,
+    description: body.description,
+    logo: body.logo ? image(body.logo) : null,
+    photos: (body.photos ?? []).map(image),
+    visibility: body.visibility,
+    published: body.published,
+    publishedAt: body.published_at ?? null,
+    editing: body.editing,
+    publishing: body.publishing,
+  };
+}
+
 // Checks the fields the workspace summarizes and keeps the body exactly as it came.
 const simulationDecoder: Decoder<{ raw: unknown; parsed: SimulationResultResponse }> = {
   safeParse(value) {
@@ -532,6 +745,32 @@ export function gamesFailure(failure: HttpFailure): GamesFailure {
       return { kind: 'invalid-players', min: details.min ?? null, max: details.max ?? null };
     case gamesErrorCodes.previewScriptFailure:
       return { kind: 'script-failure' };
+    case gamesErrorCodes.invalidCard:
+      return { kind: 'invalid-card' };
+    case gamesErrorCodes.imageTooLarge:
+      return { kind: 'too-large', diagnostics };
+    case gamesErrorCodes.tooManyPhotos:
+      return { kind: 'too-many-photos' };
+    case gamesErrorCodes.imageNotFound:
+      return { kind: 'image-not-found' };
+    case gamesErrorCodes.notReady: {
+      const refusal = publishRefusalSchema.safeParse(failure.body);
+      const blockers = refusal.success ? (refusal.data.blockers ?? []) : [];
+      return {
+        kind: 'not-ready',
+        blockers: blockers.map((blocker) => ({
+          code: blocker.code,
+          buildStatus: blocker.build_status ?? null,
+          keys: blocker.keys ?? [],
+        })),
+      };
+    }
+    case gamesErrorCodes.notPublished:
+      return { kind: 'not-published' };
+    case gamesErrorCodes.editionOpen:
+      return { kind: 'edition-open' };
+    case gamesErrorCodes.publishing:
+      return { kind: 'publishing' };
     case gamesErrorCodes.uploadsBusy:
     case gamesErrorCodes.simulationsBusy:
     case gamesErrorCodes.previewUnavailable:

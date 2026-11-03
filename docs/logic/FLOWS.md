@@ -25,9 +25,15 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | When | Call | With | Answer used for |
 | --- | --- | --- | --- |
 | Page load (flow 1), retried until it answers | `GET /v1/identity/operations` | no credential | Each operation's minimum level → where to send a person to authenticate (flow 15) |
-| "Crear una partida" (flow 16) | `POST /v1/sessions` | `game_uuid` (fixed for now), `idempotency_key` (one per visit) | `session_uuid` + `join_code` → the host screen's URL |
+| "Crear una partida" (flow 16), or a published game's "Crear una partida de este juego" (`/sessions/new?game=<uuid>`) | `POST /v1/sessions` | `game_uuid` (the link's game, else the default seed game), `idempotency_key` (one per visit) | `session_uuid` + `join_code` → the host screen's URL |
 | The host screen opens (flow 16) | WebSocket `/v1/play/join/sessions/{sessionUUID}/admin` | token in subprotocol | Lobby with player limits, start / cancel / perspective results, the watched player's views |
-| "Crear un juego" (flow 17) | `POST /v1/games` | `idempotency_key` (one per visit) | `game_uuid` → the workspace URL |
+| "Crear el juego" on the name form (flow 17) | `POST /v1/games` | `name`, `idempotency_key` (one per name) | `game_uuid` → the workspace URL; invalid name |
+| "Ficha y publicación" opens, and after every card action (flow 17) | `GET /v1/games/{id}` | — | The card: name, description, logo, photos, visibility, published, editing, publishing |
+| "Guardar ficha" (flow 17) | `PATCH /v1/games/{id}` | `name?`, `description?` | done / unchanged / invalid |
+| "Subir logo" / "Reemplazar logo" / "Agregar foto" (flow 17) | `PUT /v1/games/{id}/logo`, `POST /v1/games/{id}/photos` | the image as the body, `Idempotency-Key` (one per picked file) | done / too large / invalid / too many photos |
+| "Quitar" a logo or photo (flow 17) | `POST /v1/games/{id}/logo/remove`, `POST /v1/games/{id}/photos/{photoID}/remove` | — | done / not found |
+| "Publicar esta revisión" (flow 17) | `POST /v1/games/{id}/publish` | `visibility`, `name?` (when changed), `idempotency_key` (the same while the same publication is retried) | published → the card and the draft are read again (no edition open); not ready with blockers |
+| "Crear nueva versión" (flow 17) | `POST /v1/games/{id}/editions` | `idempotency_key` | A new draft at revision 1 from the published sources → card and draft read again |
 | The workspace opens, and after every new revision (flow 17) | `GET /v1/games/{id}/draft?content=true` | — | The current revision: files with content, assets, attempts, build, last successful build |
 | A new revision's build is running (flow 17) | `GET /v1/games/{id}/draft/build?revision=N&wait=20` | — | The build's status and diagnostics; asked again while it runs, then the draft is read again |
 | "Aplicar cambio" / "Guardar como nueva revisión" (flow 17) | `POST /v1/games/{id}/draft/changes` | the envelope on the current base, `idempotency_key` (the same while the same action is retried) | applied / unchanged / conflict / invalid |

@@ -66,7 +66,7 @@ describe('build', () => {
       await mkdir(join(root, 'client'));
       await writeFile(
         join(root, 'game.project.json'),
-        JSON.stringify({ format: 'playhoot.project.v1', name: 'Broken' }),
+        JSON.stringify({ format: 'playhoot.project.v1' }),
       );
       await writeFile(
         join(root, 'server/game.ts'),

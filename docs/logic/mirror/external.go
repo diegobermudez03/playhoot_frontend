@@ -271,7 +271,7 @@ type Socket struct{}
 
 // CreateGame creates an unpublished game whose draft starts at revision 1 (the SDK template).
 // endpoint: POST /v1/games {idempotency_key} -> 201 {game_uuid, version_uuid, revision}
-func CreateGame(idempotencyKey string) (struct{ GameUUID string }, *GamesFailure) {
+func CreateGame(name string, idempotencyKey string) (struct{ GameUUID string }, *GamesFailure) {
 	return struct{ GameUUID string }{}, nil
 }
 
@@ -374,3 +374,33 @@ type AiLinkStatus struct {
 // build-not-found | build-not-ready(buildStatus) | busy(retryAfterSeconds) | unavailable (no answer, server failure, an unknown
 // code or body).
 type GamesFailure struct{ Kind string }
+
+// ReadCard reads the game's card (Game Management): name, description, logo, photos, visibility,
+// whether it is published, whether an edition is open and whether a publication is under way.
+// GET /v1/games/{id}
+func ReadCard(gameUUID string) (GameCard, *GamesFailure) { return GameCard{}, nil }
+
+// UpdateCard changes the card's name and/or description. PATCH /v1/games/{id}
+func UpdateCard(gameUUID string, name *string, description *string) *GamesFailure { return nil }
+
+// UploadLogo / UploadPhoto send one picked image as the body with its own Idempotency-Key.
+// PUT /v1/games/{id}/logo, POST /v1/games/{id}/photos
+func UploadLogo(gameUUID string, image []byte, idempotencyKey string) *GamesFailure  { return nil }
+func UploadPhoto(gameUUID string, image []byte, idempotencyKey string) *GamesFailure { return nil }
+
+// RemoveLogo / RemovePhoto. POST /v1/games/{id}/logo/remove, POST /v1/games/{id}/photos/{photoID}/remove
+func RemoveLogo(gameUUID string) *GamesFailure                    { return nil }
+func RemovePhoto(gameUUID string, photoUUID string) *GamesFailure { return nil }
+
+// Publish publishes the CURRENT revision of the open edition; a refusal lists its blockers
+// (build not succeeded, required assets missing, invalid name, the draft changed meanwhile).
+// POST /v1/games/{id}/publish
+func Publish(gameUUID string, visibility string, name *string, idempotencyKey string) (Publication, *GamesFailure) {
+	return Publication{}, nil
+}
+
+// OpenEdition opens a new edition of a published game: its draft starts at revision 1 with the
+// published sources. POST /v1/games/{id}/editions
+func OpenEdition(gameUUID string, idempotencyKey string) (struct{ Revision int }, *GamesFailure) {
+	return struct{ Revision int }{}, nil
+}

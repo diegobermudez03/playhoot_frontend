@@ -279,4 +279,105 @@ describe('createGamesClient', () => {
     const badRequest = await malformed.games.createPreview('g-1', 0);
     expect(!badRequest.ok && badRequest.error).toEqual({ kind: 'bad-request' });
   });
+
+  it('creates a game with its name', async () => {
+    const t = gamesWith(() => json(201, { game_uuid: 'g-1', version_uuid: 'v-1', revision: 1 }));
+    const created = await t.games.createGame('Tap Race', 'k-1');
+    expect(JSON.parse(String(t.fetchImpl.mock.calls[0]![1]?.body))).toEqual({
+      name: 'Tap Race',
+      idempotency_key: 'k-1',
+    });
+    expect(created).toEqual({
+      ok: true,
+      value: { gameUUID: 'g-1', versionUUID: 'v-1', revision: 1 },
+    });
+  });
+
+  it('reads and changes the card, its logo and photos', async () => {
+    const card = gamesWith(() =>
+      json(200, {
+        game_uuid: 'g-1',
+        name: 'Tap Race',
+        description: '',
+        logo: { uuid: 'l-1', mime_type: 'image/png', size: 10, url: 'https://s/l' },
+        photos: [],
+        visibility: 'private',
+        published: false,
+        editing: true,
+        publishing: false,
+      }),
+    );
+    expect(await card.games.readCard('g-1')).toMatchObject({
+      ok: true,
+      value: { name: 'Tap Race', logo: { uuid: 'l-1', url: 'https://s/l' }, publishedAt: null },
+    });
+
+    const patched = gamesWith(() => json(200, { outcome: 'done' }));
+    const saved = await patched.games.updateCard('g-1', { description: 'd' });
+    expect(saved).toEqual({ ok: true, value: undefined });
+    expect(patched.fetchImpl.mock.calls[0]![1]?.method).toBe('PATCH');
+
+    const logo = gamesWith(() =>
+      json(200, { outcome: 'done', image: { uuid: 'l-2', mime_type: 'image/png', size: 4 } }),
+    );
+    await logo.games.uploadLogo('g-1', new Blob(['x'], { type: 'image/png' }), 'k-2');
+    expect(logo.fetchImpl.mock.calls[0]![0]).toBe('/v1/games/g-1/logo');
+    const headers = new Headers(logo.fetchImpl.mock.calls[0]![1]?.headers);
+    expect(headers.get('Idempotency-Key')).toBe('k-2');
+
+    const tooMany = gamesWith(() => json(409, { code: 'too_many_photos', message: 'm' }));
+    const refused = await tooMany.games.uploadPhoto('g-1', new Blob(['x']), 'k-3');
+    expect(!refused.ok && refused.error.kind).toBe('too-many-photos');
+  });
+
+  it('publishes, reports what blocks it, and opens a new edition', async () => {
+    const published = gamesWith(() =>
+      json(200, {
+        outcome: 'published',
+        release_uuid: 'r-1',
+        sequence: 1,
+        version_uuid: 'v-1',
+        revision: 3,
+        visibility: 'public',
+      }),
+    );
+    expect(await published.games.publish('g-1', { visibility: 'public' }, 'k-1')).toEqual({
+      ok: true,
+      value: {
+        releaseUUID: 'r-1',
+        sequence: 1,
+        versionUUID: 'v-1',
+        revision: 3,
+        visibility: 'public',
+      },
+    });
+
+    const blocked = gamesWith(() =>
+      json(409, {
+        code: 'not_ready',
+        message: 'm',
+        blockers: [
+          { code: 'build_not_succeeded', build_status: 'FAILED' },
+          { code: 'missing_required_assets', keys: ['cardBack'] },
+        ],
+      }),
+    );
+    const refused = await blocked.games.publish('g-1', { visibility: 'private' }, 'k-2');
+    expect(!refused.ok && refused.error).toEqual({
+      kind: 'not-ready',
+      blockers: [
+        { code: 'build_not_succeeded', buildStatus: 'FAILED', keys: [] },
+        { code: 'missing_required_assets', buildStatus: null, keys: ['cardBack'] },
+      ],
+    });
+
+    const edition = gamesWith(() => json(201, { version_uuid: 'v-2', revision: 1 }));
+    expect(await edition.games.openEdition('g-1', 'k-3')).toEqual({
+      ok: true,
+      value: { versionUUID: 'v-2', revision: 1 },
+    });
+    const open = gamesWith(() => json(409, { code: 'edition_open', message: 'm' }));
+    const again = await open.games.openEdition('g-1', 'k-4');
+    expect(!again.ok && again.error.kind).toBe('edition-open');
+  });
 });
