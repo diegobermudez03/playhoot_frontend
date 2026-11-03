@@ -1,0 +1,11 @@
+{
+  "format": "playhoot.scenario.v1",
+  "players": 1,
+  "seed": 5,
+  "duration_ms": 4000,
+  "steps": [
+    { "at_ms": 100, "player": "P1", "inputs": { "move": [1, 0] } },
+    { "at_ms": 1100, "player": "P1", "inputs": { "move": [0, 0] } }
+  ],
+  "observe_at_ms": [0, 1100, 3000]
+}

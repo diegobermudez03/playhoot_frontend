@@ -1,0 +1,13 @@
+{
+  "format": "playhoot.scenario.v1",
+  "players": 2,
+  "seed": 3,
+  "duration_ms": 5000,
+  "steps": [
+    { "at_ms": 200, "player": "P2", "command": { "name": "flip", "payload": { "index": 0 } } },
+    { "at_ms": 300, "player": "P1", "command": { "name": "flip", "payload": { "index": 0 } } },
+    { "at_ms": 400, "player": "P1", "command": { "name": "flip", "payload": { "index": 1 } } },
+    { "at_ms": 500, "player": "P1", "command": { "name": "flip", "payload": { "index": 9 } } }
+  ],
+  "observe_at_ms": [450]
+}

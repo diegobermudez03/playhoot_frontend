@@ -298,3 +298,10 @@
     transform: rotate(90deg);
   }
 }
+
+/* The finished game's notice, with its leave action: the final view stays visible under it. */
+.finished {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}

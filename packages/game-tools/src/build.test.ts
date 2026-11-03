@@ -86,4 +86,60 @@ describe('build', () => {
       await rm(root, { recursive: true, force: true });
     }
   });
+
+  it('types the declared assets, so an undeclared key is a type error', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'playhoot-game-'));
+    try {
+      await mkdir(join(root, 'server'));
+      await mkdir(join(root, 'client'));
+      const declared = {
+        format: 'playhoot.project.v1',
+        assets: { cardBack: { type: 'image', description: 'Back of a card', optional: true } },
+      };
+      await writeFile(join(root, 'game.project.json'), JSON.stringify(declared));
+      await writeFile(
+        join(root, 'server/game.ts'),
+        `import { defineGame } from '@playhoot/game-server';\nexport default defineGame({ players: { min: 1, max: 2 }, setup: () => ({}), view: () => null });\n`,
+      );
+      const client = (key: string) =>
+        `import { assets } from '@playhoot/assets';\nimport { useAsset } from '@playhoot/game-react';\nexport default function Game() { const back = useAsset(assets.${key}); return back.url; }\n`;
+
+      await writeFile(join(root, 'client/Game.tsx'), client('cardBack'));
+      const built = await build(root);
+      if (!built.ok) throw new Error(JSON.stringify(built.diagnostics));
+      expect(built.client).toContain('cardBack');
+
+      await writeFile(join(root, 'client/Game.tsx'), client('cardFront'));
+      const refused = await build(root);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) return;
+      expect(refused.diagnostics).toEqual([
+        expect.objectContaining({ stage: 'types', file: 'client/Game.tsx', line: 3 }),
+      ]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses an asset declaration the backend would refuse', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'playhoot-game-'));
+    try {
+      const declared = {
+        format: 'playhoot.project.v1',
+        assets: { 'card-back': { type: 'image', description: 'x' }, sound: { type: 'midi' } },
+      };
+      await writeFile(join(root, 'game.project.json'), JSON.stringify(declared));
+      const result = await build(root);
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+      expect(result.diagnostics.map((d) => d.message)).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('asset "card-back": keys start with a letter'),
+          expect.stringContaining('asset "sound": "type" is image, audio or video'),
+        ]),
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
 });

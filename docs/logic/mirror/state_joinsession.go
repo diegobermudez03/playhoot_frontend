@@ -23,7 +23,7 @@ type JoinView struct {
 	ReconnectAttempt int           // connecting: 0 first try, 1..3 reconnecting
 	Members          []LobbyMember // lobby
 	Started          *StartedSession
-	Connection       string       // started: "connected" | "reconnecting" (the game stays on screen)
+	Connection       string       // started: "connected" | "reconnecting" (the game stays on screen) | "finished" (session_ended FINISHED: the final view stays until Leave, which closes with the ended outcome; the closing socket is ignored)
 	Outcome          *JoinOutcome // closed
 }
 

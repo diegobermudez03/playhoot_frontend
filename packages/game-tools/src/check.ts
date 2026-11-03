@@ -11,7 +11,7 @@ import { areaOf, type Diagnostic, type SourceArea } from './project.ts';
 const allowedPackages: Record<SourceArea, readonly string[]> = {
   shared: ['@playhoot/game-core'],
   server: ['@playhoot/game-core', '@playhoot/game-server'],
-  client: ['@playhoot/game-core', '@playhoot/game-react', 'react'],
+  client: ['@playhoot/game-core', '@playhoot/game-react', '@playhoot/assets', 'react'],
 };
 
 // Folders each area may import from.

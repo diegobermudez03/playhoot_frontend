@@ -84,8 +84,14 @@ export type JoinView =
   | { phase: 'connecting'; reconnectAttempt: number }
   | { phase: 'lobby'; members: LobbyMember[] }
   // The game is running. While the connection is lost and being re-established the phase stays
-  // `started` (the game is not torn down), with `connection: 'reconnecting'`.
-  | { phase: 'started'; session: StartedSession; connection: 'connected' | 'reconnecting' }
+  // `started` (the game is not torn down), with `connection: 'reconnecting'`. When the game
+  // finishes, it stays `started` with `connection: 'finished'`: the game keeps showing its final
+  // view until the player leaves.
+  | {
+      phase: 'started';
+      session: StartedSession;
+      connection: 'connected' | 'reconnecting' | 'finished';
+    }
   | { phase: 'leaving' }
   | { phase: 'closed'; outcome: JoinOutcome };
 
@@ -312,7 +318,22 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
         });
         return;
       case 'session_ended':
-      case 'lobby_closed':
+      case 'lobby_closed': {
+        const current = store.getState().view;
+        if (
+          message.type === 'session_ended' &&
+          message.status === 'FINISHED' &&
+          current.phase === 'started'
+        ) {
+          finishedOutcome = {
+            kind: 'ended',
+            status: message.status,
+            endCause: message.end_cause,
+            beforeStart: false,
+          };
+          setView({ ...current, connection: 'finished' });
+          return;
+        }
         setView({
           phase: 'closed',
           outcome: {
@@ -323,6 +344,7 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
           },
         });
         return;
+      }
       case 'roster_update': {
         const view = store.getState().view;
         if (view.phase !== 'started') return;
@@ -348,11 +370,15 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
 
   // What leaving ends in: a plain leave, or one forced by a stopped game.
   let leftOutcome: JoinOutcome = { kind: 'left' };
+  // How a finished game ends for the player once they leave its final view.
+  let finishedOutcome: JoinOutcome | null = null;
 
   const onClosed = (kind: ConnectionCloseKind, attempt: number, opened: boolean) => {
     const view = store.getState().view;
-    // A rejection or a terminal message already decided the outcome.
+    // A rejection or a terminal message already decided the outcome; a finished game stays on
+    // its final view until the player leaves.
     if (view.phase === 'closed') return;
+    if (view.phase === 'started' && view.connection === 'finished') return;
     if (view.phase === 'leaving') {
       setView({ phase: 'closed', outcome: leftOutcome });
       return;
@@ -436,6 +462,12 @@ export function createJoinSession(target: SessionTarget, deps: JoinSessionDeps):
     start: begin,
     retry: begin,
     leave(reason) {
+      const view = store.getState().view;
+      if (view.phase === 'started' && view.connection === 'finished' && finishedOutcome) {
+        dropConnection();
+        setView({ phase: 'closed', outcome: finishedOutcome });
+        return;
+      }
       leftOutcome = reason === 'game-stopped' ? { kind: 'game-stopped' } : { kind: 'left' };
       if (connection && store.getState().view.phase !== 'closed') {
         setView({ phase: 'leaving' });

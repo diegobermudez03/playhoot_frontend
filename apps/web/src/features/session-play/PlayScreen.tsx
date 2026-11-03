@@ -32,6 +32,8 @@ export interface PlayScreenProps {
   initialRosterOpen?: boolean;
   game: GameHostStatus;
   reconnecting: boolean;
+  // The game finished: its final view stays on screen until the player leaves.
+  finished?: boolean;
   // The device is held the other way from the game (plan §8): a dismissable hint to turn it.
   suggestRotation?: boolean;
   // Where the game's isolated container goes.
@@ -52,6 +54,7 @@ export function PlayScreen({
   initialRosterOpen = false,
   game,
   reconnecting,
+  finished = false,
   suggestRotation = false,
   frameRef,
   onRetry,
@@ -127,6 +130,16 @@ export function PlayScreen({
                 <FormattedMessage id="lobby.leave" />
               </Button>
             </div>
+          </div>
+        )}
+        {finished && !failed && (
+          <div className={`${styles.banner} ${styles.finished}`} role="status" aria-live="polite">
+            <span>
+              <FormattedMessage id="play.finished" />
+            </span>
+            <Button variant="ghost" onClick={onLeave} sound="leave">
+              <FormattedMessage id="play.finished.leave" />
+            </Button>
           </div>
         )}
         {reconnecting && !failed && (

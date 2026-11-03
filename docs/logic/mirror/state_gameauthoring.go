@@ -170,6 +170,13 @@ type GameCard struct {
 	PublishedAt       *string
 	Editing           bool // an edition is open: the draft can change
 	Publishing        bool // a publication is under way
+	Live              *LivePublication
+}
+
+// LivePublication is the publication players get: the latest completed release.
+type LivePublication struct {
+	ReleaseSequence, Revision int
+	VersionUUID, PublishedAt  string
 }
 
 // CardImage is one card image; URL is a signed read valid a few minutes.

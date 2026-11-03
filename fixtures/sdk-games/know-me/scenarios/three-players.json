@@ -1,0 +1,24 @@
+{
+  "format": "playhoot.scenario.v1",
+  "players": 3,
+  "seed": 1,
+  "duration_ms": 100000,
+  "steps": [
+    {
+      "at_ms": 1000,
+      "player": "P1",
+      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+    },
+    {
+      "at_ms": 1100,
+      "player": "P2",
+      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+    },
+    {
+      "at_ms": 1200,
+      "player": "P3",
+      "command": { "name": "answer", "payload": { "option": 0, "phase": 1 } }
+    }
+  ],
+  "observe_at_ms": [1150, 1300, 100000]
+}

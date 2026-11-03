@@ -309,7 +309,44 @@ describe('createGamesClient', () => {
     );
     expect(await card.games.readCard('g-1')).toMatchObject({
       ok: true,
-      value: { name: 'Tap Race', logo: { uuid: 'l-1', url: 'https://s/l' }, publishedAt: null },
+      value: {
+        name: 'Tap Race',
+        logo: { uuid: 'l-1', url: 'https://s/l' },
+        publishedAt: null,
+        live: null,
+      },
+    });
+
+    const live = gamesWith(() =>
+      json(200, {
+        game_uuid: 'g-1',
+        name: 'Tap Race',
+        description: '',
+        logo: null,
+        photos: [],
+        visibility: 'public',
+        published: true,
+        published_at: '2026-11-03T10:00:00Z',
+        editing: false,
+        publishing: false,
+        live: {
+          release_sequence: 2,
+          revision: 7,
+          version_uuid: 'v-7',
+          published_at: '2026-11-03T10:00:00Z',
+        },
+      }),
+    );
+    expect(await live.games.readCard('g-1')).toMatchObject({
+      ok: true,
+      value: {
+        live: {
+          releaseSequence: 2,
+          revision: 7,
+          versionUUID: 'v-7',
+          publishedAt: '2026-11-03T10:00:00Z',
+        },
+      },
     });
 
     const patched = gamesWith(() => json(200, { outcome: 'done' }));

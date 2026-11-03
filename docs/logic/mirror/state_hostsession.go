@@ -23,7 +23,7 @@ type HostView struct {
 	StartError             string        // lobby: invalid_player_count | game_unavailable | start_failed | sandbox_unavailable | not_in_lobby | unavailable
 	Participants           []struct{ ParticipantID, UserUUID, DisplayName string }
 	Watching               string // started: the participant whose view the admin gets
-	Connection             string // started: "connected" | "reconnecting"
+	Connection             string // started: "connected" | "reconnecting" | "finished"
 	Outcome                string // closed: ended (status, end cause) | rejected (reason) | unreachable | connection-lost | protocol-error
 }
 
@@ -39,7 +39,10 @@ func NewHostSession(sessionUUID, joinCode string) *HostSession { return &HostSes
 //	                    else the first) unless Playing or WatchBlocked
 //	player_view      -> the watched player's state, reconciled like a player's (patches, revision
 //	                    gaps -> resync); handed to the GameHost read only
-//	session_ended / lobby_closed -> View = closed (ended, status, end cause)
+//	session_ended FINISHED while started -> View stays started, Connection = "finished": the
+//	                    game keeps its final view (with "El juego terminó. Así quedó. · Salir")
+//	                    until DismissFinished
+//	session_ended / lobby_closed (any other end) -> View = closed (ended, status, end cause)
 //	rejected         -> View = closed (rejected, reason)
 //
 // Connection closed:
@@ -81,8 +84,11 @@ func (h *HostSession) JoinAndStart() {}
 func (h *HostSession) PlayerInLobby() {}
 
 // StopPlaying: the creator's player part ended (a leave, a refusal, a failure); back to the admin
-// screens, and a pending "join and start" is dropped.
+// screens, and a pending "join and start" is dropped. Leaving a finished game also dismisses it.
 func (h *HostSession) StopPlaying() {}
+
+// DismissFinished: "Salir" on a finished game's final view -> View = closed (ended, FINISHED).
+func (h *HostSession) DismissFinished() {}
 
 // Retry: "Intentar de nuevo" on the outcome screen.
 func (h *HostSession) Retry() {}

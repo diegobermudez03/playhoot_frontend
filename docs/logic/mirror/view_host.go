@@ -61,6 +61,11 @@ func HostView(sessionUUID string, joinCode string) {
 		//       same player limits as "Iniciar partida".
 		// When: "Cancelar partida" then "Sí, cancelar" (asks once more).
 		host.Cancel()
+	case host.State.View.Phase == "started" && host.State.View.Connection == "finished":
+		// The watched game's final view, under "El juego terminó. Así quedó." and "Salir"; no
+		// perspectives, no cancel.
+		// When: "Salir".
+		host.DismissFinished()
 	case host.State.View.Phase == "started":
 		// "Viendo a" + one button per participant (unless WatchBlocked: then only a note that a
 		// creator who plays cannot watch the others), the watched player's game read only, and

@@ -129,6 +129,8 @@ export const ptBR: Messages = {
 
   'play.seat': 'Jogador {seat} de {total}',
   'play.reconnecting': 'A conexão caiu. Reconectando…',
+  'play.finished': 'O jogo acabou. Assim terminou.',
+  'play.finished.leave': 'Sair',
   'play.rotate.hint': 'Gire o aparelho para ver o jogo maior',
   'play.rotate.dismiss': 'Entendi',
   'play.leave': 'Sair',
@@ -281,6 +283,7 @@ export const ptBR: Messages = {
   'publish.underWay': 'Ficou uma publicação pela metade: publique de novo para concluí-la.',
   'publish.editionNote': 'A versão publicada continua ativa até você publicar esta.',
   'publish.published': 'Publicado em {when} como {visibility}.',
+  'publish.live': 'Versão publicada: revisão {revision} (publicação #{sequence}).',
   'publish.done': 'Pronto: você publicou a revisão {revision}.',
   'publish.createSession': 'Criar uma partida deste jogo',
   'publish.newVersion.intro':

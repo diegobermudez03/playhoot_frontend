@@ -2,7 +2,7 @@
 
 Status: ACCEPTED
 Created: 2026-10-20
-Last status change: 2026-10-20 (amended 2026-10-21: run-time transport selection)
+Last status change: 2026-10-20 (amended 2026-10-21: run-time transport selection; 2026-11-02: bridge v2, presentation context)
 Supersedes: None
 Superseded by: None
 
@@ -79,3 +79,10 @@ Smaller messages but every game would reimplement patch merging, which the plan 
 ## Implementation Impact
 
 Accepted by the human on 2026-10-20 (every name approved). Implemented 2026-10-20: `@playhoot/protocol/bridge` (+ `/validation`), `@playhoot/game-host` (`startGameHost`, `createArtifactLoader`), `@playhoot/game-sdk` (`createPlayhoot`), the web iframe container and artifact cache (`apps/web/src/platform`), the Space Drift fixture (`fixtures/games/space-drift`) and the development lab `/dev/game-host`.
+
+## Amendment (2026-11-02): bridge v2, the presentation context
+
+Approved by the human with the SDK's delivery 1 (plan 03 §10 "Contexto de presentación"; game-creation-web-v1 CHECKLIST C). The iframe keeps its fixed logical size and the Host scales it, so a game cannot know on its own how big it really shows. **Bridge version 2** adds a `Presentation` (`@playhoot/protocol/bridge`): the fit `scale`, the game's on-screen `width`/`height` in CSS pixels, `pixelRatio`, the `safeArea` the device covers (in logical pixels), a `density` (`compact` < 480 CSS px on the short side, `regular` < 900, else `spacious`), the main `pointer` (`coarse`/`fine`), `reducedMotion` and `highContrast`. `start` carries it, and a new host -> game message `presentation` carries every change (resize, rotation, preference). The platform container measures it (`GameContainer.open` handler `onPresentation`; the web iframe container computes it with `presentationFor` from the fit, `env(safe-area-inset-*)` and media queries).
+
+Version 1 stays as released: a game whose `ready` offers only `[1]` negotiates v1 and never receives `presentation` or the field. The Game SDK now offers `[1, 2]` and exposes `presentation()` / `onPresentation()`; `@playhoot/game-react` turns it into `usePresentation()` and the legibility and target tokens of `Screen`.
+

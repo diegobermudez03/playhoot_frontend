@@ -141,7 +141,7 @@ func WorkspaceOnCopyScenarioResult(runner *ScenarioRunner) {}
 
 // PublishSection is "Ficha y publicación" (section publish): its state lives as long as the workspace.
 func PublishSection(gameUUID string) {
-	card, failure := ReadCard(gameUUID) // shows the card form, logo, photos and the publication
+	card, failure := ReadCard(gameUUID) // shows the card form, logo, photos and the publication (card.Live: "Versión publicada: revisión N (publicación #S)")
 	_ = failure
 	// WHEN "Guardar ficha": UpdateCard with the changed fields, then ReadCard.
 	// WHEN a logo or photo is picked: UploadLogo / UploadPhoto (one key per picked file), then ReadCard.

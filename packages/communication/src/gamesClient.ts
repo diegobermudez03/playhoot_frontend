@@ -214,6 +214,15 @@ export interface GameCard {
   editing: boolean;
   // A publication is under way (it completes on the next publish or edit).
   publishing: boolean;
+  // The publication players get, null before the first.
+  live: LivePublication | null;
+}
+
+export interface LivePublication {
+  releaseSequence: number;
+  revision: number;
+  versionUUID: string;
+  publishedAt: string;
 }
 
 export interface Publication {
@@ -657,6 +666,14 @@ function cardOf(body: GameCardResponse): GameCard {
     publishedAt: body.published_at ?? null,
     editing: body.editing,
     publishing: body.publishing,
+    live: body.live
+      ? {
+          releaseSequence: body.live.release_sequence,
+          revision: body.live.revision,
+          versionUUID: body.live.version_uuid,
+          publishedAt: body.live.published_at,
+        }
+      : null,
   };
 }
 

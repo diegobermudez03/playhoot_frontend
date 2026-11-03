@@ -7,6 +7,7 @@ import { join } from 'node:path';
 
 import { checkSource } from './check.ts';
 import { buildClient } from './client.ts';
+import { inputRequirements, type InputRequirements } from './inputs.ts';
 import { loadProject, ProjectError, type Diagnostic, type Project } from './project.ts';
 import { buildServer, smokeTest } from './server.ts';
 import { typecheck } from './typecheck.ts';
@@ -29,6 +30,8 @@ export interface BuildRecord {
   aspectRatio: string;
   server: Artifact;
   client: Artifact;
+  // What the client asks of the device, read from its sources.
+  inputRequirements: InputRequirements;
 }
 
 export type BuildResult =
@@ -51,8 +54,11 @@ export async function build(root: string): Promise<BuildResult> {
   }
 
   const sourceDiagnostics: Diagnostic[] = [];
+  const clientSources: { file: string; text: string }[] = [];
   for (const file of project.files) {
-    sourceDiagnostics.push(...checkSource(file, await readFile(join(root, file), 'utf8')));
+    const text = await readFile(join(root, file), 'utf8');
+    sourceDiagnostics.push(...checkSource(file, text));
+    if (file.startsWith('client/')) clientSources.push({ file, text });
   }
   const diagnostics = [...sourceDiagnostics, ...typecheck(project)];
   if (diagnostics.length > 0) return { ok: false, diagnostics };
@@ -79,6 +85,7 @@ export async function build(root: string): Promise<BuildResult> {
       aspectRatio: project.aspectRatio,
       server: artifact(server.script),
       client: artifact(client),
+      inputRequirements: inputRequirements(clientSources),
     },
   };
 }

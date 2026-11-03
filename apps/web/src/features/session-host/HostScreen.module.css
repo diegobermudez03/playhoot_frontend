@@ -283,3 +283,14 @@
   border-radius: var(--radius-md);
   text-align: center;
 }
+
+/* A finished game watched by the creator: its final view stays under this banner. */
+.finished {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-success);
+  border-radius: var(--radius-md);
+}

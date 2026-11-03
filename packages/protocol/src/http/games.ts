@@ -329,6 +329,15 @@ export const gameCardSchema = z.object({
   // Whether an edition is open (its draft can change) and whether a publication is under way.
   editing: z.boolean(),
   publishing: z.boolean(),
+  // The publication players get: the latest completed release; null before the first.
+  live: z
+    .object({
+      release_sequence: z.number(),
+      revision: z.number(),
+      version_uuid: z.string(),
+      published_at: z.string(),
+    })
+    .nullish(),
 });
 
 export interface UpdateCardRequest {

@@ -2,4 +2,5 @@
 export * from './artifact';
 export * from './assets';
 export * from './gameHost';
+export * from './presentation';
 export * from './viewport';

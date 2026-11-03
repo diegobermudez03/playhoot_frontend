@@ -14,9 +14,23 @@ export const clientEntry = 'client/Game.tsx';
 export const sourceAreas = ['shared', 'server', 'client'] as const;
 export type SourceArea = (typeof sourceAreas)[number];
 
+// The asset types the backend stores (gameversion in ../playhoot) and the key pattern it accepts.
+export const assetTypes = ['image', 'audio', 'video'] as const;
+export type AssetType = (typeof assetTypes)[number];
+const assetKeyPattern = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
+const maxAssetDescriptionLength = 300;
+
+// One asset game.project.json declares; the client reaches it through `@playhoot/assets`.
+export interface DeclaredAsset {
+  type: AssetType;
+  optional: boolean;
+}
+
 export interface Project {
   root: string;
   aspectRatio: AspectRatio;
+  // Declared assets by key, in key order.
+  assets: Record<string, DeclaredAsset>;
   // Source files relative to root, with forward slashes.
   files: string[];
 }
@@ -60,6 +74,8 @@ export async function loadProject(root: string): Promise<Project> {
     problem(`"aspectRatio" must be one of ${aspectRatios.join(', ')}`);
   }
 
+  const assets = declaredAssets(declared.assets, problem);
+
   const files: string[] = [];
   for (const area of sourceAreas) {
     for (const file of await listFiles(join(root, area))) {
@@ -75,8 +91,63 @@ export async function loadProject(root: string): Promise<Project> {
   return {
     root,
     aspectRatio: aspectRatio as AspectRatio,
+    assets,
     files: files.sort(),
   };
+}
+
+// The "assets" declaration, checked with the backend's rules (draftsources in ../playhoot).
+function declaredAssets(
+  declared: unknown,
+  problem: (message: string) => void,
+): Record<string, DeclaredAsset> {
+  const assets: Record<string, DeclaredAsset> = {};
+  if (declared === undefined) return assets;
+  if (typeof declared !== 'object' || declared === null || Array.isArray(declared)) {
+    problem('"assets" is an object of asset keys');
+    return assets;
+  }
+  for (const key of Object.keys(declared).sort()) {
+    const asset = (declared as Record<string, unknown>)[key];
+    if (!assetKeyPattern.test(key)) {
+      problem(
+        `asset "${key}": keys start with a letter and hold up to 64 letters, digits or underscores`,
+      );
+      continue;
+    }
+    if (typeof asset !== 'object' || asset === null || Array.isArray(asset)) {
+      problem(`asset "${key}": each asset is an object {"type", "description", "optional"}`);
+      continue;
+    }
+    const { type, description, optional } = asset as Record<string, unknown>;
+    if (!(assetTypes as readonly unknown[]).includes(type)) {
+      problem(`asset "${key}": "type" is image, audio or video`);
+      continue;
+    }
+    const text = typeof description === 'string' ? description.trim() : '';
+    if (text === '' || text.length > maxAssetDescriptionLength) {
+      problem(
+        `asset "${key}": "description" says what to upload, in 1 to ${maxAssetDescriptionLength} characters`,
+      );
+      continue;
+    }
+    if (optional !== undefined && typeof optional !== 'boolean') {
+      problem(`asset "${key}": "optional" is true or false`);
+      continue;
+    }
+    assets[key] = { type: type as AssetType, optional: optional === true };
+  }
+  return assets;
+}
+
+// The module `@playhoot/assets` the client imports: one handle per declared asset. typed says
+// whether it is the type-checked TypeScript or the bundled JavaScript.
+export function assetsModule(project: Project, typed: boolean): string {
+  const handles: Record<string, { key: string; type: AssetType; optional: boolean }> = {};
+  for (const [key, asset] of Object.entries(project.assets)) {
+    handles[key] = { key, type: asset.type, optional: asset.optional };
+  }
+  return `export const assets = ${JSON.stringify(handles)}${typed ? ' as const' : ''};\n`;
 }
 
 async function listFiles(directory: string): Promise<string[]> {

@@ -1,4 +1,11 @@
-import { fitGameViewport, type GameContainer, type GameViewport } from '@playhoot/game-host';
+import {
+  fitGameViewport,
+  presentationFor,
+  samePresentation,
+  type GameContainer,
+  type GameViewport,
+} from '@playhoot/game-host';
+import type { Presentation } from '@playhoot/protocol/bridge';
 
 // What the game document may do (plan §16): run its own inline/blob scripts and styles, and use
 // images, media and fonts it was handed as blob/data URLs (assets come through the Host). No
@@ -78,8 +85,39 @@ export function createIframeGameContainer(parent: HTMLElement, title: string): G
       iframe.style.cssText =
         `position:absolute;left:0;top:0;width:${viewport.width}px;height:${viewport.height}px;` +
         'border:0;transform-origin:0 0';
-      const place = () => placeIframe(iframe, stage, viewport);
+      // How the game is shown, told to the Host whenever it changes (bridge v2 games get it).
+      let presented: Presentation | null = null;
+      const media = [
+        '(any-pointer: coarse)',
+        '(prefers-reduced-motion: reduce)',
+        '(prefers-contrast: more)',
+      ].map((query) => window.matchMedia(query));
+      const present = () => {
+        const fit = placeIframe(iframe, stage, viewport);
+        const box = stage.getBoundingClientRect();
+        const next = presentationFor({
+          viewport,
+          fit,
+          gameRect: {
+            left: box.left + fit.left,
+            top: box.top + fit.top,
+            width: fit.width,
+            height: fit.height,
+          },
+          window: { width: window.innerWidth, height: window.innerHeight },
+          safeInsets: safeAreaInsets(stage),
+          pixelRatio: window.devicePixelRatio || 1,
+          coarsePointer: media[0]?.matches ?? false,
+          reducedMotion: media[1]?.matches ?? false,
+          highContrast: media[2]?.matches ?? false,
+        });
+        if (samePresentation(presented, next)) return;
+        presented = next;
+        handlers.onPresentation?.(next);
+      };
+      const place = present;
       const resizes = new ResizeObserver(place);
+      media.forEach((query) => query.addEventListener('change', present));
 
       // Messages count only when they come from this iframe's window (its origin is "null").
       const onMessage = (event: MessageEvent) => {
@@ -112,6 +150,7 @@ export function createIframeGameContainer(parent: HTMLElement, title: string): G
         },
         dispose() {
           resizes.disconnect();
+          media.forEach((query) => query.removeEventListener('change', present));
           window.removeEventListener('message', onMessage);
           iframe.removeEventListener('load', onLoad);
           stage.remove();
@@ -141,4 +180,24 @@ function prepareGameDocument(html: string): string {
 function placeIframe(iframe: HTMLIFrameElement, stage: HTMLElement, viewport: GameViewport) {
   const fit = fitGameViewport({ width: stage.clientWidth, height: stage.clientHeight }, viewport);
   iframe.style.transform = `translate(${fit.left}px, ${fit.top}px) scale(${fit.scale})`;
+  return fit;
+}
+
+// The window edges the device covers (notch, rounded corners), read through CSS env() on a probe.
+function safeAreaInsets(host: HTMLElement) {
+  const probe = document.createElement('div');
+  probe.style.cssText =
+    'position:fixed;visibility:hidden;pointer-events:none;' +
+    'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) ' +
+    'env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+  host.append(probe);
+  const style = getComputedStyle(probe);
+  const insets = {
+    top: parseFloat(style.paddingTop) || 0,
+    right: parseFloat(style.paddingRight) || 0,
+    bottom: parseFloat(style.paddingBottom) || 0,
+    left: parseFloat(style.paddingLeft) || 0,
+  };
+  probe.remove();
+  return insets;
 }

@@ -8,7 +8,9 @@ export const bridgeMarker = 'playhoot.bridge';
 // Bridge versions this code speaks, newest last. A game announces the versions its SDK speaks in
 // `ready`; the Host picks the newest both speak. A version is never changed once released: a
 // change is a new version, so old GameVersion artifacts stay interpretable.
-export const bridgeVersions = [1] as const;
+// Version 2 (ADR-0005 amendment, 2026-11-02) adds the presentation context: `start` carries it and
+// `presentation` updates it. Version 1 games never receive either.
+export const bridgeVersions = [1, 2] as const;
 export type BridgeVersion = (typeof bridgeVersions)[number];
 
 // Limits the Host enforces on game -> host messages (the SDK respects them too).
@@ -98,6 +100,29 @@ export interface GameContext {
   locale: string;
 }
 
+// How the game is shown on this device (bridge v2). The game always draws in its fixed logical
+// viewport; this says what that becomes on the screen, so text and targets can stay legible.
+export interface Presentation {
+  // CSS pixels of the device per logical pixel of the game (the Host's fit scale).
+  scale: number;
+  // The game's size on the screen, in CSS pixels.
+  width: number;
+  height: number;
+  // Device pixels per CSS pixel.
+  pixelRatio: number;
+  // The part of each edge the device covers (notch, rounded corners), in logical pixels.
+  safeArea: { top: number; right: number; bottom: number; left: number };
+  // How much room the game really has: compact on a phone, spacious on a large screen.
+  density: PresentationDensity;
+  // The main pointer: coarse for touch, fine for a mouse.
+  pointer: 'coarse' | 'fine';
+  reducedMotion: boolean;
+  highContrast: boolean;
+}
+
+export const presentationDensities = ['compact', 'regular', 'spacious'] as const;
+export type PresentationDensity = (typeof presentationDensities)[number];
+
 // The player's view of the game: the backend's PlayerProjection with patches already applied.
 export interface Projection {
   state: unknown;
@@ -115,6 +140,15 @@ export interface StartMessage {
   version: BridgeVersion;
   context: GameContext;
   projection: Projection | null;
+  // Bridge v2 only.
+  presentation?: Presentation;
+}
+
+// The presentation changed (a resize, a rotation, a preference). Bridge v2 only.
+export interface PresentationMessage {
+  bridge: typeof bridgeMarker;
+  type: 'presentation';
+  presentation: Presentation;
 }
 
 // What the backend produced for this player since the last update. `projection` is absent when
@@ -165,7 +199,12 @@ export interface IncompatibleMessage {
 }
 
 export type HostToGameMessage =
-  StartMessage | UpdateMessage | CommandResultMessage | AssetMessage | IncompatibleMessage;
+  | StartMessage
+  | UpdateMessage
+  | CommandResultMessage
+  | AssetMessage
+  | IncompatibleMessage
+  | PresentationMessage;
 
 // Chooses the newest bridge version both sides speak, or null.
 export function negotiateBridgeVersion(offered: readonly number[]): BridgeVersion | null {
@@ -183,4 +222,11 @@ export function isBridgeMessage(value: unknown): value is { bridge: string; type
     (value as { bridge?: unknown }).bridge === bridgeMarker &&
     typeof (value as { type?: unknown }).type === 'string'
   );
+}
+
+// The density of a game shown with `shortSide` CSS pixels on its short side.
+export function densityFor(shortSide: number): PresentationDensity {
+  if (shortSide < 480) return 'compact';
+  if (shortSide < 900) return 'regular';
+  return 'spacious';
 }

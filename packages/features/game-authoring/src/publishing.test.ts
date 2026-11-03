@@ -14,6 +14,7 @@ const card: GameCard = {
   publishedAt: null,
   editing: true,
   publishing: false,
+  live: null,
 };
 
 const publication = {

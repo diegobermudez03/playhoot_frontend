@@ -83,6 +83,7 @@ function Screen({
       players={players}
       game={game}
       reconnecting={view.connection === 'reconnecting'}
+      finished={view.connection === 'finished'}
       suggestRotation={suggestRotation}
       {...(frameRef && { frameRef })}
       onRetry={onRetry}

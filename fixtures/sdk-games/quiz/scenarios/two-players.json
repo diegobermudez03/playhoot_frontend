@@ -1,0 +1,39 @@
+{
+  "format": "playhoot.scenario.v1",
+  "players": 2,
+  "seed": 1,
+  "duration_ms": 40000,
+  "steps": [
+    {
+      "at_ms": 1000,
+      "player": "P1",
+      "command": { "name": "answer", "payload": { "option": 1, "phase": 1 } }
+    },
+    {
+      "at_ms": 1500,
+      "player": "P2",
+      "command": { "name": "answer", "payload": { "option": 0, "phase": 1 } }
+    },
+    {
+      "at_ms": 2000,
+      "player": "P2",
+      "command": { "name": "answer", "payload": { "option": 1, "phase": 2 } }
+    },
+    {
+      "at_ms": 7000,
+      "player": "P1",
+      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+    },
+    {
+      "at_ms": 32000,
+      "player": "P1",
+      "command": { "name": "answer", "payload": { "option": 1, "phase": 5 } }
+    },
+    {
+      "at_ms": 32100,
+      "player": "P2",
+      "command": { "name": "answer", "payload": { "option": 1, "phase": 5 } }
+    }
+  ],
+  "observe_at_ms": [1200, 2000, 40000]
+}

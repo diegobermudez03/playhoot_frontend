@@ -412,7 +412,9 @@ function HostBar({ host, state }: { host: HostSession; state: HostSessionState }
           <FormattedMessage id="host.start" />
         </Button>
       )}
-      <CancelControl host={host} cancelling={state.cancelling} />
+      {!(view.phase === 'started' && view.connection === 'finished') && (
+        <CancelControl host={host} cancelling={state.cancelling} />
+      )}
       {view.phase === 'lobby' && view.startError && (
         <span className={styles.error} role="alert">
           <FormattedMessage id={`host.startError.${view.startError}`} />
@@ -432,6 +434,24 @@ function StartedStep({
   view: Extract<HostView, { phase: 'started' }>;
 }) {
   const intl = useIntl();
+  // A finished game: its final view stays, without perspectives or cancel, until the creator leaves.
+  if (view.connection === 'finished') {
+    return (
+      <div className={styles.watch}>
+        <div className={styles.finished} role="status" aria-live="polite">
+          <span>
+            <FormattedMessage id="play.finished" />
+          </span>
+          <Button variant="ghost" onClick={host.dismissFinished} sound="leave">
+            <FormattedMessage id="play.finished.leave" />
+          </Button>
+        </div>
+        {!state.watchBlocked && view.watching && (
+          <HostGameView session={view.session} watching={view.watching} live={host.live} />
+        )}
+      </div>
+    );
+  }
   return (
     <div className={styles.watch}>
       {view.connection === 'reconnecting' && (

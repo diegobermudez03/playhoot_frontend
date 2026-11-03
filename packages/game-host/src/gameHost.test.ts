@@ -5,7 +5,7 @@ import type {
   ViewUpdate,
 } from '@playhoot/communication';
 import { createPlayhoot, type Playhoot } from '@playhoot/game-sdk';
-import type { HostToGameMessage } from '@playhoot/protocol/bridge';
+import type { HostToGameMessage, Presentation } from '@playhoot/protocol/bridge';
 import { describe, expect, it } from 'vitest';
 
 import { createArtifactLoader, createMemoryArtifactCache, sha256Hex } from './artifact';
@@ -77,6 +77,7 @@ function sdkContainer() {
   let game: Playhoot | null = null;
   let toHost: ((raw: unknown) => void) | null = null;
   let violation: ((detail: string) => void) | null = null;
+  let present: ((presentation: Presentation) => void) | null = null;
   let disposed = false;
   let openedWith: string | null = null;
   let openedAt: GameViewport | null = null;
@@ -86,6 +87,7 @@ function sdkContainer() {
       openedAt = viewport;
       toHost = handlers.onMessage;
       violation = handlers.onViolation;
+      present = handlers.onPresentation ?? null;
       game = createPlayhoot({
         post: (message) => queueMicrotask(() => toHost?.(structuredClone(message))),
         listen(handler) {
@@ -111,6 +113,7 @@ function sdkContainer() {
     },
     postRaw: (raw: unknown) => toHost?.(raw),
     violate: (detail: string) => violation?.(detail),
+    present: (presentation: Presentation) => present?.(presentation),
     get disposed() {
       return disposed;
     },
@@ -179,7 +182,50 @@ describe('startGameHost', () => {
     await flush();
     expect(context).toEqual({ participantId: 'p1', participants: ['p1', 'p2'], locale: 'es' });
     expect(projections).toEqual([{ state: { x: 1 }, full: true, ack: 0 }]);
-    expect(host.status).toEqual({ phase: 'running', version: 1 });
+    expect(host.status).toEqual({ phase: 'running', version: 2 });
+  });
+
+  it('gives a bridge v2 game its presentation at start and on every change', async () => {
+    const { box } = await setup();
+    const phone: Presentation = {
+      scale: 0.2,
+      width: 384,
+      height: 216,
+      pixelRatio: 3,
+      safeArea: { top: 0, right: 0, bottom: 0, left: 0 },
+      density: 'compact',
+      pointer: 'coarse',
+      reducedMotion: false,
+      highContrast: false,
+    };
+    box.present(phone);
+    const seen: Presentation[] = [];
+    box.game().onPresentation((presentation) => seen.push(presentation));
+    await box.game().ready();
+    expect(box.game().presentation()).toEqual(phone);
+
+    box.present({ ...phone, density: 'regular', reducedMotion: true });
+    await flush();
+    expect(seen.at(-1)).toMatchObject({ density: 'regular', reducedMotion: true });
+  });
+
+  it('never sends a presentation to a bridge v1 game', async () => {
+    const { box } = await setup();
+    box.postRaw({ bridge: 'playhoot.bridge', type: 'ready', versions: [1] });
+    box.present({
+      scale: 1,
+      width: 1920,
+      height: 1080,
+      pixelRatio: 1,
+      safeArea: { top: 0, right: 0, bottom: 0, left: 0 },
+      density: 'spacious',
+      pointer: 'fine',
+      reducedMotion: false,
+      highContrast: false,
+    });
+    await flush();
+    expect(box.sentToGame.map((message) => message.type)).toEqual(['start']);
+    expect(box.sentToGame[0]).not.toHaveProperty('presentation');
   });
 
   it('starts without a projection when the Session has none yet', async () => {
@@ -360,7 +406,7 @@ describe('startGameHost', () => {
       error: { kind: 'unsupported-bridge-version', offered: [99] },
     });
     expect(box.sentToGame).toEqual([
-      { bridge: 'playhoot.bridge', type: 'incompatible', supported: [1] },
+      { bridge: 'playhoot.bridge', type: 'incompatible', supported: [1, 2] },
     ]);
   });
 

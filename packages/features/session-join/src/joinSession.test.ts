@@ -420,6 +420,21 @@ describe('createJoinSession', () => {
     });
   });
 
+  it('keeps a finished game on its final view until the player leaves', () => {
+    const t = setup();
+    t.join.start();
+    t.last().emit({ type: 'open' });
+    t.last().message(started);
+    t.last().message({ type: 'session_ended', status: 'FINISHED', end_cause: 'GAME_FINISHED' });
+    t.last().emit({ type: 'closed', kind: 'session-ended', code: 1000, reason: 'session_ended' });
+    expect(t.view()).toMatchObject({ phase: 'started', connection: 'finished' });
+    t.join.leave();
+    expect(t.view()).toEqual({
+      phase: 'closed',
+      outcome: { kind: 'ended', status: 'FINISHED', endCause: 'GAME_FINISHED', beforeStart: false },
+    });
+  });
+
   it('leaves through the connection and ends as left', () => {
     const t = setup();
     t.join.start();

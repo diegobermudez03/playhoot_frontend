@@ -101,6 +101,17 @@ describe('assets', () => {
     expect(host.assetRequests()).toHaveLength(2);
   });
 
+  it('tells an asset the version holds no file for apart from other failures', async () => {
+    const host = fakeHost();
+    const assets = host.playhoot.assets({ back: 'image' });
+    const back = host.playhoot.load(assets.back);
+    void host.playhoot.ready();
+    host.start();
+    const [request] = host.assetRequests();
+    host.answer({ type: 'asset', id: request?.id, key: 'back', found: false });
+    await expect(back).rejects.toMatchObject({ code: 'asset_missing' });
+  });
+
   it('keeps at most the Host pending cap in flight while preloading many', async () => {
     vi.stubGlobal('URL', { createObjectURL: () => 'blob:local' });
     const host = fakeHost();
@@ -148,7 +159,7 @@ describe('detectTransport', () => {
 
     const started = playhoot.ready();
     expect(sent.map((message) => JSON.parse(message) as unknown)).toEqual([
-      { bridge: bridgeMarker, type: 'ready', versions: [1] },
+      { bridge: bridgeMarker, type: 'ready', versions: [1, 2] },
     ]);
 
     // Android dispatches on `document`; anything that is not JSON text is ignored.

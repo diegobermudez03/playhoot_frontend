@@ -143,6 +143,44 @@ describe('createHostSession', () => {
     });
   });
 
+  it('keeps a finished game on screen until the creator leaves it', () => {
+    const t = setup();
+    t.last().message(lobby(2));
+    t.last().message(started);
+    t.last().message({ type: 'session_ended', status: 'FINISHED', end_cause: 'GAME_FINISHED' });
+    expect(t.state().view).toMatchObject({ phase: 'started', connection: 'finished' });
+
+    // The connection ending with the game does not replace the final view.
+    t.last().emit({ type: 'closed', kind: 'session-ended' } as never);
+    expect(t.state().view).toMatchObject({ phase: 'started', connection: 'finished' });
+
+    t.host.dismissFinished();
+    expect(t.state().view).toEqual({
+      phase: 'closed',
+      outcome: { kind: 'ended', status: 'FINISHED', endCause: 'GAME_FINISHED' },
+    });
+  });
+
+  it('dismisses a finished game when the playing creator leaves it', () => {
+    const t = setup();
+    t.last().message(lobby(2));
+    t.host.playToo();
+    t.last().message(started);
+    t.last().message({ type: 'session_ended', status: 'FINISHED', end_cause: 'GAME_FINISHED' });
+    expect(t.state()).toMatchObject({ playing: true, view: { connection: 'finished' } });
+
+    t.host.stopPlaying();
+    expect(t.state()).toMatchObject({ playing: false, view: { phase: 'closed' } });
+  });
+
+  it('closes at once when a game ends any other way', () => {
+    const t = setup();
+    t.last().message(lobby(2));
+    t.last().message(started);
+    t.last().message({ type: 'session_ended', status: 'CANCELLED', end_cause: 'HOST_CANCELLED' });
+    expect(t.state().view).toMatchObject({ phase: 'closed' });
+  });
+
   it('does not watch while the creator plays here, and stops watching when the backend refuses', async () => {
     const t = setup();
     t.last().message(lobby(2));

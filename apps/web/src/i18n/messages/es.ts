@@ -131,6 +131,8 @@ export const es: Messages = {
 
   'play.seat': 'Jugador {seat} de {total}',
   'play.reconnecting': 'Se perdió la conexión. Reconectando…',
+  'play.finished': 'El juego terminó. Así quedó.',
+  'play.finished.leave': 'Salir',
   'play.rotate.hint': 'Gira tu dispositivo para ver el juego más grande',
   'play.rotate.dismiss': 'Entendido',
   'play.leave': 'Salir',
@@ -284,6 +286,7 @@ export const es: Messages = {
   'publish.underWay': 'Hay una publicación a medias: vuelve a publicar para completarla.',
   'publish.editionNote': 'La versión publicada sigue activa hasta que publiques esta.',
   'publish.published': 'Publicado el {when} como {visibility}.',
+  'publish.live': 'Versión publicada: revisión {revision} (publicación #{sequence}).',
   'publish.done': 'Listo: publicaste la revisión {revision}.',
   'publish.createSession': 'Crear una partida de este juego',
   'publish.newVersion.intro':

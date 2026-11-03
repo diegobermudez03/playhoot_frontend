@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
 
-import type { Diagnostic, Project } from './project.ts';
+import { assetsModule, type Diagnostic, type Project } from './project.ts';
 
 // Packages resolve from the toolchain, wherever the project lives.
 const toolchainFile = fileURLToPath(import.meta.url);
@@ -24,10 +24,27 @@ const options: ts.CompilerOptions = {
   types: [],
 };
 
+// Where the generated `@playhoot/assets` module is type-checked from; it exists only in memory.
+const assetsFileName = '__playhoot_assets__.ts';
+
 export function typecheck(project: Project): Diagnostic[] {
   const host = ts.createCompilerHost(options);
+  const assetsFile = join(project.root, assetsFileName).split('\\').join('/');
+  const assetsSource = ts.createSourceFile(
+    assetsFile,
+    assetsModule(project, true),
+    ts.ScriptTarget.ES2022,
+  );
+  const getSourceFile = host.getSourceFile.bind(host);
+  host.getSourceFile = (fileName, ...rest) =>
+    fileName === assetsFile ? assetsSource : getSourceFile(fileName, ...rest);
   host.resolveModuleNameLiterals = (literals, containingFile) =>
     literals.map((literal) => {
+      if (literal.text === '@playhoot/assets') {
+        return {
+          resolvedModule: { resolvedFileName: assetsFile, extension: ts.Extension.Ts },
+        };
+      }
       const from = literal.text.startsWith('.') ? containingFile : toolchainFile;
       return ts.resolveModuleName(literal.text, from, options, host);
     });

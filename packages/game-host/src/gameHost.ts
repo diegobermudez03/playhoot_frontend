@@ -14,6 +14,7 @@ import {
   type GameContext,
   type GameToHostMessage,
   type HostToGameMessage,
+  type Presentation,
 } from '@playhoot/protocol/bridge';
 import { decodeGameMessage } from '@playhoot/protocol/bridge/validation';
 import type { GameFaultKind } from '@playhoot/protocol';
@@ -28,11 +29,16 @@ export interface GameContainer {
   // Starts the artifact in a new isolated container, shown at its fixed logical `viewport` scaled
   // to fit the container's space (plan §8): the game always sees `viewport.width` x `height`.
   // `onMessage` receives whatever the game posts (unvalidated); `onViolation` reports the game
-  // breaking out of its container (e.g. navigating).
+  // breaking out of its container (e.g. navigating); `onPresentation` reports how the game is shown
+  // on the device, at once and whenever that changes (bridge v2).
   open(
     html: string,
     viewport: GameViewport,
-    handlers: { onMessage(raw: unknown): void; onViolation(detail: string): void },
+    handlers: {
+      onMessage(raw: unknown): void;
+      onViolation(detail: string): void;
+      onPresentation?(presentation: Presentation): void;
+    },
   ): OpenContainer;
 }
 
@@ -119,6 +125,8 @@ export function startGameHost(options: GameHostOptions): GameHost {
   const listeners = new Set<(event: GameHostEvent) => void>();
   let status: GameHostStatus = { phase: 'loading' };
   let container: OpenContainer | null = null;
+  // How the container shows the game now; games on bridge v2 get it at start and on every change.
+  let presentation: Presentation | null = null;
   let readyTimer: unknown = null;
   let unsubscribeSession: (() => void) | null = null;
   const acks = createAckTranslator();
@@ -225,6 +233,7 @@ export function startGameHost(options: GameHostOptions): GameHost {
       version,
       context: options.context,
       projection: view ? { state: view.state, full: true, ack: acks.translate(view.ack) } : null,
+      ...(version >= 2 && presentation !== null && { presentation }),
     });
   };
 
@@ -316,6 +325,12 @@ export function startGameHost(options: GameHostOptions): GameHost {
         else onGameMessage(decoded.message, openedAt);
       },
       onViolation: (detail) => fail({ kind: 'container-violation', detail }),
+      onPresentation: (next) => {
+        presentation = next;
+        if (status.phase === 'running' && status.version >= 2) {
+          send({ bridge: bridgeMarker, type: 'presentation', presentation: next });
+        }
+      },
     });
     readyTimer = timers.setTimeout(
       () => fail({ kind: 'ready-timeout' }),

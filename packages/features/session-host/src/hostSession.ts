@@ -72,10 +72,12 @@ export type HostView =
       startError: StartError | null;
     }
   // The game runs. `watching` is the participant whose view the admin gets, null while choosing.
+  // When the game finishes it stays `started` with `connection: 'finished'`: the game keeps
+  // showing its final view until the creator dismisses it (`dismissFinished`).
   | {
       phase: 'started';
       session: HostStartedSession;
-      connection: 'connected' | 'reconnecting';
+      connection: 'connected' | 'reconnecting' | 'finished';
       watching: string | null;
     }
   | { phase: 'closed'; outcome: HostOutcome };
@@ -126,13 +128,18 @@ export interface HostSession {
   // listed there, and starting then would leave the creator out of the game.
   playerInLobby(): void;
   // Their player connection ended (they left, or joining was refused): back to the admin screens,
-  // and a pending "join and start" is dropped.
+  // and a pending "join and start" is dropped. Leaving a finished game also dismisses it.
   stopPlaying(): void;
+  // Leaves a finished game's final view for the Session's ended screen.
+  dismissFinished(): void;
   retry(): void;
   dispose(): void;
 }
 
 export const hostReconnectDelaysMs = [1000, 2000, 4000] as const;
+
+// The Session status of a game its script finished.
+const finishedStatus = 'FINISHED';
 
 // Whether the creator is among the lobby's players (from this page or another device).
 export function hostPlays(view: Extract<HostView, { phase: 'lobby' }>): boolean {
@@ -173,6 +180,8 @@ export function createHostSession(
   let connection: AdminConnection | null = null;
   let cancelReconnect: (() => void) | null = null;
   let disposed = false;
+  // How a finished game ends for the creator once they leave its final view.
+  let finishedOutcome: HostOutcome | null = null;
 
   const setView = (view: HostView) => store.setState({ view });
   const me = () => {
@@ -311,18 +320,33 @@ export function createHostSession(
         return;
       }
       case 'session_ended':
-      case 'lobby_closed':
-        setView({
-          phase: 'closed',
-          outcome: { kind: 'ended', status: message.status, endCause: message.end_cause },
-        });
+      case 'lobby_closed': {
+        const outcome: HostOutcome = {
+          kind: 'ended',
+          status: message.status,
+          endCause: message.end_cause,
+        };
+        const current = store.getState().view;
+        if (
+          message.type === 'session_ended' &&
+          message.status === finishedStatus &&
+          current.phase === 'started'
+        ) {
+          finishedOutcome = outcome;
+          setView({ ...current, connection: 'finished' });
+          return;
+        }
+        setView({ phase: 'closed', outcome });
         return;
+      }
     }
   };
 
   const onClosed = (kind: ConnectionCloseKind, attempt: number, opened: boolean) => {
     const view = store.getState().view;
     if (view.phase === 'closed') return;
+    // A finished game's connection ends with it; its final view stays until dismissed.
+    if (view.phase === 'started' && view.connection === 'finished') return;
     switch (kind) {
       case 'session-ended':
         setView({ phase: 'closed', outcome: { kind: 'ended', status: '', endCause: '' } });
@@ -392,6 +416,13 @@ export function createHostSession(
     setView({ ...after, starting: false, startError });
   };
 
+  const dismissFinished = () => {
+    const view = store.getState().view;
+    if (view.phase !== 'started' || view.connection !== 'finished' || !finishedOutcome) return;
+    dropConnection();
+    setView({ phase: 'closed', outcome: finishedOutcome });
+  };
+
   const live: HostLive = {
     subscribe(listener) {
       liveListeners.add(listener);
@@ -436,7 +467,9 @@ export function createHostSession(
     },
     stopPlaying() {
       store.setState({ playing: false, startWhenJoined: false });
+      dismissFinished();
     },
+    dismissFinished,
     retry: () => connect(0),
     dispose() {
       disposed = true;

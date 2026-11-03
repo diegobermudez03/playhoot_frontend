@@ -305,6 +305,14 @@ function PublicationPanel({
           values={{ when: when(card.publishedAt), visibility: visibilityLabel(card.visibility) }}
         />
       </span>
+      {card.live && (
+        <span data-testid="live-release">
+          <FormattedMessage
+            id="publish.live"
+            values={{ revision: card.live.revision, sequence: card.live.releaseSequence }}
+          />
+        </span>
+      )}
       <div className={styles.rowActions}>
         <Link to={newSessionPathFor(card.gameUUID)}>
           <FormattedMessage id="publish.createSession" />

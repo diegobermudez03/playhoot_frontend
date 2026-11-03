@@ -16,6 +16,8 @@ Steps, stopping at the first that fails with diagnostics (stage, file, line):
 4. bundles (rolldown): `server.js`, one flat classic script with generated entrypoints and `__playhoot_module_values()`, and `client.html`, one self-contained page;
 5. a smoke run of `start` and `project` with the minimum players.
 
+`game.project.json`'s `"assets"` (checked with the backend's rules) becomes the module `@playhoot/assets` the client imports: one handle per key, generated for the bundle and, in memory, for the type check, so an undeclared key is a type error.
+
 Outputs `server.js`, `client.html`, `manifest.json` (derived from the definition) and `build.json` (profile, aspect ratio, hashes). The backend's scriptcheck profile `sdk-v1` checks `server.js` again and decides.
 
 SDK packages always resolve from the toolchain, wherever the project lives.

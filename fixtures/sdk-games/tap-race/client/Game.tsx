@@ -1,4 +1,4 @@
-import { useCommand, usePlayer, useView } from '@playhoot/game-react';
+import { Button, Screen, Stack, Text, useCommand, usePlayer, useView } from '@playhoot/game-react';
 
 import { commands, type View } from '../shared/actions';
 
@@ -8,51 +8,26 @@ export default function Game() {
   const tap = useCommand(commands.tap);
   if (view === null) return null;
 
-  const mine = view.taps[view.me] ?? 0;
   const done = view.winner !== null;
   return (
-    <div style={styles.screen}>
-      <div style={styles.header}>
-        <span>Goal: {view.goal}</span>
-        <span>{done ? 'Finished' : `${view.secondsLeft}s`}</span>
-      </div>
-      <button style={styles.button} disabled={done} onClick={() => void tap()}>
-        {done ? (view.winner === view.me ? 'You win!' : 'Game over') : mine}
-      </button>
-      <ol style={styles.board}>
-        {players.map((player) => (
-          <li key={player} style={player === view.me ? styles.me : undefined}>
-            {player === view.me ? 'You' : player}: {view.taps[player] ?? 0}
-            {view.winner === player ? ' 🏆' : ''}
-          </li>
-        ))}
-      </ol>
-    </div>
+    <Screen theme={{ background: '#14213d', accent: '#fca311' }}>
+      <Stack direction="row" justify="between">
+        <Text>Goal: {view.goal}</Text>
+        <Text>{done ? 'Finished' : `${view.secondsLeft}s`}</Text>
+      </Stack>
+      <Stack direction="row" grow>
+        <Button onPress={tap} disabled={done} style={{ flex: 2, fontSize: '15vmin' }}>
+          {done ? (view.winner === view.me ? 'You win!' : 'Game over') : (view.taps[view.me] ?? 0)}
+        </Button>
+        <Stack gap="sm" style={{ flex: 1 }}>
+          {players.map((player) => (
+            <Text key={player} tone={player === view.me ? 'accent' : undefined}>
+              {player === view.me ? 'You' : player}: {view.taps[player] ?? 0}
+              {view.winner === player ? ' 🏆' : ''}
+            </Text>
+          ))}
+        </Stack>
+      </Stack>
+    </Screen>
   );
 }
-
-const styles = {
-  screen: {
-    height: '100%',
-    display: 'grid',
-    gridTemplateColumns: '2fr 1fr',
-    gridTemplateRows: 'auto 1fr',
-    gap: 48,
-    padding: 64,
-    boxSizing: 'border-box',
-    background: '#14213d',
-    color: '#fff',
-    font: '600 48px system-ui, sans-serif',
-  },
-  header: { gridColumn: '1 / 3', display: 'flex', justifyContent: 'space-between' },
-  button: {
-    borderRadius: 48,
-    border: 'none',
-    background: '#fca311',
-    color: '#14213d',
-    font: '800 160px system-ui, sans-serif',
-    cursor: 'pointer',
-  },
-  board: { margin: 0, display: 'flex', flexDirection: 'column', gap: 24 },
-  me: { color: '#fca311' },
-} as const;

@@ -57,5 +57,9 @@ describe('checkSource', () => {
     expect(
       messages('client/Game.tsx', `let free = 1; import { useView } from '@playhoot/game-react';`),
     ).toEqual([]);
+    expect(messages('client/Game.tsx', `import { assets } from '@playhoot/assets';`)).toEqual([]);
+    expect(messages('server/game.ts', `import { assets } from '@playhoot/assets';`)[0]).toContain(
+      'not available',
+    );
   });
 });

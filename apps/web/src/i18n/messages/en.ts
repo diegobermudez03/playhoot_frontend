@@ -129,6 +129,8 @@ export const en = {
 
   'play.seat': 'Player {seat} of {total}',
   'play.reconnecting': 'Connection lost. Reconnecting…',
+  'play.finished': 'The game is over. This is how it ended.',
+  'play.finished.leave': 'Leave',
   'play.rotate.hint': 'Turn your device to see the game bigger',
   'play.rotate.dismiss': 'Got it',
   'play.leave': 'Leave',
@@ -275,6 +277,7 @@ export const en = {
   'publish.underWay': 'A publication was left halfway: publish again to complete it.',
   'publish.editionNote': 'The published version keeps running until you publish this one.',
   'publish.published': 'Published on {when} as {visibility}.',
+  'publish.live': 'Published version: revision {revision} (publication #{sequence}).',
   'publish.done': 'Done: you published revision {revision}.',
   'publish.createSession': 'Create a game session of it',
   'publish.newVersion.intro':

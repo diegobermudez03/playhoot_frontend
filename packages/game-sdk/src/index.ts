@@ -13,6 +13,7 @@ import {
   type GameContext,
   type GameToHostMessage,
   type HostToGameMessage,
+  type Presentation,
   type Projection,
 } from '@playhoot/protocol/bridge';
 
@@ -20,6 +21,8 @@ export type {
   GameAssetType,
   GameCommandOutcome,
   GameContext,
+  Presentation,
+  PresentationDensity,
   Projection,
 } from '@playhoot/protocol/bridge';
 
@@ -57,6 +60,10 @@ export interface Playhoot {
   onError(handler: (error: unknown) => void): () => void;
   // Every update, for games that want projection, ack and transients together.
   onUpdate(handler: (update: GameUpdate) => void): () => void;
+  // How the game is shown on this device (size on screen, density, pointer, preferences), or null
+  // until the Host says (a Host speaking bridge v1 never does). Changes reach `onPresentation`.
+  presentation(): Presentation | null;
+  onPresentation(handler: (presentation: Presentation) => void): () => void;
   // Sends the full snapshot of the player's logical inputs; returns its sample id. Call it as
   // often as the inputs change: the Host sends only what the backend accepts and loses nothing.
   sample(inputs: Record<string, unknown>): number;
@@ -151,6 +158,13 @@ interface AssetRequest {
 
 export class PlayhootError extends Error {
   override name = 'PlayhootError';
+  // `asset_missing` when the Host has no such asset: the version holds no file for that key.
+  readonly code: string | undefined;
+
+  constructor(message: string, code?: string) {
+    super(message);
+    this.code = code;
+  }
 }
 
 export function createPlayhoot(transport: BridgeTransport = detectTransport()): Playhoot {
@@ -158,6 +172,12 @@ export function createPlayhoot(transport: BridgeTransport = detectTransport()): 
   const eventHandlers = new Set<(event: unknown) => void>();
   const errorHandlers = new Set<(error: unknown) => void>();
   const updateHandlers = new Set<(update: GameUpdate) => void>();
+  const presentationHandlers = new Set<(presentation: Presentation) => void>();
+  let currentPresentation: Presentation | null = null;
+  const setPresentation = (presentation: Presentation) => {
+    currentPresentation = presentation;
+    presentationHandlers.forEach((handler) => handler(presentation));
+  };
   const commands = new Map<number, (result: CommandResult) => void>();
   const assets = new Map<number, AssetRequest>();
   const assetUrls = new Map<string, Promise<string>>();
@@ -201,6 +221,7 @@ export function createPlayhoot(transport: BridgeTransport = detectTransport()): 
       case 'start':
         if (running) return;
         running = true;
+        if (message.presentation) setPresentation(message.presentation);
         resolveStart?.(message.context);
         pumpAssets();
         // After `ready()` resolves, so the game has its context before the first projection.
@@ -210,6 +231,9 @@ export function createPlayhoot(transport: BridgeTransport = detectTransport()): 
             deliverUpdate({ projection, ack: projection.ack, events: [], errors: [] }),
           );
         }
+        return;
+      case 'presentation':
+        if (running) setPresentation(message.presentation);
         return;
       case 'incompatible':
         rejectStart?.(new PlayhootError('this game needs a newer Playhoot'));
@@ -239,7 +263,7 @@ export function createPlayhoot(transport: BridgeTransport = detectTransport()): 
         if (!pending) return;
         pumpAssets();
         if (!message.found) {
-          pending.settle(new PlayhootError(`no asset "${pending.handle.key}"`));
+          pending.settle(new PlayhootError(`no asset "${pending.handle.key}"`, 'asset_missing'));
           return;
         }
         if (!gameAssetMimeTypes[pending.handle.type].includes(message.mimeType)) {
@@ -332,6 +356,8 @@ export function createPlayhoot(transport: BridgeTransport = detectTransport()): 
     onEvent: (handler) => subscribe(eventHandlers, handler),
     onError: (handler) => subscribe(errorHandlers, handler),
     onUpdate: (handler) => subscribe(updateHandlers, handler),
+    presentation: () => currentPresentation,
+    onPresentation: (handler) => subscribe(presentationHandlers, handler),
     sample(inputs) {
       requireRunning('sample()');
       nextSampleId += 1;
