@@ -3,11 +3,14 @@ import { describe, expect, it } from 'vitest';
 import {
   addPoints,
   defaultValues,
+  effectiveLanguage,
   ranking,
+  validateManifest,
   validateValues,
   type Field,
   type Fields,
 } from './index';
+import declarationDocument from './testdata/declaration-vectors.json';
 import vectorsDocument from './testdata/field-vectors.json';
 
 interface VectorCase {
@@ -21,6 +24,26 @@ interface VectorCase {
 }
 
 const vectors = vectorsDocument as unknown as { cases: VectorCase[] };
+
+interface DeclarationCase {
+  name: string;
+  manifest: unknown;
+  valid: boolean;
+  defaults?: unknown;
+}
+
+const declarations = declarationDocument as unknown as { cases: DeclarationCase[] };
+
+describe('validateManifest', () => {
+  // The same vectors run against the backend's manifest parsing (../playhoot), so a build the SDK
+  // accepts is a version the backend stores.
+  it.each(declarations.cases.map((vector) => [vector.name, vector] as const))('%s', (_, vector) => {
+    const result = validateManifest(vector.manifest);
+    expect(result.ok).toBe(vector.valid);
+    if (result.ok) expect(result.defaults).toEqual(vector.defaults);
+    else expect(result.issues.length).toBeGreaterThan(0);
+  });
+});
 
 describe('validateValues', () => {
   // The same vectors run against the backend's validation (../playhoot), so both decide alike;
@@ -79,5 +102,18 @@ describe('ranking', () => {
       { player: 'P2', points: 0, rank: 1 },
       { player: 'P3', points: 0, rank: 1 },
     ]);
+  });
+});
+
+describe('effectiveLanguage', () => {
+  it('shows the player their language when the game is written in it', () => {
+    expect(effectiveLanguage(['es', 'en'], 'en')).toBe('en');
+    expect(effectiveLanguage(['es', 'pt-BR'], 'pt-PT')).toBe('pt-BR');
+    expect(effectiveLanguage(['es', 'en'], 'EN')).toBe('en');
+  });
+
+  it("falls back to the game's main language", () => {
+    expect(effectiveLanguage(['es'], 'en')).toBe('es');
+    expect(effectiveLanguage(['pt-BR', 'en'], 'fr')).toBe('pt-BR');
   });
 });

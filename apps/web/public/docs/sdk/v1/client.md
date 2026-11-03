@@ -7,7 +7,9 @@
 | Hook | Returns |
 |---|---|
 | `useView<V>()` | What the server's `view` returned for this player, or `null` before the first view. Re-renders on every new view. |
-| `usePlayer()` | `{ id, players, locale }`: this player's id (`P1`…), every participant's id, and the platform language (BCP 47, e.g. `es`). |
+| `usePlayer()` | `{ id, players, locale }`: this player's id (`P1`…), every participant's id, and their Playhoot language (BCP 47, e.g. `es`). Show texts in `useLanguage()`, not in `locale`. |
+| `useLanguage(languages?)` | The language this player sees the game in: one of the game's `languages` (below). |
+| `useText(texts)` | `t(key, params?)` for texts made with `defineTexts` (below). |
 | `useCommand(commands.name)` | A function sending that command. With no fields it takes no argument; otherwise the payload, typed from the declaration. |
 | `useInputs(inputs)` | `[values, set]`: this player's current inputs (starting at their defaults) and `set(change)`, which changes some of them and sends the whole snapshot. |
 | `useAsset(assets.key)` | `{ status, url }` for a declared asset (`assets.md`). |
@@ -63,6 +65,72 @@ Inputs are for what a player holds (keys, a joystick); commands are for discrete
 ```
 
 The view, not the answer, is the truth about the game: after a command, the next view shows its effect.
+
+## Languages and texts
+
+`game.project.json` lists the game's `languages`, its main one first (`project.md`). Each player sees the game in their Playhoot language when it is listed, otherwise in the main one; `useLanguage()` says which. The SDK's own texts (the `TextAnswer` button, the countdown's spoken label) come in that language too.
+
+A game in one language simply writes its texts in it. A game in several keeps each text once per language and picks it by key: `defineTexts(languages, { ... })`, with `languages` from `'@playhoot/project'` (the build writes it from `game.project.json`). The main language's keys are the texts; every other listed language must give each of them, or the build fails with a type error. `{name}` marks a parameter.
+
+<!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
+```tsx
+const texts = defineTexts(languages, {
+  es: {
+    question: 'Pregunta {number}/{total}',
+    yourAnswer: 'Tu respuesta',
+    answered: '{count} respondieron',
+    score: 'Puntaje: {points}',
+    ranking: 'Ranking final',
+    you: 'Tú',
+  },
+  en: {
+    question: 'Question {number}/{total}',
+    yourAnswer: 'Your answer',
+    answered: '{count} answered',
+    score: 'Score: {points}',
+    ranking: 'Final ranking',
+    you: 'You',
+  },
+});
+```
+
+<!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
+```tsx
+  const t = useText(texts);
+  const language = useLanguage(languages);
+```
+
+<!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
+```tsx
+        <Text tone="muted">{t('question', { number: question.number, total: view.total })}</Text>
+```
+
+Content in several languages (questions, cards, words) is plain data keyed by language. Typed with `useLanguage(languages)`, the language is one of the listed ones, so the lookup type-checks:
+
+<!-- example: fixtures/sdk-games/quiz/shared/questions.ts -->
+```ts
+// The questions players read, in each language the game is written in. Public: the client shows
+// them, so the right answers live only in server/game.ts.
+export const QUESTIONS = {
+  es: [
+    { text: '¿Cuánto es 7 x 8?', options: ['54', '56', '64', '48'] },
+    { text: '¿Qué planeta es el más grande?', options: ['Marte', 'Tierra', 'Júpiter', 'Venus'] },
+    { text: '¿Cuántos lados tiene un hexágono?', options: ['5', '6', '7', '8'] },
+  ],
+  en: [
+    { text: 'What is 7 x 8?', options: ['54', '56', '64', '48'] },
+    { text: 'Which planet is the largest?', options: ['Mars', 'Earth', 'Jupiter', 'Venus'] },
+    { text: 'How many sides has a hexagon?', options: ['5', '6', '7', '8'] },
+  ],
+};
+```
+
+<!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
+```tsx
+  const { text, options } = QUESTIONS[language][question.number - 1];
+```
+
+Keep texts in the client. The server sends data the client turns into words (the question's number, an option's index, a code), never sentences: a player's language is a matter of their screen, and the same view then serves every language. Secret data stays on the server (the quiz keeps its right answers in `server/game.ts`).
 
 ## The frame
 

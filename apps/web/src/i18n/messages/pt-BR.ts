@@ -284,6 +284,7 @@ export const ptBR: Messages = {
   'publish.editionNote': 'A versão publicada continua ativa até você publicar esta.',
   'publish.published': 'Publicado em {when} como {visibility}.',
   'publish.live': 'Versão publicada: revisão {revision} (publicação #{sequence}).',
+  'publish.languages': 'Idiomas do jogo: {languages}.',
   'publish.done': 'Pronto: você publicou a revisão {revision}.',
   'publish.createSession': 'Criar uma partida deste jogo',
   'publish.newVersion.intro':

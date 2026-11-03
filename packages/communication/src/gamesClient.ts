@@ -223,6 +223,8 @@ export interface LivePublication {
   revision: number;
   versionUUID: string;
   publishedAt: string;
+  // The languages the game is written in, its main one first (BCP 47 tags).
+  languages: string[];
 }
 
 export interface Publication {
@@ -672,6 +674,7 @@ function cardOf(body: GameCardResponse): GameCard {
           revision: body.live.revision,
           versionUUID: body.live.version_uuid,
           publishedAt: body.live.published_at,
+          languages: body.live.languages,
         }
       : null,
   };

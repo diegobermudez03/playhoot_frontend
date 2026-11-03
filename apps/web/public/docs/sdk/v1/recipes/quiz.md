@@ -1,12 +1,17 @@
 # Recipe: Quiz
 
-A timed quiz for 1 to 30 players. Each question lasts 20 seconds or until everyone answered; then the right answer and how many chose each option are shown for 5 seconds. Answers stay private until the reveal. After the last question, the final ranking stays on screen. It shows phases, private submissions, stale answers refused and scores.
+A timed quiz for 1 to 30 players. Each question lasts 20 seconds or until everyone answered; then the right answer and how many chose each option are shown for 5 seconds. Answers stay private until the reveal. After the last question, the final ranking stays on screen. It shows phases, private submissions, stale answers refused and scores, and a game written in two languages (Spanish first, English): each player sees it in their Playhoot language when it is one of them, in Spanish otherwise.
 
 ## `game.project.json`
 
+<!-- example: fixtures/sdk-games/quiz/game.project.json -->
 ```json
 {
   "format": "playhoot.project.v1",
+  "languages": [
+    "es",
+    "en"
+  ],
   "aspectRatio": "16:9"
 }
 ```
@@ -26,12 +31,35 @@ export const commands = defineCommands({
 });
 
 export type View = {
-  question: { number: number; text: string; options: string[] } | null;
+  // Which question is asked (1-based); its text is in shared/questions.ts, in the player's language.
+  question: { number: number } | null;
   // Shown only once the question ended.
   reveal: { correct: number; counts: number[] } | null;
   standings: Standing[];
   total: number;
   phase: PhaseView<'question' | 'reveal' | 'results', { option: number }> | null;
+};
+```
+
+## `shared/questions.ts`
+
+The questions as players read them, once per language. Public: the client shows them. Only the server knows which option is right.
+
+<!-- example: fixtures/sdk-games/quiz/shared/questions.ts -->
+```ts
+// The questions players read, in each language the game is written in. Public: the client shows
+// them, so the right answers live only in server/game.ts.
+export const QUESTIONS = {
+  es: [
+    { text: '¿Cuánto es 7 x 8?', options: ['54', '56', '64', '48'] },
+    { text: '¿Qué planeta es el más grande?', options: ['Marte', 'Tierra', 'Júpiter', 'Venus'] },
+    { text: '¿Cuántos lados tiene un hexágono?', options: ['5', '6', '7', '8'] },
+  ],
+  en: [
+    { text: 'What is 7 x 8?', options: ['54', '56', '64', '48'] },
+    { text: 'Which planet is the largest?', options: ['Mars', 'Earth', 'Jupiter', 'Venus'] },
+    { text: 'How many sides has a hexagon?', options: ['5', '6', '7', '8'] },
+  ],
 };
 ```
 
@@ -46,16 +74,9 @@ import { addPoints, defineGame, ranking, type Scores } from '@playhoot/game-serv
 import { commands, type View } from '../shared/actions';
 
 // A timed quiz: every question lasts 20 seconds or until everyone answered, then the right answer
-// is revealed for 5 seconds. Answers stay private until the reveal.
-const QUESTIONS = [
-  { text: 'What is 7 x 8?', options: ['54', '56', '64', '48'], correct: 1 },
-  {
-    text: 'Which planet is the largest?',
-    options: ['Mars', 'Earth', 'Jupiter', 'Venus'],
-    correct: 2,
-  },
-  { text: 'How many sides has a hexagon?', options: ['5', '6', '7', '8'], correct: 1 },
-];
+// is revealed for 5 seconds. Answers stay private until the reveal. The question texts are in
+// shared/questions.ts (the client shows them); the right option of each question only here.
+const CORRECT = [1, 2, 1];
 
 type State = {
   players: string[];
@@ -73,13 +94,13 @@ export default defineGame({
       seconds: 20,
       submit: 'answer',
       end(state, { submissions }) {
-        const question = QUESTIONS[state.index];
+        const correct = CORRECT[state.index];
         const counts = [0, 0, 0, 0];
         for (const [player, { option }] of Object.entries(submissions)) {
           counts[option] += 1;
-          if (option === question.correct) addPoints(state.scores, player, 1);
+          if (option === correct) addPoints(state.scores, player, 1);
         }
-        state.reveal = { correct: question.correct, counts };
+        state.reveal = { correct, counts };
         return 'reveal';
       },
     },
@@ -88,24 +109,19 @@ export default defineGame({
       end(state, { finish }) {
         state.reveal = null;
         state.index += 1;
-        if (state.index < QUESTIONS.length) return 'question';
+        if (state.index < CORRECT.length) return 'question';
         finish();
         return 'results';
       },
     },
     results: {},
   },
-  view: (state): Omit<View, 'phase'> => {
-    const question = QUESTIONS[state.index];
-    return {
-      question: question
-        ? { number: state.index + 1, text: question.text, options: question.options }
-        : null,
-      reveal: state.reveal,
-      standings: ranking(state.scores, state.players),
-      total: QUESTIONS.length,
-    };
-  },
+  view: (state): Omit<View, 'phase'> => ({
+    question: state.index < CORRECT.length ? { number: state.index + 1 } : null,
+    reveal: state.reveal,
+    standings: ranking(state.scores, state.players),
+    total: CORRECT.length,
+  }),
 });
 ```
 
@@ -118,55 +134,80 @@ The client reads the phase from the view: the seconds left (`Countdown`), who an
 import {
   Choices,
   Countdown,
+  defineTexts,
   Screen,
   Scoreboard,
   Stack,
   Text,
   useCommand,
+  useLanguage,
   usePlayer,
+  useText,
   useView,
 } from '@playhoot/game-react';
+import { languages } from '@playhoot/project';
 
 import { commands, type View } from '../shared/actions';
+import { QUESTIONS } from '../shared/questions';
+
+const texts = defineTexts(languages, {
+  es: {
+    question: 'Pregunta {number}/{total}',
+    yourAnswer: 'Tu respuesta',
+    answered: '{count} respondieron',
+    score: 'Puntaje: {points}',
+    ranking: 'Ranking final',
+    you: 'Tú',
+  },
+  en: {
+    question: 'Question {number}/{total}',
+    yourAnswer: 'Your answer',
+    answered: '{count} answered',
+    score: 'Score: {points}',
+    ranking: 'Final ranking',
+    you: 'You',
+  },
+});
 
 export default function Game() {
   const view = useView<View>();
   const { id } = usePlayer();
+  const t = useText(texts);
+  const language = useLanguage(languages);
   const answer = useCommand(commands.answer);
   if (view === null || view.phase === null) return null;
   const { phase, question, reveal } = view;
-  const name = (player: string) => (player === id ? 'You' : player);
+  const name = (player: string) => (player === id ? t('you') : player);
 
   if (phase.name === 'results' || question === null) {
     return (
       <Screen>
-        <Text size="title">Final ranking</Text>
+        <Text size="title">{t('ranking')}</Text>
         <Scoreboard standings={view.standings} name={name} />
       </Screen>
     );
   }
+  const { text, options } = QUESTIONS[language][question.number - 1];
   const points = view.standings.find((s) => s.player === id)?.points ?? 0;
   return (
     <Screen>
       <Stack direction="row" justify="between">
-        <Text tone="muted">
-          Question {question.number}/{view.total}
-        </Text>
+        <Text tone="muted">{t('question', { number: question.number, total: view.total })}</Text>
         <Countdown />
       </Stack>
-      <Text size="xl">{question.text}</Text>
+      <Text size="xl">{text}</Text>
       <Choices
-        label="Your answer"
-        options={question.options.map((text, i) =>
-          reveal ? `${text} (${reveal.counts[i]})` : text,
-        )}
+        label={t('yourAnswer')}
+        options={options.map((option, i) => (reveal ? `${option} (${reveal.counts[i]})` : option))}
         value={phase.mine?.option ?? null}
         onChange={(option) => answer({ option })}
         disabled={phase.name !== 'question'}
         marks={reveal ? { [reveal.correct]: 'correct' } : undefined}
       />
       <Text tone="muted">
-        {phase.name === 'question' ? `${phase.submitted.length} answered` : `Score: ${points}`}
+        {phase.name === 'question'
+          ? t('answered', { count: phase.submitted.length })
+          : t('score', { points })}
       </Text>
     </Screen>
   );

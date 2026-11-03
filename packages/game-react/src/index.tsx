@@ -3,10 +3,13 @@
 // boundaries: see ../README.md.
 import {
   defaultValues,
+  effectiveLanguage,
+  gameLanguages,
   validateValues,
   type Command,
   type FieldIssue,
   type Fields,
+  type GameLanguage,
   type PhaseView,
   type ValuesOf,
 } from '@playhoot/game-core';
@@ -53,6 +56,7 @@ export {
   type Tone,
 } from './presentation';
 export { Button, Choices, TextAnswer, type ChoiceMark } from './controls';
+export { defineTexts, useLanguage, useText, type Texts } from './texts';
 export { AssetImage, Countdown, Scoreboard } from './status';
 
 // A command's answer: what the game's handler returned, or why it did not run. `invalid_payload`
@@ -74,10 +78,14 @@ export type InputsResult =
 const loadingAsset: AssetState = { status: 'loading', url: null };
 
 // Starts the game: declares its assets, connects to the Host and renders `Game` into the page. The
-// build calls it with the assets game.project.json declares.
+// build calls it with the assets and languages game.project.json declares.
 export async function mountGame(
   Game: ComponentType,
-  options: { assets?: Readonly<Record<string, AssetRef>>; container?: Element | null } = {},
+  options: {
+    assets?: Readonly<Record<string, AssetRef>>;
+    languages?: readonly [GameLanguage, ...GameLanguage[]];
+    container?: Element | null;
+  } = {},
 ) {
   const playhoot = createPlayhoot();
   const view = createStore<unknown>(null);
@@ -109,6 +117,7 @@ export async function mountGame(
   const runtime: GameRuntime = {
     playhoot,
     context,
+    language: effectiveLanguage(options.languages ?? gameLanguages, context.locale),
     view,
     presentation,
     assets,
@@ -141,7 +150,8 @@ export function usePhase<Name extends string = string, Submission = unknown>(): 
   return view?.phase ?? null;
 }
 
-// Who is playing: this player's id, everyone's ids and the platform language.
+// Who is playing: this player's id, everyone's ids and their Playhoot language (the language the
+// game shows them is useLanguage()).
 export function usePlayer(): { id: string; players: readonly string[]; locale: string } {
   const { context } = useRuntime();
   return { id: context.participantId, players: context.participants, locale: context.locale };

@@ -336,6 +336,8 @@ export const gameCardSchema = z.object({
       revision: z.number(),
       version_uuid: z.string(),
       published_at: z.string(),
+      // The languages the live version's game is written in, its main one first.
+      languages: z.array(z.string()).default([]),
     })
     .nullish(),
 });

@@ -13,6 +13,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { useStore } from 'zustand';
 
 import { useServices } from '../../../app/ServicesContext';
+import { useLayout } from '../../layout';
 import type { MessageId } from '../../../i18n/catalogs';
 import { createIframeGameContainer } from '../../../platform/iframeGameContainer';
 import { Button, Card } from '../../../ui';
@@ -246,85 +247,98 @@ function RunningPanel({
   buildReady: boolean;
 }) {
   const intl = useIntl();
+  const compact = useLayout() === 'compact';
 
+  const game =
+    running.frontend && running.actingAs ? (
+      <PreviewGame
+        preview={preview}
+        running={running}
+        actingAs={running.actingAs}
+        compact={compact}
+      />
+    ) : (
+      <p className={styles.muted}>
+        <FormattedMessage id="preview.connecting" />
+      </p>
+    );
+  const controls = (
+    <Card className={compact ? styles.previewControlsCompact : styles.panel}>
+      <div className={styles.previewBar}>
+        <span className={styles.revisionChip} data-testid="preview-revision">
+          <FormattedMessage id="preview.testing" values={{ revision: running.revision }} />
+        </span>
+        {running.paused && (
+          <span className={styles.pausedChip} data-testid="preview-paused">
+            <FormattedMessage id="preview.paused" />
+          </span>
+        )}
+      </div>
+      {draftRevision > running.revision && (
+        <div className={styles.notice} data-testid="preview-outdated">
+          <p>
+            <FormattedMessage
+              id="preview.outdated"
+              values={{ tested: running.revision, current: draftRevision }}
+            />
+          </p>
+        </div>
+      )}
+      <RunningNotice preview={preview} />
+      <div
+        className={styles.participants}
+        role="group"
+        aria-label={intl.formatMessage({ id: 'preview.actingAs' })}
+      >
+        {running.participants.map((participant) => (
+          <button
+            key={participant}
+            type="button"
+            className={[
+              styles.participant,
+              participant === running.actingAs && styles.participantActive,
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            aria-pressed={participant === running.actingAs}
+            disabled={running.actingAs === null}
+            onClick={() => preview.actAs(participant)}
+            data-participant={participant}
+          >
+            {participant}
+          </button>
+        ))}
+      </div>
+      <div className={styles.rowActions}>
+        {running.paused ? (
+          <Button variant="secondary" onClick={preview.resume} data-testid="preview-resume">
+            <FormattedMessage id="preview.resume" />
+          </Button>
+        ) : (
+          <Button variant="secondary" onClick={preview.pause} data-testid="preview-pause">
+            <FormattedMessage id="preview.pause" />
+          </Button>
+        )}
+        <Button
+          variant="secondary"
+          disabled={!buildReady}
+          onClick={() => void preview.start()}
+          data-testid="preview-restart"
+        >
+          <FormattedMessage id="preview.restart" />
+        </Button>
+        <Button variant="ghost" onClick={preview.end} data-testid="preview-end">
+          <FormattedMessage id="preview.end" />
+        </Button>
+      </div>
+    </Card>
+  );
+
+  // On a phone the game comes first, at full width, and the controls follow in a compact bar.
   return (
     <div className={styles.sectionStack}>
-      <Card className={styles.panel}>
-        <div className={styles.previewBar}>
-          <span className={styles.revisionChip} data-testid="preview-revision">
-            <FormattedMessage id="preview.testing" values={{ revision: running.revision }} />
-          </span>
-          {running.paused && (
-            <span className={styles.pausedChip} data-testid="preview-paused">
-              <FormattedMessage id="preview.paused" />
-            </span>
-          )}
-        </div>
-        {draftRevision > running.revision && (
-          <div className={styles.notice} data-testid="preview-outdated">
-            <p>
-              <FormattedMessage
-                id="preview.outdated"
-                values={{ tested: running.revision, current: draftRevision }}
-              />
-            </p>
-          </div>
-        )}
-        <RunningNotice preview={preview} />
-        <div
-          className={styles.participants}
-          role="group"
-          aria-label={intl.formatMessage({ id: 'preview.actingAs' })}
-        >
-          {running.participants.map((participant) => (
-            <button
-              key={participant}
-              type="button"
-              className={[
-                styles.participant,
-                participant === running.actingAs && styles.participantActive,
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              aria-pressed={participant === running.actingAs}
-              disabled={running.actingAs === null}
-              onClick={() => preview.actAs(participant)}
-              data-participant={participant}
-            >
-              {participant}
-            </button>
-          ))}
-        </div>
-        <div className={styles.rowActions}>
-          {running.paused ? (
-            <Button variant="secondary" onClick={preview.resume} data-testid="preview-resume">
-              <FormattedMessage id="preview.resume" />
-            </Button>
-          ) : (
-            <Button variant="secondary" onClick={preview.pause} data-testid="preview-pause">
-              <FormattedMessage id="preview.pause" />
-            </Button>
-          )}
-          <Button
-            variant="secondary"
-            disabled={!buildReady}
-            onClick={() => void preview.start()}
-            data-testid="preview-restart"
-          >
-            <FormattedMessage id="preview.restart" />
-          </Button>
-          <Button variant="ghost" onClick={preview.end} data-testid="preview-end">
-            <FormattedMessage id="preview.end" />
-          </Button>
-        </div>
-      </Card>
-      {running.frontend && running.actingAs ? (
-        <PreviewGame preview={preview} running={running} actingAs={running.actingAs} />
-      ) : (
-        <p className={styles.muted}>
-          <FormattedMessage id="preview.connecting" />
-        </p>
-      )}
+      {compact ? game : controls}
+      {compact ? controls : game}
     </div>
   );
 }
@@ -335,10 +349,12 @@ function PreviewGame({
   preview,
   running,
   actingAs,
+  compact,
 }: {
   preview: GamePreview;
   running: RunningPreview;
   actingAs: string;
+  compact: boolean;
 }) {
   const play = usePreviewPlay(preview, running, actingAs);
   const intl = useIntl();
@@ -352,7 +368,18 @@ function PreviewGame({
   }, [play, frameTitle]);
 
   return (
-    <div className={styles.gameArea} data-testid="preview-game">
+    <div
+      className={compact ? styles.gameAreaCompact : styles.gameArea}
+      // On a phone the frame takes the game's own shape, as wide as the screen.
+      style={
+        compact && running.frontend
+          ? {
+              aspectRatio: `${running.frontend.viewport.width} / ${running.frontend.viewport.height}`,
+            }
+          : undefined
+      }
+      data-testid="preview-game"
+    >
       <div ref={frame} className={styles.gameFrame} />
       {play && <GameStatus play={play} />}
     </div>

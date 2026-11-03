@@ -1,55 +1,80 @@
 import {
   Choices,
   Countdown,
+  defineTexts,
   Screen,
   Scoreboard,
   Stack,
   Text,
   useCommand,
+  useLanguage,
   usePlayer,
+  useText,
   useView,
 } from '@playhoot/game-react';
+import { languages } from '@playhoot/project';
 
 import { commands, type View } from '../shared/actions';
+import { QUESTIONS } from '../shared/questions';
+
+const texts = defineTexts(languages, {
+  es: {
+    question: 'Pregunta {number}/{total}',
+    yourAnswer: 'Tu respuesta',
+    answered: '{count} respondieron',
+    score: 'Puntaje: {points}',
+    ranking: 'Ranking final',
+    you: 'Tú',
+  },
+  en: {
+    question: 'Question {number}/{total}',
+    yourAnswer: 'Your answer',
+    answered: '{count} answered',
+    score: 'Score: {points}',
+    ranking: 'Final ranking',
+    you: 'You',
+  },
+});
 
 export default function Game() {
   const view = useView<View>();
   const { id } = usePlayer();
+  const t = useText(texts);
+  const language = useLanguage(languages);
   const answer = useCommand(commands.answer);
   if (view === null || view.phase === null) return null;
   const { phase, question, reveal } = view;
-  const name = (player: string) => (player === id ? 'You' : player);
+  const name = (player: string) => (player === id ? t('you') : player);
 
   if (phase.name === 'results' || question === null) {
     return (
       <Screen>
-        <Text size="title">Final ranking</Text>
+        <Text size="title">{t('ranking')}</Text>
         <Scoreboard standings={view.standings} name={name} />
       </Screen>
     );
   }
+  const { text, options } = QUESTIONS[language][question.number - 1];
   const points = view.standings.find((s) => s.player === id)?.points ?? 0;
   return (
     <Screen>
       <Stack direction="row" justify="between">
-        <Text tone="muted">
-          Question {question.number}/{view.total}
-        </Text>
+        <Text tone="muted">{t('question', { number: question.number, total: view.total })}</Text>
         <Countdown />
       </Stack>
-      <Text size="xl">{question.text}</Text>
+      <Text size="xl">{text}</Text>
       <Choices
-        label="Your answer"
-        options={question.options.map((text, i) =>
-          reveal ? `${text} (${reveal.counts[i]})` : text,
-        )}
+        label={t('yourAnswer')}
+        options={options.map((option, i) => (reveal ? `${option} (${reveal.counts[i]})` : option))}
         value={phase.mine?.option ?? null}
         onChange={(option) => answer({ option })}
         disabled={phase.name !== 'question'}
         marks={reveal ? { [reveal.correct]: 'correct' } : undefined}
       />
       <Text tone="muted">
-        {phase.name === 'question' ? `${phase.submitted.length} answered` : `Score: ${points}`}
+        {phase.name === 'question'
+          ? t('answered', { count: phase.submitted.length })
+          : t('score', { points })}
       </Text>
     </Screen>
   );

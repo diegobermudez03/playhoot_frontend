@@ -1,5 +1,6 @@
 {
   "format": "playhoot.project.v1",
+  "languages": ["en"],
   "aspectRatio": "16:9",
   "assets": {
     "cardBack": {

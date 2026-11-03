@@ -278,6 +278,7 @@ export const en = {
   'publish.editionNote': 'The published version keeps running until you publish this one.',
   'publish.published': 'Published on {when} as {visibility}.',
   'publish.live': 'Published version: revision {revision} (publication #{sequence}).',
+  'publish.languages': 'Game languages: {languages}.',
   'publish.done': 'Done: you published revision {revision}.',
   'publish.createSession': 'Create a game session of it',
   'publish.newVersion.intro':

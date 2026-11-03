@@ -4,9 +4,13 @@ A movement game for 1 to 6 players: each player holds arrows to move; touching t
 
 ## `game.project.json`
 
+<!-- example: fixtures/sdk-games/drift/game.project.json -->
 ```json
 {
   "format": "playhoot.project.v1",
+  "languages": [
+    "en"
+  ],
   "aspectRatio": "16:9"
 }
 ```

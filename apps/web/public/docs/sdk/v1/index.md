@@ -33,7 +33,7 @@ Keep `notes.md` current: purpose, rules agreed with the person, open decisions, 
 
 - `project.md`: files, folders, `game.project.json`, import rules, limits.
 - `server.md`: `defineGame`, commands, handlers, timing, sandbox rules.
-- `client.md`: the React hooks and what the frame allows.
+- `client.md`: the React hooks, languages and texts, and what the frame allows.
 - `ui.md`: layout, controls (activate, select, text), game-state components, presentation, and which devices a game plays on.
 - `assets.md`: declaring and uploading images, audio and video.
 - `changes.md`: the change document, conflicts, idempotency, restore.
@@ -44,7 +44,7 @@ Keep `notes.md` current: purpose, rules agreed with the person, open decisions, 
 - `recipes/number-guess.md`: a turn-based game with private information, every file explained.
 - `recipes/pairs.md`: a memory game with an optional image, events and errors.
 - `recipes/drift.md`: a movement game driven by held inputs and `update`.
-- `recipes/quiz.md`: a timed quiz with private answers, a reveal and a final ranking.
+- `recipes/quiz.md`: a timed quiz with private answers, a reveal and a final ranking, in two languages.
 - `recipes/know-me.md`: players guess one another's answers, round by round.
 
 All pages are under the same address as this one.

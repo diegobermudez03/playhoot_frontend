@@ -12,9 +12,9 @@ A build stops at the first stage that fails:
 | `source` | Per-file rules: imports per area and the sandbox rules (`server.md`). |
 | `types` | TypeScript type check (strict, without checked index access or exact optional properties). |
 | `bundle` | Bundling the server script and the client page. |
+| `manifest` | The declarations derived from `defineGame` (players, commands, inputs and their fields), checked exactly as the platform stores them; the message names the declaration, e.g. `commands.guess.payload.value`. |
 | `runtime` | Starting the game with its minimum players and computing each view once. |
 | `sandbox` | The platform's own check of the server script. |
-| `manifest` | The declarations derived from `defineGame` (commands, inputs, players). |
 | `infrastructure` | The platform failed, not the game. Nothing to fix in the code; another change builds again. |
 
 ## Reading the result

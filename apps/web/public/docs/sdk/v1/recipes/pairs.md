@@ -6,9 +6,13 @@ A memory game for 1 to 4 players. Players take turns turning two cards: a pair s
 
 The card back is optional: the game works with a plain color until someone uploads it.
 
+<!-- example: fixtures/sdk-games/pairs/game.project.json -->
 ```json
 {
   "format": "playhoot.project.v1",
+  "languages": [
+    "en"
+  ],
   "aspectRatio": "16:9",
   "assets": {
     "cardBack": {

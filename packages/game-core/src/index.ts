@@ -205,6 +205,174 @@ function canonicalValue(field: ManifestField, value: unknown): { value: unknown 
     : 'must be one of its values';
 }
 
+// What the backend refuses in a runtime manifest, field by field (`path` names the declaration,
+// e.g. `commands.guess.payload.value`), and each field's default as the backend keeps it.
+export interface ManifestIssue {
+  path: string;
+  message: string;
+}
+
+export type ManifestCheck =
+  | {
+      ok: true;
+      defaults: {
+        inputs: Record<string, unknown>;
+        commands: Record<string, Record<string, unknown>>;
+      };
+    }
+  | { ok: false; issues: ManifestIssue[] };
+
+// The most inputs and commands a manifest declares (`inputs.MaxInputs`, `commands.MaxCommands`).
+export const maxInputs = 32;
+export const maxCommands = 64;
+
+// Checks a runtime manifest exactly as the backend parses it before storing a version
+// (`play/session/internal/business/manifest` with `play/internal/business/inputs` and
+// `commands` in ../playhoot). The shared declaration vectors keep both sides equal.
+export function validateManifest(manifest: unknown): ManifestCheck {
+  const issues: ManifestIssue[] = [];
+  const issue = (path: string, message: string) => issues.push({ path, message });
+  const defaults = {
+    inputs: {} as Record<string, unknown>,
+    commands: {} as Record<string, Record<string, unknown>>,
+  };
+  if (!isObject(manifest))
+    return { ok: false, issues: [{ path: '', message: 'must be an object' }] };
+  if (manifest.schema_version !== 1) issue('schema_version', 'must be 1');
+  const players = manifest.players;
+  if (!isObject(players)) {
+    issue('players', 'is required');
+  } else {
+    const min = typeof players.min === 'number' ? players.min : 0;
+    const max = typeof players.max === 'number' ? players.max : 0;
+    if (min < 1 || max < min)
+      issue('players', `must satisfy 1 <= min <= max, got min ${min} max ${max}`);
+  }
+  const inputs = manifest.inputs ?? {};
+  if (!isObject(inputs)) issue('inputs', 'must be an object');
+  else defaults.inputs = checkFields('inputs', inputs, maxInputs, issue);
+  const commands = manifest.commands ?? {};
+  if (!isObject(commands)) {
+    issue('commands', 'must be an object');
+  } else {
+    const names = Object.keys(commands);
+    if (names.length > maxCommands)
+      issue('commands', `at most ${maxCommands} commands, got ${names.length}`);
+    for (const name of names) {
+      if (!validName(name))
+        issue(
+          `commands.${name}`,
+          'names start with a letter and hold up to 64 letters, digits or underscores',
+        );
+      const command = commands[name];
+      if (!isObject(command)) {
+        issue(`commands.${name}`, 'must be an object');
+        continue;
+      }
+      const payload = command.payload ?? {};
+      if (!isObject(payload)) issue(`commands.${name}.payload`, 'must be an object');
+      else
+        defaults.commands[name] = checkFields(
+          `commands.${name}.payload`,
+          payload,
+          maxInputs,
+          issue,
+        );
+    }
+  }
+  const entrypoints = manifest.entrypoints ?? [];
+  if (!Array.isArray(entrypoints)) {
+    issue('entrypoints', 'must be a list');
+  } else {
+    const seen = new Set<unknown>();
+    for (const entrypoint of entrypoints) {
+      if (entrypoint !== 'update' && entrypoint !== 'playerRejoined')
+        issue('entrypoints', `unknown optional entrypoint ${JSON.stringify(entrypoint)}`);
+      else if (seen.has(entrypoint))
+        issue('entrypoints', `entrypoint ${JSON.stringify(entrypoint)} is declared twice`);
+      seen.add(entrypoint);
+    }
+  }
+  return issues.length > 0 ? { ok: false, issues } : { ok: true, defaults };
+}
+
+function checkFields(
+  path: string,
+  fields: Record<string, unknown>,
+  limit: number,
+  issue: (path: string, message: string) => void,
+): Record<string, unknown> {
+  const names = Object.keys(fields);
+  if (names.length > limit) issue(path, `at most ${limit} inputs, got ${names.length}`);
+  const defaults: Record<string, unknown> = {};
+  for (const name of names) {
+    const checked = checkDeclaration(name, fields[name]);
+    if (typeof checked === 'string') issue(`${path}.${name}`, checked);
+    else defaults[name] = checked.default;
+  }
+  return defaults;
+}
+
+// One field declaration as the backend's inputs.Validate decides it: the reason it is refused, or
+// its default in canonical form.
+function checkDeclaration(name: string, declared: unknown): { default: unknown } | string {
+  if (!validName(name))
+    return 'names start with a letter and hold up to 64 letters, digits or underscores';
+  if (!isObject(declared)) return 'must be an object';
+  const type = declared.type;
+  const min = typeof declared.min === 'number' ? declared.min : undefined;
+  const max = typeof declared.max === 'number' ? declared.max : undefined;
+  const values = Array.isArray(declared.values) ? (declared.values as unknown[]) : [];
+  const nullable = declared.nullable === true;
+  const hasDefault = 'default' in declared && declared.default !== undefined;
+  if (type === 'number') {
+    if (min !== undefined && max !== undefined && min > max) return 'min must not exceed max';
+  } else if (type === 'enum') {
+    if (values.length === 0) return 'an enum declares its values';
+    const seen = new Set<unknown>();
+    for (const value of values) {
+      if (value === '' || seen.has(value)) return 'enum values must be distinct and not empty';
+      seen.add(value);
+    }
+    if (!hasDefault) return 'an enum has no natural zero, so it declares a default';
+  } else if (type !== 'boolean' && type !== 'vector2' && type !== 'string') {
+    return `unknown type ${JSON.stringify(type)}`;
+  }
+  if (type !== 'number' && (min !== undefined || max !== undefined))
+    return 'only number inputs take min and max';
+  if (type !== 'string' && nullable) return 'only string inputs may be nullable';
+  if (type !== 'enum' && values.length > 0) return 'only enum inputs take values';
+  const field: ManifestField = { type: type as ManifestField['type'], nullable };
+  if (min !== undefined) field.min = min;
+  if (max !== undefined) field.max = max;
+  if (type === 'enum') field.values = values as string[];
+  const zero =
+    type === 'boolean'
+      ? false
+      : type === 'number'
+        ? 0
+        : type === 'vector2'
+          ? [0, 0]
+          : nullable
+            ? null
+            : '';
+  const checked = canonicalValue(field, hasDefault ? declared.default : zero);
+  if (typeof checked === 'string') {
+    return hasDefault
+      ? `default: ${checked}`
+      : `its natural zero ${JSON.stringify(zero)} is not a valid value, so it declares a default`;
+  }
+  return { default: checked.value };
+}
+
+function validName(name: string): boolean {
+  return /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name);
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function utf8Length(text: string): number {
   let bytes = 0;
   for (const character of text) {
@@ -261,4 +429,23 @@ export function ranking(scores: Scores, players?: readonly string[]): Standing[]
     standings.push({ player: entry.player, points: entry.points, rank });
   }
   return standings;
+}
+
+// The languages Playhoot is offered in (app-core's supportedLocales; a test keeps both equal). A
+// game declares in game.project.json the ones it is written in, the first being its main language.
+export const gameLanguages = ['es', 'en', 'pt-BR'] as const;
+export type GameLanguage = (typeof gameLanguages)[number];
+
+// The language a game shows a player: the player's Playhoot language when the game is written in
+// it (the same tag, or the same language: `pt` matches `pt-BR`), otherwise the game's main one.
+export function effectiveLanguage(
+  languages: readonly [GameLanguage, ...GameLanguage[]],
+  locale: string,
+): GameLanguage {
+  const wanted = locale.toLowerCase();
+  const exact = languages.find((language) => language.toLowerCase() === wanted);
+  if (exact !== undefined) return exact;
+  const base = wanted.split('-')[0];
+  const same = languages.find((language) => language.split('-')[0]?.toLowerCase() === base);
+  return same ?? languages[0];
 }

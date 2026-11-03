@@ -8,6 +8,9 @@ The starter game every new project begins with. Every player taps a button; the 
 ```json
 {
   "format": "playhoot.project.v1",
+  "languages": [
+    "en"
+  ],
   "aspectRatio": "16:9"
 }
 ```

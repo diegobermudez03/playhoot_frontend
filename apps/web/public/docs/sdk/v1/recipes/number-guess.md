@@ -12,7 +12,7 @@ import { defineCommands } from '@playhoot/game-core';
 
 // What players may ask the server to do, and the fields each request carries.
 export const commands = defineCommands({
-  guess: { value: { type: 'number', min: 1, max: 100 } },
+  guess: { value: { type: 'number', min: 1, max: 100, default: 50 } },
   pass: {},
 });
 
@@ -99,7 +99,12 @@ export default defineGame({
     guess(state, { player, payload, now, emit, finish }) {
       // Validate first: changes made before a rejection are kept.
       if (playerToMove(state.turns) !== player) return reject('NOT_YOUR_TURN');
-      const hint = payload.value === state.secret ? 'correct' : payload.value < state.secret ? 'higher' : 'lower';
+      const hint =
+        payload.value === state.secret
+          ? 'correct'
+          : payload.value < state.secret
+            ? 'higher'
+            : 'lower';
       state.guesses.push({ player, value: payload.value, hint });
       emit({ type: 'guessed', player, hint });
       if (hint === 'correct') {

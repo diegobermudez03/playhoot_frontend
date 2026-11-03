@@ -287,6 +287,7 @@ export const es: Messages = {
   'publish.editionNote': 'La versión publicada sigue activa hasta que publiques esta.',
   'publish.published': 'Publicado el {when} como {visibility}.',
   'publish.live': 'Versión publicada: revisión {revision} (publicación #{sequence}).',
+  'publish.languages': 'Idiomas del juego: {languages}.',
   'publish.done': 'Listo: publicaste la revisión {revision}.',
   'publish.createSession': 'Crear una partida de este juego',
   'publish.newVersion.intro':

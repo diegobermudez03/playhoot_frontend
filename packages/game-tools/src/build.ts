@@ -5,10 +5,18 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { validateManifest } from '@playhoot/game-core';
+
 import { checkSource } from './check.ts';
 import { buildClient } from './client.ts';
 import { inputRequirements, type InputRequirements } from './inputs.ts';
-import { loadProject, ProjectError, type Diagnostic, type Project } from './project.ts';
+import {
+  loadProject,
+  ProjectError,
+  serverEntry,
+  type Diagnostic,
+  type Project,
+} from './project.ts';
 import { buildServer, smokeTest } from './server.ts';
 import { typecheck } from './typecheck.ts';
 
@@ -28,6 +36,8 @@ export interface BuildRecord {
   format: typeof buildFormat;
   profile: typeof compileProfile;
   aspectRatio: string;
+  // The languages the game is written in, its main one first.
+  languages: string[];
   server: Artifact;
   client: Artifact;
   // What the client asks of the device, read from its sources.
@@ -70,6 +80,19 @@ export async function build(root: string): Promise<BuildResult> {
   } catch (error) {
     return { ok: false, diagnostics: [{ stage: 'bundle', message: (error as Error).message }] };
   }
+  // The backend refuses a version whose manifest breaks its rules; the same check here reports it
+  // on the declaration instead of at the backend's build.
+  const checked = validateManifest(server.manifest);
+  if (!checked.ok) {
+    return {
+      ok: false,
+      diagnostics: checked.issues.map((issue) => ({
+        stage: 'manifest',
+        file: serverEntry,
+        message: `${issue.path ? `${issue.path}: ` : ''}${issue.message}`,
+      })),
+    };
+  }
   const players = (server.manifest as { players: { min: number } }).players.min;
   const runtime = smokeTest(server.script, players);
   if (runtime.length > 0) return { ok: false, diagnostics: runtime };
@@ -83,6 +106,7 @@ export async function build(root: string): Promise<BuildResult> {
       format: buildFormat,
       profile: compileProfile,
       aspectRatio: project.aspectRatio,
+      languages: [...project.languages],
       server: artifact(server.script),
       client: artifact(client),
       inputRequirements: inputRequirements(clientSources),

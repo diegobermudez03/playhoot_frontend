@@ -414,6 +414,22 @@
   overflow: hidden;
 }
 
+.gameAreaCompact {
+  position: relative;
+  width: 100%;
+  max-height: 75vh;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* On a phone the controls under the game: one dense bar. */
+.previewControlsCompact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
 .gameFrame {
   position: absolute;
   inset: 0;

@@ -7,7 +7,8 @@ export const commands = defineCommands({
 });
 
 export type View = {
-  question: { number: number; text: string; options: string[] } | null;
+  // Which question is asked (1-based); its text is in shared/questions.ts, in the player's language.
+  question: { number: number } | null;
   // Shown only once the question ended.
   reveal: { correct: number; counts: number[] } | null;
   standings: Standing[];

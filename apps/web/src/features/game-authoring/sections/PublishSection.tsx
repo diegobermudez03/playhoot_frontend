@@ -6,7 +6,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { Link } from 'react-router';
 import { useStore } from 'zustand';
 
-import type { MessageId } from '../../../i18n/catalogs';
+import { languageNames, type MessageId } from '../../../i18n/catalogs';
 import { Button, Card, TextField } from '../../../ui';
 import { BuildStatusBadge } from '../BuildStatusBadge';
 import styles from '../GameWorkspace.module.css';
@@ -313,6 +313,14 @@ function PublicationPanel({
           />
         </span>
       )}
+      {card.live && card.live.languages.length > 0 && (
+        <span data-testid="live-languages">
+          <FormattedMessage
+            id="publish.languages"
+            values={{ languages: card.live.languages.map(languageName).join(', ') }}
+          />
+        </span>
+      )}
       <div className={styles.rowActions}>
         <Link to={newSessionPathFor(card.gameUUID)}>
           <FormattedMessage id="publish.createSession" />
@@ -537,4 +545,9 @@ function BlockerText({
     default:
       return <FormattedMessage id="publish.blocker.other" values={{ code: blocker.code }} />;
   }
+}
+
+// A language's own name ("Español") for a tag the backend sends; an unknown tag shows as is.
+function languageName(tag: string): string {
+  return (languageNames as Record<string, string>)[tag] ?? tag;
 }

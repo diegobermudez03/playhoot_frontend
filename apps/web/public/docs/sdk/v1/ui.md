@@ -29,10 +29,8 @@ A quiz answer is a `Choices` whose `onChange` sends the command:
 <!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
 ```tsx
       <Choices
-        label="Your answer"
-        options={question.options.map((text, i) =>
-          reveal ? `${text} (${reveal.counts[i]})` : text,
-        )}
+        label={t('yourAnswer')}
+        options={options.map((option, i) => (reveal ? `${option} (${reveal.counts[i]})` : option))}
         value={phase.mine?.option ?? null}
         onChange={(option) => answer({ option })}
         disabled={phase.name !== 'question'}
@@ -51,7 +49,7 @@ A quiz answer is a `Choices` whose `onChange` sends the command:
 <!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
 ```tsx
       <Screen>
-        <Text size="title">Final ranking</Text>
+        <Text size="title">{t('ranking')}</Text>
         <Scoreboard standings={view.standings} name={name} />
       </Screen>
 ```

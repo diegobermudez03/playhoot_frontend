@@ -31,7 +31,7 @@ Declared once in `shared/`, so the server and the client agree:
 <!-- example: fixtures/sdk-games/number-guess/shared/actions.ts -->
 ```ts
 export const commands = defineCommands({
-  guess: { value: { type: 'number', min: 1, max: 100 } },
+  guess: { value: { type: 'number', min: 1, max: 100, default: 50 } },
   pass: {},
 });
 ```
@@ -42,11 +42,13 @@ Field types:
 |---|---|
 | `'boolean'`, `{ type: 'boolean', default? }` | `boolean` (default `false`) |
 | `'number'`, `{ type: 'number', min?, max?, default? }` | finite number (default `0`) |
-| `'string'`, `{ type: 'string', nullable?, default? }` | string up to 256 characters (default `""`, or `null` when nullable) |
+| `'string'`, `{ type: 'string', nullable?, default? }` | string up to 256 bytes in UTF-8 (default `""`, or `null` when nullable) |
 | `'vector2'`, `{ type: 'vector2', default? }` | `[x, y]` (default `[0, 0]`) |
 | `['a', 'b']`, `{ type: 'enum', values, default? }` | one of the values (default: the first) |
 
-Names start with a letter and hold up to 64 letters, digits or `_`. At most 64 commands and 32 inputs. The platform checks every payload against the declaration and fills missing fields with their defaults before your handler runs; a payload that does not match never reaches the game.
+Every field has a default, and it must be a valid value of the field. When a field gives none, its natural default above is used; if that one breaks the field's own rules, the field must declare `default`. For example `{ type: 'number', min: 1, max: 100 }` is refused because its natural default `0` is below `min`: write `{ type: 'number', min: 1, max: 100, default: 50 }`. `min` and `max` belong only to numbers, `nullable` only to strings, and enum values must be distinct and not empty. The build reports a declaration the platform would refuse as a `manifest` diagnostic.
+
+Names start with a letter and hold up to 64 letters, digits or `_`. At most 64 commands and 32 inputs (and 32 fields per command). The platform checks every payload against the declaration and fills missing fields with their defaults before your handler runs; a payload that does not match never reaches the game.
 
 ## Handlers
 

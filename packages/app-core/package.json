@@ -11,5 +11,8 @@
   },
   "dependencies": {
     "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@playhoot/game-core": "*"
   }
 }

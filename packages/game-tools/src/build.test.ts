@@ -66,7 +66,7 @@ describe('build', () => {
       await mkdir(join(root, 'client'));
       await writeFile(
         join(root, 'game.project.json'),
-        JSON.stringify({ format: 'playhoot.project.v1' }),
+        JSON.stringify({ format: 'playhoot.project.v1', languages: ['en'] }),
       );
       await writeFile(
         join(root, 'server/game.ts'),
@@ -94,6 +94,7 @@ describe('build', () => {
       await mkdir(join(root, 'client'));
       const declared = {
         format: 'playhoot.project.v1',
+        languages: ['en'],
         assets: { cardBack: { type: 'image', description: 'Back of a card', optional: true } },
       };
       await writeFile(join(root, 'game.project.json'), JSON.stringify(declared));
@@ -126,6 +127,7 @@ describe('build', () => {
     try {
       const declared = {
         format: 'playhoot.project.v1',
+        languages: ['en'],
         assets: { 'card-back': { type: 'image', description: 'x' }, sound: { type: 'midi' } },
       };
       await writeFile(join(root, 'game.project.json'), JSON.stringify(declared));
@@ -138,6 +140,63 @@ describe('build', () => {
           expect.stringContaining('asset "sound": "type" is image, audio or video'),
         ]),
       );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('refuses languages Playhoot does not speak, or none', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'playhoot-game-'));
+    try {
+      for (const languages of [undefined, [], ['es', 'fr'], ['es', 'es']]) {
+        const declared = { format: 'playhoot.project.v1', ...(languages && { languages }) };
+        await writeFile(join(root, 'game.project.json'), JSON.stringify(declared));
+        const result = await build(root);
+        expect(result.ok).toBe(false);
+        if (result.ok) return;
+        expect(result.diagnostics.map((d) => d.message)).toEqual(
+          expect.arrayContaining([expect.stringContaining('"languages" lists the languages')]),
+        );
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it('records the languages, and makes a missing translation a type error', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'playhoot-game-'));
+    try {
+      await mkdir(join(root, 'server'));
+      await mkdir(join(root, 'client'));
+      await writeFile(
+        join(root, 'game.project.json'),
+        JSON.stringify({ format: 'playhoot.project.v1', languages: ['es', 'en'] }),
+      );
+      await writeFile(
+        join(root, 'server/game.ts'),
+        `import { defineGame } from '@playhoot/game-server';
+export default defineGame({ players: { min: 1, max: 2 }, setup: () => ({}), view: () => null });
+`,
+      );
+      const client = (english: string) =>
+        `import { defineTexts, useText } from '@playhoot/game-react';
+import { languages } from '@playhoot/project';
+const texts = defineTexts(languages, { es: { hello: 'Hola', bye: 'Chao' }, en: { ${english} } });
+export default function Game() { return useText(texts)('hello'); }
+`;
+
+      await writeFile(join(root, 'client/Game.tsx'), client(`hello: 'Hello', bye: 'Bye'`));
+      const built = await build(root);
+      if (!built.ok) throw new Error(JSON.stringify(built.diagnostics));
+      expect(built.record.languages).toEqual(['es', 'en']);
+
+      await writeFile(join(root, 'client/Game.tsx'), client(`hello: 'Hello'`));
+      const refused = await build(root);
+      expect(refused.ok).toBe(false);
+      if (refused.ok) return;
+      expect(refused.diagnostics).toEqual([
+        expect.objectContaining({ stage: 'types', file: 'client/Game.tsx', line: 3 }),
+      ]);
     } finally {
       await rm(root, { recursive: true, force: true });
     }

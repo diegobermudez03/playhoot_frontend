@@ -14,6 +14,7 @@ import {
 import { useRadioGroupState, type RadioGroupState } from 'react-stately';
 
 import { toneStyle, type Tone } from './presentation';
+import { useSdkText } from './texts';
 
 const focusRing: CSSProperties = {
   outline: 'calc(var(--ph-gap) / 2) solid var(--ph-color)',
@@ -188,7 +189,7 @@ function Choice({
 export function TextAnswer({
   label,
   onSubmit,
-  submitLabel = 'Send',
+  submitLabel,
   placeholder,
   maxLength = 120,
   disabled = false,
@@ -202,6 +203,7 @@ export function TextAnswer({
 }) {
   const [text, setText] = useState('');
   const ref = useRef<HTMLInputElement>(null);
+  const sdkText = useSdkText();
   const submit = async () => {
     const value = text.trim();
     if (value === '' || disabled) return;
@@ -247,7 +249,7 @@ export function TextAnswer({
           }}
         />
         <Button onPress={submit} disabled={disabled || text.trim() === ''}>
-          {submitLabel}
+          {submitLabel ?? sdkText('send')}
         </Button>
       </div>
     </div>

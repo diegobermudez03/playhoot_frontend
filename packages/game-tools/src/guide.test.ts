@@ -88,6 +88,12 @@ describe('the SDK guide', async () => {
     }
   });
 
+  it('serves every page as finished text, without template placeholders', () => {
+    for (const [page, text] of texts) {
+      expect(text, `${page} holds an unresolved placeholder`).not.toMatch(/\{\{\s*slice:/);
+    }
+  });
+
   it('writes only valid JSON in JSON examples', () => {
     for (const block of blocks.filter((b) => b.language === 'json')) {
       expect(() => JSON.parse(block.content), `${block.page}: invalid JSON`).not.toThrow();

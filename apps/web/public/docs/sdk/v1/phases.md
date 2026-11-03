@@ -6,7 +6,35 @@ For games that move through timed steps: ask, answer, reveal, results. Declare t
 
 `phases` in `defineGame` maps each phase name to its rules. The first declared phase starts the game (or name it in `firstPhase`).
 
-{{slice:fixtures/sdk-games/quiz/server/game.ts|  phases: {|    results: {},}}
+<!-- example: fixtures/sdk-games/quiz/server/game.ts -->
+```ts
+  phases: {
+    question: {
+      seconds: 20,
+      submit: 'answer',
+      end(state, { submissions }) {
+        const correct = CORRECT[state.index];
+        const counts = [0, 0, 0, 0];
+        for (const [player, { option }] of Object.entries(submissions)) {
+          counts[option] += 1;
+          if (option === correct) addPoints(state.scores, player, 1);
+        }
+        state.reveal = { correct, counts };
+        return 'reveal';
+      },
+    },
+    reveal: {
+      seconds: 5,
+      end(state, { finish }) {
+        state.reveal = null;
+        state.index += 1;
+        if (state.index < CORRECT.length) return 'question';
+        finish();
+        return 'results';
+      },
+    },
+    results: {},
+```
 
 Each phase may have:
 
@@ -43,7 +71,8 @@ export const commands = defineCommands({
 });
 
 export type View = {
-  question: { number: number; text: string; options: string[] } | null;
+  // Which question is asked (1-based); its text is in shared/questions.ts, in the player's language.
+  question: { number: number } | null;
   // Shown only once the question ended.
   reveal: { correct: number; counts: number[] } | null;
   standings: Standing[];
@@ -70,7 +99,15 @@ The type is `PhaseView<Name, Submission>` from `@playhoot/game-core`. In the cli
 
 `Scores` is a plain object in your state, player → points. `addPoints(scores, player, points)` adds (or subtracts), `ranking(scores, players)` orders them: best first, tied players share a rank and the next rank skips (1, 1, 3), listed players without points count 0. Both come from `@playhoot/game-server` (and `ranking` from `@playhoot/game-react` too, for the client).
 
-{{slice:fixtures/sdk-games/quiz/server/game.ts|  view: (state)|  },}}
+<!-- example: fixtures/sdk-games/quiz/server/game.ts -->
+```ts
+  view: (state): Omit<View, 'phase'> => ({
+    question: state.index < CORRECT.length ? { number: state.index + 1 } : null,
+    reveal: state.reveal,
+    standings: ranking(state.scores, state.players),
+    total: CORRECT.length,
+  }),
+```
 
 ## When the game ends
 

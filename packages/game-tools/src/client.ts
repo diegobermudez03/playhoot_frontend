@@ -5,10 +5,11 @@ import { fileURLToPath } from 'node:url';
 
 import { rolldown, type Plugin } from 'rolldown';
 
-import { assetsModule, clientEntry, type Project } from './project.ts';
+import { assetsModule, clientEntry, projectModule, type Project } from './project.ts';
 
 const entryId = '\0playhoot-client-entry';
 const assetsId = '\0playhoot-assets';
+const projectId = '\0playhoot-project';
 const toolchainFile = fileURLToPath(import.meta.url);
 
 export async function buildClient(project: Project): Promise<string> {
@@ -50,6 +51,7 @@ function entryPlugin(project: Project): Plugin {
     async resolveId(source, importer) {
       if (source === entryId) return entryId;
       if (source === '@playhoot/assets') return assetsId;
+      if (source === '@playhoot/project') return projectId;
       // SDK packages and React resolve from the toolchain, wherever the project lives.
       if (!source.startsWith('.') && !source.startsWith('\0') && importer !== undefined) {
         return this.resolve(source, toolchainFile, { skipSelf: true });
@@ -58,12 +60,14 @@ function entryPlugin(project: Project): Plugin {
     },
     load(id) {
       if (id === assetsId) return assetsModule(project, false);
+      if (id === projectId) return projectModule(project, false);
       if (id !== entryId) return null;
       return [
         `import Game from ${JSON.stringify(gameFile)};`,
         `import { assets } from '@playhoot/assets';`,
+        `import { languages } from '@playhoot/project';`,
         `import { mountGame } from '@playhoot/game-react';`,
-        `void mountGame(Game, { assets });`,
+        `void mountGame(Game, { assets, languages });`,
       ].join('\n');
     },
   };

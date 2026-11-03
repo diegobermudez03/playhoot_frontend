@@ -7,6 +7,7 @@ Images, audio and video a game needs are declared in `game.project.json` and upl
 ```json
 {
   "format": "playhoot.project.v1",
+  "languages": ["es"],
   "assets": {
     "cardBack": { "type": "image", "description": "Back of a card, 512x768, dark blue" },
     "flip": { "type": "audio", "description": "Short card flip sound", "optional": true }

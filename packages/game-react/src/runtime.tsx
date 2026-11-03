@@ -1,6 +1,6 @@
 // The mounted game's runtime, shared by the hooks and components of this package. Internal: games
 // reach it only through the exported hooks.
-import type { Fields } from '@playhoot/game-core';
+import type { Fields, GameLanguage } from '@playhoot/game-core';
 import type { AssetHandle, GameContext, Playhoot, Presentation } from '@playhoot/game-sdk';
 import { createContext, useContext } from 'react';
 
@@ -34,6 +34,8 @@ export function createStore<T>(initial: T): Store<T> {
 export interface GameRuntime {
   playhoot: Playhoot;
   context: GameContext;
+  // The language this player sees the game in (see effectiveLanguage).
+  language: GameLanguage;
   view: Store<unknown>;
   presentation: Store<Presentation | null>;
   assets: Map<string, { handle: AssetHandle; optional: boolean; state: Store<AssetState> }>;

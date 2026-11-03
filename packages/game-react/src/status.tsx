@@ -5,16 +5,18 @@ import type { ReactNode } from 'react';
 
 import { usePhase, usePlayer, useAsset, type AssetRef } from './index';
 import { Text } from './presentation';
+import { useSdkText } from './texts';
 
 // The current phase's seconds left ("12s"), highlighted for the last five; nothing without a
 // deadline. The server sends them once a second.
 export function Countdown() {
   const phase = usePhase();
+  const sdkText = useSdkText();
   const left = phase?.secondsLeft;
   if (left === null || left === undefined) return null;
   return (
     <Text size="lg" tone={left <= 5 ? 'negative' : 'muted'} align="end">
-      <span role="timer" aria-live="off">
+      <span role="timer" aria-live="off" aria-label={sdkText('secondsLeft', { seconds: left })}>
         {left}s
       </span>
     </Text>
