@@ -386,3 +386,23 @@ export const publishRefusalSchema = z.object({
 export const editionOpenedSchema = z.object({ version_uuid: z.string(), revision: z.number() });
 
 export type GameCardResponse = z.infer<typeof gameCardSchema>;
+
+// The caller's own games, newest first (`GET /v1/games`, the same path that creates one).
+export const myGamesPath = createGamePath;
+
+export const myGamesSchema = z.array(
+  z.object({
+    game_uuid: z.string().min(1),
+    name: z.string(),
+    published: z.boolean(),
+    // `public` or `private`; another value may come.
+    visibility: z.string(),
+    // A version is being built for it (an edition is open).
+    editing: z.boolean(),
+    // A publication is under way.
+    publishing: z.boolean(),
+    updated_at: z.string(),
+  }),
+);
+
+export type MyGamesResponse = z.infer<typeof myGamesSchema>;

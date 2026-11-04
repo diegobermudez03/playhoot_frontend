@@ -10,7 +10,8 @@ import { build } from './build.ts';
 
 const tapRace = fileURLToPath(new URL('../../../fixtures/sdk-games/tap-race', import.meta.url));
 
-describe('build', () => {
+// Each test runs a real build (type check and bundles), several seconds under a loaded machine.
+describe('build', { timeout: 60_000 }, () => {
   it('builds Tap Race into a script the sandbox ABI can run', async () => {
     const result = await build(tapRace);
     if (!result.ok) throw new Error(JSON.stringify(result.diagnostics));

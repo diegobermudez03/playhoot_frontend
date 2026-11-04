@@ -6,7 +6,7 @@ import { operations } from '@playhoot/protocol';
 
 import { useNavigateToOperation } from '../access';
 import { useLayout } from '../layout';
-import { joinPath, newGamePath, newSessionPath } from '../paths';
+import { joinPath, myGamesPath, newGamePath, newSessionPath } from '../paths';
 import { AppShell, Button, Card, CodeInput, Logo, SplitStage, Stage } from '../../ui';
 import styles from './EnterCodeRoute.module.css';
 
@@ -64,6 +64,9 @@ export function EnterCodeRoute() {
       </Button>
       <Button variant="ghost" block onClick={() => goTo(operations.createGame, newGamePath)}>
         <FormattedMessage id="createGame.button" />
+      </Button>
+      <Button variant="ghost" block onClick={() => goTo(operations.editGame, myGamesPath)}>
+        <FormattedMessage id="myGames.button" />
       </Button>
     </>
   );

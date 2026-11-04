@@ -56,8 +56,17 @@ func Router(url string) {
 			HostView(param(url, "sessionUUID"), param(url, "joinCode")) // view_host.go
 		})
 
+	case url == "/games":
+		RequireOperation("EDIT_GAME", url, func() { MyGamesView() }) // view_game_workspace.go
+
 	case url == "/games/new":
 		RequireOperation("CREATE_GAME", url, func() { CreateGameView() }) // view_game_workspace.go
+
+	case matches(url, "/connect-ai?request={requestID}"):
+		RequireOperation("EDIT_GAME", url, func() { ConnectAiView(param(url, "requestID")) }) // view_game_workspace.go
+
+	case url == "/account/ai-connections":
+		RequireOperation("EDIT_GAME", url, func() { AiConnectionsView() }) // view_game_workspace.go
 
 	case matches(url, "/games/{gameUUID}/edit?section={section}"):
 		RequireOperation("EDIT_GAME", url, func() {

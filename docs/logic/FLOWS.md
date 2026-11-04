@@ -61,6 +61,10 @@ Rule of the architecture: nothing of a feature survives leaving its route. Comin
 | Playing (the game asks through the GameHost) | `sample` / `command` / `resync` on the WebSocket | inputs / name+payload+token | views → the game; `command_result` → the game |
 | The GameHost stops the game (any failure, flow 12) | `{"type":"game_fault"}` on the WebSocket | kind + evidence (≤ 2 KiB) | Nothing: never answered; the backend stores it for auditing |
 | Every 30 s while there is telemetry, and when the tab is hidden or closed (flow 14) | `POST /v1/client-telemetry` | the classified events, in one batch | Nothing (`204`); the backend records them as metrics |
+| "Mis juegos" opens (flow 18) | `GET /v1/games` | — (Bearer) | The account's games, newest first |
+| An AI app sends the person to the consent page (flow 18) | `GET /v1/ai-authorizations/{requestID}` | — (Bearer) | What the app asks for; `404` when expired or used |
+| The person allows or denies it | `POST /v1/ai-authorizations/{requestID}/approve` or `/deny` | — (Bearer) | The AI app's URL, where the whole browser goes |
+| "IAs conectadas" opens / a connection is revoked | `GET /v1/ai-connections` / `POST /v1/ai-connections/{id}/revoke` | — (Bearer) | The connected apps / `204` |
 
 ---
 
@@ -283,4 +287,14 @@ The admin connection reconnects by itself after 1, 2 and 4 seconds when lost aft
 | **Compartir con mi IA** (`share`) | Whether the game has an active link for the person's AI and until when. **Crear enlace** makes one; with one active the button is **Renovar enlace**, which first says the old one will stop working. The new link is shown ONCE, with **Copiar mensaje para mi IA** (a ready-to-paste "Read this link and help me with my Playhoot game: LINK" in the page's language), **Copiar solo el enlace** and **Ocultar enlace**, and the warning that whoever has it can read and change the game until it expires (7 days). **Revocar enlace** asks once more. The link lives only in memory while the section is open: never stored, never in the URL; leaving the section forgets it. |
 
 The header shows the current revision and its build status everywhere. Every action that made a revision reads the draft again and follows the new revision's build with the backend's long poll (`wait=20`, asked again while it runs, up to 5 failed reads 3 s apart), then reads the draft again. One action at a time. Retrying the same action sends the same idempotency key; any other action takes a new one. Wide: the sections in a rail beside the content; compact: as tabs above it. Mirror: [view_game_workspace.go](mirror/view_game_workspace.go), [state_gameauthoring.go](mirror/state_gameauthoring.go).
+
+## 18. The account's games and its AI apps
+
+Account pages (sign-in first, with return to them), reachable from the corner menu ("Mis juegos", "IAs conectadas") and from Enter a code ("Mis juegos" beside "Crear un juego"):
+
+| Page | What the person sees and can do |
+| --- | --- |
+| **Mis juegos** (`/games`) | Their games, newest first: name (or "untitled"), draft or published (public/private), a publication under way, a new version in progress, last change; each opens its workspace. **Crear un juego** goes to `/games/new`. |
+| **Conectar una IA** (`/connect-ai?request=<id>`) | Where an AI app (MCP) sends the person. Shows the app's name, the host the browser returns to, what it will be able to do (read and change games, build and simulate, upload assets, create games) and what never (publish, see the profile). **Permitir** / **No permitir** answer the app's URL and the whole browser goes there (only an `http(s)` URL). An unknown, expired or already decided request says to start the connection again from the AI app. Nothing about tokens is shown or kept. |
+| **IAs conectadas** (`/account/ai-connections`) | The connected apps (name, connected since, last used); **Desconectar** asks for confirmation and revokes it. |
 

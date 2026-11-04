@@ -3,14 +3,20 @@ import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { DesignRoute } from '../dev/DesignRoute';
 import { GameHostLabRoute } from '../dev/GameHostLabRoute';
 import {
+  aiConnectionsPath,
+  connectAiRoute,
   enterCodePath,
   gameWorkspaceRoute,
   guestSignInRoute,
+  myGamesPath,
   newGamePath,
   newSessionPath,
   signInRoute,
 } from '../features/paths';
+import { AiConnectionsRoute } from '../features/game-authoring/AiConnectionsRoute';
+import { ConnectAiRoute } from '../features/game-authoring/ConnectAiRoute';
 import { CreateGameRoute } from '../features/game-authoring/CreateGameRoute';
+import { MyGamesRoute } from '../features/game-authoring/MyGamesRoute';
 import { GameWorkspaceRoute } from '../features/game-authoring/GameWorkspaceRoute';
 import { EnterCodeRoute } from '../features/session-join/EnterCodeRoute';
 import { CreateSessionRoute } from '../features/session-host/CreateSessionRoute';
@@ -40,8 +46,12 @@ const routes: RouteObject[] = [
   { path: newSessionPath, element: <CreateSessionRoute /> },
   { path: '/sessions/:sessionUUID/host', element: <HostRoute /> },
   // A creator's games: create one (an account's), then change its draft in its workspace.
+  { path: myGamesPath, element: <MyGamesRoute /> },
   { path: newGamePath, element: <CreateGameRoute /> },
   { path: gameWorkspaceRoute, element: <GameWorkspaceRoute /> },
+  // AI apps (MCP): the consent they send the person to, and the account's connected ones.
+  { path: connectAiRoute, element: <ConnectAiRoute /> },
+  { path: aiConnectionsPath, element: <AiConnectionsRoute /> },
   {
     // One pathless parent for both Session URLs, so moving from the code URL to the UUID URL
     // keeps the same mounted feature (and its connection).

@@ -21,6 +21,9 @@ export const sessionHostPath = (sessionUUID: string, joinCode?: string | null) =
   `/sessions/${encodeURIComponent(sessionUUID)}/host` +
   (joinCode ? `?${new URLSearchParams({ code: joinCode }).toString()}` : '');
 
+// The account's own games, each leading to its workspace.
+export const myGamesPath = '/games';
+
 // Creating a game (an account's operation): the route creates it and moves to its workspace.
 export const newGamePath = '/games/new';
 
@@ -63,3 +66,10 @@ export function joinCodeOf(next: string | null): string | null {
 function withNext(path: string, next: string | undefined): string {
   return next ? `${path}?${new URLSearchParams({ next }).toString()}` : path;
 }
+
+// Where an AI app sends the person to approve its connection (OAuth consent). `request` is the
+// authorization request's id, as the backend gives it to the AI app.
+export const connectAiRoute = '/connect-ai';
+
+// The account's connected AI apps, each revocable.
+export const aiConnectionsPath = '/account/ai-connections';

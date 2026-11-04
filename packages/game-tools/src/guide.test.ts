@@ -57,7 +57,8 @@ function codeBlocks(page: string, text: string): CodeBlock[] {
   return blocks;
 }
 
-describe('the SDK guide', async () => {
+// Building the fixtures is a real build each, several seconds under a loaded machine.
+describe('the SDK guide', { timeout: 60_000 }, async () => {
   const files = await pages(guide);
   const texts = new Map(
     await Promise.all(

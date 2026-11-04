@@ -4,3 +4,4 @@ export * from './guests';
 export * from './operations';
 export * from './sessions';
 export * from './games';
+export * from './aiAccess';

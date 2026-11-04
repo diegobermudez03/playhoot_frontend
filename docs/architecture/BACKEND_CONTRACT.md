@@ -119,6 +119,16 @@ Game Management's card and the publication (backend `api/README.md`, games group
 - `POST /v1/games/{id}/publish` `{visibility public|private, name?, idempotency_key}` publishes the CURRENT revision of the open edition (a `name` replaces the card name first) -> `200 {outcome published, release_uuid, sequence, version_uuid, revision, visibility}`; `409 not_ready {blockers[{code, build_status?, keys?}]}` with codes `build_not_succeeded`, `build_not_for_current_revision`, `missing_required_assets` (keys), `invalid_name`, `name_required`, `revision_changed` (the list may grow: an unknown one is shown with its code); `409 not_editable`; `409 idempotency_conflict`. The same key answers the same release.
 - `POST /v1/games/{id}/editions` `{idempotency_key}` -> `201 {version_uuid, revision}` (revision 1 copies the published sources and assets); `409 not_published` / `edition_open` / `publishing`.
 - `POST /v1/sessions` checks playability for real (published, not deleted, public or the caller's own; otherwise `404`). The host's "Create Session" takes `?game=<uuid>` (a published game's own link), the default seed game otherwise.
+- `GET /v1/games` -> `200 [{game_uuid, name, published, visibility, editing, publishing, updated_at}]`, the caller's own games newest first ("Mis juegos", `/games`). `visibility` may grow beyond `public`/`private`.
+
+### AI apps through MCP (game-creation-web-v1 I, 2026-11-03)
+
+The backend is an MCP server and the OAuth authorization server of AI apps (Claude, ChatGPT...): an app connects to the account (not to one game), and its tools are the same operations as the AI link's, with origin `mcp`; it can create games, never publish nor read the profile. The web only takes part in the consent and in listing connections; tokens are exchanged between the backend and the AI app and never reach the web.
+
+- The backend's authorization endpoint sends the person to the web's `/connect-ai?request=<id>` (account only; sign-in first with return to it).
+- `GET /v1/ai-authorizations/{requestID}` (Bearer) -> `200 {client_name, client_uri?, redirect_host, scopes[] ("games"; may grow), expires_at}`; `404` unknown, expired or already decided.
+- `POST /v1/ai-authorizations/{requestID}/approve` and `.../deny` (Bearer) -> `200 {redirect_url}`; the web navigates the whole browser there (the AI app's callback, with the code or the denial). `404` as above.
+- `GET /v1/ai-connections` (Bearer) -> `200 [{connection_id, client_name, created_at, last_used_at?}]` ("IAs conectadas", `/account/ai-connections`); `POST /v1/ai-connections/{connectionID}/revoke` -> `204` (the app stops at its next request).
 
 ### Auth (`api/internal/auth/auth.go`)
 

@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Link, useLocation } from 'react-router';
 
-import { signInPath, signInRoute } from '../features/paths';
+import { aiConnectionsPath, myGamesPath, signInPath, signInRoute } from '../features/paths';
 import { Avatar } from '../ui/Avatar';
 import styles from './AccountButton.module.css';
 import { useAuth, useServices } from './ServicesContext';
@@ -46,6 +46,10 @@ export function AccountButton() {
     <AccountMenu
       name={name}
       kind={null}
+      links={[
+        { to: myGamesPath, label: 'account.myGames' },
+        { to: aiConnectionsPath, label: 'account.aiConnections' },
+      ]}
       action={{ kind: 'button', run: app.signOut, label: 'account.signOut' }}
     />
   );
@@ -59,11 +63,14 @@ type MenuAction =
 function AccountMenu({
   name,
   kind,
+  links = [],
   action,
 }: {
   name: string;
   // What kind of identity it is, when worth saying (a guest).
   kind: string | null;
+  // The account's own pages.
+  links?: { to: string; label: 'account.myGames' | 'account.aiConnections' }[];
   action: MenuAction | null;
 }) {
   const intl = useIntl();
@@ -81,6 +88,16 @@ function AccountMenu({
           <span className={styles.name}>{name}</span>
           {kind && <span className={styles.kind}>{kind}</span>}
         </p>
+        {links.map((link) => (
+          <Link
+            key={link.to}
+            className={styles.item}
+            to={link.to}
+            onClick={() => menu.current?.removeAttribute('open')}
+          >
+            <FormattedMessage id={link.label} />
+          </Link>
+        ))}
         {action?.kind === 'link' && (
           <Link className={styles.item} to={action.to}>
             <FormattedMessage id={action.label} />

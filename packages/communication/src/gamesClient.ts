@@ -37,6 +37,8 @@ import {
   type PublishRequest,
   type UpdateCardRequest,
   gamesErrorCodes,
+  myGamesPath,
+  myGamesSchema,
   maxBuildWaitSeconds,
   projectChangeFormat,
   rateLimitedCode,
@@ -55,6 +57,20 @@ import { err, ok, type Result } from './result';
 
 // Game authoring over REST (backend `api/games`). Every string the backend lists (statuses,
 // outcomes, stages, kinds) stays a string: known values are in `@playhoot/protocol`.
+
+// One of the caller's games, as their list shows it.
+export interface MyGame {
+  gameUUID: string;
+  name: string;
+  published: boolean;
+  // `public` or `private` (another value may come).
+  visibility: string;
+  // A version is being built for it.
+  editing: boolean;
+  // A publication is under way.
+  publishing: boolean;
+  updatedAt: string;
+}
 
 export interface CreatedGame {
   gameUUID: string;
@@ -283,6 +299,8 @@ export type GamesFailure =
   | { kind: 'unavailable'; failure: HttpFailure };
 
 export interface GamesClient {
+  // The caller's own games, newest first.
+  listGames(): Promise<Result<MyGame[], GamesFailure>>;
   createGame(name: string, idempotencyKey: string): Promise<Result<CreatedGame, GamesFailure>>;
   readCard(gameUUID: string): Promise<Result<GameCard, GamesFailure>>;
   // Changes the card's name and/or description; allowed published or not.
@@ -371,6 +389,26 @@ export interface GamesClient {
 
 export function createGamesClient(http: HttpClient): GamesClient {
   return {
+    async listGames() {
+      const result = await http.request({
+        method: 'GET',
+        path: myGamesPath,
+        response: myGamesSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok(
+        result.value.map((game) => ({
+          gameUUID: game.game_uuid,
+          name: game.name,
+          published: game.published,
+          visibility: game.visibility,
+          editing: game.editing,
+          publishing: game.publishing,
+          updatedAt: game.updated_at,
+        })),
+      );
+    },
+
     async createGame(name, idempotencyKey) {
       const body: CreateGameRequest = { name, idempotency_key: idempotencyKey };
       const result = await http.request({

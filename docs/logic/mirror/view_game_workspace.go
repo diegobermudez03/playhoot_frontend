@@ -156,3 +156,48 @@ func PublishSection(gameUUID string) {
 		// /sessions/new?game={gameUUID}, and "Crear nueva versión" → OpenEdition, then ReadCard and the draft.
 	}
 }
+
+// MyGamesView: /games. The account's games, each opening its workspace.
+func MyGamesView() {
+	games, failure := ListGames()
+	if failure != nil {
+		Show("myGames.error") // with Try again
+		return
+	}
+	for _, game := range games {
+		Link(game.Name, "/games/"+game.GameUUID+"/edit") // badge: draft, or published public/private
+	}
+	Button("createGame.button", func() { Navigate("/games/new") })
+}
+
+// ConnectAiView: /connect-ai?request={id}. An AI app's consent; tokens never pass through here.
+func ConnectAiView(requestID string) {
+	request, failure := ReadAiAuthorization(requestID)
+	if failure != nil && failure.Kind == "not-found" {
+		Show("connectAi.gone") // start the connection again from the AI app
+		return
+	}
+	Show(request.ClientName, request.RedirectHost) // what it can do, and what never
+	decide := func(decision func(string) (string, *AiAccessFailure)) {
+		url, failure := decision(requestID)
+		if failure == nil && isHTTP(url) {
+			NavigateBrowser(url) // a full navigation to the AI app, not the router
+		}
+	}
+	Button("connectAi.approve", func() { decide(ApproveAiAuthorization) })
+	Button("connectAi.deny", func() { decide(DenyAiAuthorization) })
+}
+
+// AiConnectionsView: /account/ai-connections. Each connected app, revocable after confirming.
+func AiConnectionsView() {
+	connections, _ := ListAiConnections()
+	for _, connection := range connections {
+		Button("aiConnections.revoke", func() {
+			if Confirm("aiConnections.confirm") {
+				RevokeAiConnection(connection.ConnectionID)
+				AiConnectionsView() // read again
+			}
+		})
+	}
+}
+

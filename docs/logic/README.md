@@ -41,6 +41,10 @@ Every control a person can use, by the text they see (es / en / pt), and the eve
 | Host screen: game | A participant's button ("Viendo a" / Watching / Vendo) | `host.Watch(participantID)` | [view_host.go](mirror/view_host.go) |
 | Host screen: outcome | **Intentar de nuevo** / **Volver al inicio** | `host.Retry()` / `Navigate("/join")` | [view_host.go](mirror/view_host.go) |
 | Enter a code (`/join`) | **Crear un juego** / Create a game / Criar um jogo | `Navigate("/games/new")` (sign in first without an account) | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Enter a code (`/join`), corner menu | **Mis juegos** / My games / Meus jogos | `Navigate("/games")` (sign in first without an account) | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Corner menu (account) | **IAs conectadas** / Connected AIs / IAs conectadas | `Navigate("/account/ai-connections")` | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| Conectar una IA (`/connect-ai`) | **Permitir** / **No permitir** | `ApproveAiAuthorization` / `DenyAiAuthorization`, then a full navigation to the app's URL | [view_game_workspace.go](mirror/view_game_workspace.go) |
+| IAs conectadas | **Desconectar** (after confirming) | `RevokeAiConnection`, then the list again | [view_game_workspace.go](mirror/view_game_workspace.go) |
 | Workspace (`/games/{id}/edit`) | A section: **Cambios de mi IA** / **Archivos** / **Recursos** / **Construcción** / **Historial** | `WorkspaceOnSectionChosen` | [view_game_workspace.go](mirror/view_game_workspace.go) |
 | Workspace: Cambios de mi IA | **Aplicar cambio** / Apply change / Aplicar mudança | `WorkspaceOnApplyChange` | [view_game_workspace.go](mirror/view_game_workspace.go) |
 | Workspace: a refused change (conflict) | **Recargar el juego** / Reload the game / Recarregar o jogo | `authoring.Reload()` | [view_game_workspace.go](mirror/view_game_workspace.go) |

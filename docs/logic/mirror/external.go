@@ -404,3 +404,25 @@ func Publish(gameUUID string, visibility string, name *string, idempotencyKey st
 func OpenEdition(gameUUID string, idempotencyKey string) (struct{ Revision int }, *GamesFailure) {
 	return struct{ Revision int }{}, nil
 }
+
+// ListGames reads the account's own games, newest first. GET /v1/games
+// code: packages/communication/src/gamesClient.ts#listGames
+func ListGames() ([]MyGame, *GamesFailure) { return nil, nil }
+
+// ReadAiAuthorization reads what an AI app asks for (MCP's OAuth consent). 404: unknown,
+// expired or already decided. GET /v1/ai-authorizations/{requestID}
+// code: packages/communication/src/aiAccessClient.ts#readAuthorization
+func ReadAiAuthorization(requestID string) (AiAuthorizationRequest, *AiAccessFailure) {
+	return AiAuthorizationRequest{}, nil
+}
+
+// ApproveAiAuthorization / DenyAiAuthorization answer the AI app's URL the browser goes to.
+// POST /v1/ai-authorizations/{requestID}/approve, POST /v1/ai-authorizations/{requestID}/deny
+func ApproveAiAuthorization(requestID string) (string, *AiAccessFailure) { return "", nil }
+func DenyAiAuthorization(requestID string) (string, *AiAccessFailure)    { return "", nil }
+
+// ListAiConnections / RevokeAiConnection: the account's connected AI apps.
+// GET /v1/ai-connections, POST /v1/ai-connections/{connectionID}/revoke
+func ListAiConnections() ([]AiConnection, *AiAccessFailure) { return nil, nil }
+func RevokeAiConnection(connectionID string) *AiAccessFailure { return nil }
+

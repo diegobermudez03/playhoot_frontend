@@ -1,5 +1,6 @@
 // HTTP/WebSocket clients and credential-aware transport. Responsibility and boundaries: see ../README.md.
 export * from './adminConnection';
+export * from './aiAccessClient';
 export * from './gamesClient';
 export * from './http';
 export * from './identityClient';

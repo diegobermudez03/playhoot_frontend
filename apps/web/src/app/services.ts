@@ -1,6 +1,7 @@
 import { createAppState, type AppState, type RefreshOutcome } from '@playhoot/app-core';
 import {
   createAdminConnector,
+  createAiAccessClient,
   createGamesClient,
   createHttpClient,
   createIdentityClient,
@@ -9,6 +10,7 @@ import {
   createSessionsClient,
   createTelemetryReporter,
   type AdminConnector,
+  type AiAccessClient,
   type GamesClient,
   type HttpClient,
   type IdentityClient,
@@ -60,6 +62,8 @@ export interface Services {
   accountSignIn: AccountSignIn;
   // The creator's admin connections to their Sessions.
   admins: AdminConnector;
+  // The account's AI apps over MCP: consenting to a connection, listing and revoking them.
+  aiAccess: AiAccessClient;
   app: AppState;
   device: DeviceCapabilitiesStore;
   // Game authoring (REST): creating games and changing their drafts.
@@ -141,6 +145,7 @@ export function createServices(): Services {
       realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
       credentials: app.credentials,
     }),
+    aiAccess: createAiAccessClient(http),
     app,
     device,
     gameArtifacts,
