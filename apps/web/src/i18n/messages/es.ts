@@ -423,6 +423,7 @@ export const es: Messages = {
   'history.files': '{count, plural, one {# archivo} other {# archivos}}',
   'history.current': 'Actual',
   'history.restore': 'Restaurar',
+  'history.older': 'Ver revisiones anteriores',
 
   'share.title': 'Compartir con mi IA',
   'share.intro':

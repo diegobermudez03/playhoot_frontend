@@ -40,7 +40,7 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 
 ### L. Read surface in the workspace (B)
 
-- [ ] Historial newest first and paged (backend L); attempts list paged, showing the rejected content when the backend keeps it.
+- [x] Historial newest first and paged (2026-11-05): `listRevisions(gameUUID, before?)`, `loadOlderRevisions` appending the next page ("Ver revisiones anteriores", dropped if the first page was read again meanwhile), `olderRevisions` in the state; logic mirror and `BACKEND_CONTRACT.md` updated. The attempts paging was moved out with the backend's.
 
 ### M. Patches (C)
 

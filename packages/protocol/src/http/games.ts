@@ -10,6 +10,8 @@ export const createGamePath = '/v1/games';
 export const draftPath = (gameUUID: string) => `/v1/games/${encodeURIComponent(gameUUID)}/draft`;
 export const draftChangesPath = (gameUUID: string) => `${draftPath(gameUUID)}/changes`;
 export const draftRevisionsPath = (gameUUID: string) => `${draftPath(gameUUID)}/revisions`;
+// The most revisions one page of the history holds (the backend's page).
+export const draftRevisionsPageSize = 100;
 export const draftRestorePath = (gameUUID: string) => `${draftPath(gameUUID)}/restore`;
 export const draftBuildPath = (gameUUID: string) => `${draftPath(gameUUID)}/build`;
 export const draftAssetPath = (gameUUID: string, key: string) =>

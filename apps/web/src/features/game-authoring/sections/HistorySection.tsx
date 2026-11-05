@@ -13,6 +13,7 @@ export function HistorySection({ authoring }: { authoring: GameAuthoring }) {
   const intl = useIntl();
   const draft = useStore(authoring.store, (state) => state.draft)!;
   const revisions = useStore(authoring.store, (state) => state.revisions);
+  const olderRevisions = useStore(authoring.store, (state) => state.olderRevisions);
   const busy = useStore(authoring.store, (state) => state.busy);
   const result = useStore(authoring.store, (state) => state.result);
 
@@ -34,7 +35,7 @@ export function HistorySection({ authoring }: { authoring: GameAuthoring }) {
         </p>
       ) : (
         <ul className={styles.list} data-testid="revisions">
-          {[...revisions].reverse().map((revision) => {
+          {revisions.map((revision) => {
             const current = revision.number === draft.currentRevision;
             return (
               <li key={revision.number} className={styles.listItem}>
@@ -75,6 +76,16 @@ export function HistorySection({ authoring }: { authoring: GameAuthoring }) {
             );
           })}
         </ul>
+      )}
+      {revisions !== null && olderRevisions && (
+        <Button
+          size="md"
+          variant="secondary"
+          onClick={() => void authoring.loadOlderRevisions()}
+          data-testid="older-revisions"
+        >
+          <FormattedMessage id="history.older" />
+        </Button>
       )}
     </Card>
   );

@@ -196,3 +196,68 @@ describe('parsePastedChange', () => {
     ).toEqual({ ok: false, error: { kind: 'repeated-path', path: 'server/game.ts' } });
   });
 });
+
+describe('revision history', () => {
+  const revision = (number: number) => ({
+    number,
+    source: 'web',
+    files: 5,
+    createdAt: '2026-11-05T12:00:00Z',
+  });
+  const page = (from: number, count: number) =>
+    Array.from({ length: count }, (_, i) => revision(from - i));
+
+  it('reads the newest page first and pages older ones below the oldest read', async () => {
+    const listRevisions = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, value: page(150, 100) })
+      .mockResolvedValueOnce({ ok: true, value: page(50, 50) });
+    const authoring = createGameAuthoring({
+      games: fakeGames({ listRevisions }),
+      gameUUID: 'g-1',
+    });
+
+    await authoring.loadRevisions();
+    expect(listRevisions).toHaveBeenLastCalledWith('g-1');
+    expect(authoring.store.getState().revisions?.[0]?.number).toBe(150);
+    expect(authoring.store.getState().olderRevisions).toBe(true);
+
+    await authoring.loadOlderRevisions();
+    expect(listRevisions).toHaveBeenLastCalledWith('g-1', 51);
+    const revisions = authoring.store.getState().revisions!;
+    expect(revisions).toHaveLength(150);
+    expect(revisions[revisions.length - 1]?.number).toBe(1);
+    expect(authoring.store.getState().olderRevisions).toBe(false);
+  });
+
+  it('has no older revisions after a short page', async () => {
+    const authoring = createGameAuthoring({
+      games: fakeGames({
+        listRevisions: vi.fn(async () => ({ ok: true as const, value: page(3, 3) })),
+      }),
+      gameUUID: 'g-1',
+    });
+    await authoring.loadRevisions();
+    expect(authoring.store.getState().olderRevisions).toBe(false);
+  });
+
+  it('drops an older page when the first page was read again meanwhile', async () => {
+    let answerOlder: (value: unknown) => void = () => {};
+    const listRevisions = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, value: page(150, 100) })
+      .mockReturnValueOnce(new Promise((resolve) => (answerOlder = resolve)))
+      .mockResolvedValueOnce({ ok: true, value: page(151, 100) });
+    const authoring = createGameAuthoring({
+      games: fakeGames({ listRevisions }),
+      gameUUID: 'g-1',
+    });
+    await authoring.loadRevisions();
+    const older = authoring.loadOlderRevisions();
+    await authoring.loadRevisions();
+    answerOlder({ ok: true, value: page(50, 50) });
+    await older;
+    expect(authoring.store.getState().revisions).toHaveLength(100);
+    expect(authoring.store.getState().revisions?.[0]?.number).toBe(151);
+  });
+});

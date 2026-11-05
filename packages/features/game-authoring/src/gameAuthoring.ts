@@ -7,7 +7,7 @@ import type {
   GamesClient,
   GamesFailure,
 } from '@playhoot/communication';
-import { buildStatuses } from '@playhoot/protocol';
+import { buildStatuses, draftRevisionsPageSize } from '@playhoot/protocol';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 // What can be done to a draft from the workspace, one at a time.
@@ -37,8 +37,10 @@ export interface GameAuthoringState {
   load: DraftLoad;
   // The current revision, read with its files' content.
   draft: Draft | null;
-  // Every revision, oldest first; null until asked for.
+  // The revisions read so far, newest first; null until asked for.
   revisions: DraftRevision[] | null;
+  // Whether older revisions than the last one read exist and can be read.
+  olderRevisions: boolean;
   busy: AuthoringAction | null;
   result: ActionResult | null;
 }
@@ -55,6 +57,8 @@ export interface GameAuthoring {
   // Reads the draft (and follows its build while it runs).
   reload(): Promise<void>;
   loadRevisions(): Promise<void>;
+  // Reads the next page of older revisions.
+  loadOlderRevisions(): Promise<void>;
   // A change parsed from what the person pasted.
   applyChange(change: DraftChange): Promise<ActionResult>;
   // One file written directly, on the current revision.
@@ -89,6 +93,7 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
     load: { status: 'loading' },
     draft: null,
     revisions: null,
+    olderRevisions: false,
     busy: null,
     result: null,
   }));
@@ -162,7 +167,23 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
   const loadRevisions = async () => {
     const result = await games.listRevisions(gameUUID);
     if (disposed || !result.ok) return;
-    store.setState({ revisions: result.value });
+    store.setState({
+      revisions: result.value,
+      olderRevisions: hasOlder(result.value),
+    });
+  };
+
+  const loadOlderRevisions = async () => {
+    const read = store.getState().revisions;
+    const oldest = read?.[read.length - 1];
+    if (!read || !oldest) return;
+    const result = await games.listRevisions(gameUUID, oldest.number);
+    // A newer read of the first page replaced the list meanwhile: this page belongs to it no more.
+    if (disposed || !result.ok || store.getState().revisions !== read) return;
+    store.setState({
+      revisions: [...read, ...result.value],
+      olderRevisions: hasOlder(result.value),
+    });
   };
 
   const run = async (
@@ -188,6 +209,7 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
     store,
     reload,
     loadRevisions,
+    loadOlderRevisions,
     applyChange: (change) =>
       run('change', JSON.stringify(change), (key) => games.applyChange(gameUUID, change, key)),
     editFile: (path, content) => {
@@ -251,3 +273,8 @@ function actionResult(
       return { action, kind: 'failed' };
   }
 }
+
+// A full page may have older revisions after it; a shorter one is the end of the history, as is
+// a page ending at revision 1.
+const hasOlder = (page: DraftRevision[]): boolean =>
+  page.length === draftRevisionsPageSize && page[page.length - 1]?.number !== 1;

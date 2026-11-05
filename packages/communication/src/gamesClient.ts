@@ -347,7 +347,9 @@ export interface GamesClient {
     baseRevision: number,
     idempotencyKey: string,
   ): Promise<Result<DraftChangeResult, GamesFailure>>;
-  listRevisions(gameUUID: string): Promise<Result<DraftRevision[], GamesFailure>>;
+  // A page of the history, newest first: the revisions below `before` (from the current one
+  // when absent).
+  listRevisions(gameUUID: string, before?: number): Promise<Result<DraftRevision[], GamesFailure>>;
   // Sends the file's bytes; the backend reads their real type and checks the declared limits.
   uploadAsset(
     gameUUID: string,
@@ -568,10 +570,11 @@ export function createGamesClient(http: HttpClient): GamesClient {
       );
     },
 
-    async listRevisions(gameUUID) {
+    async listRevisions(gameUUID, before) {
+      const search = before === undefined ? '' : `?before=${String(before)}`;
       const result = await http.request({
         method: 'GET',
-        path: draftRevisionsPath(gameUUID),
+        path: `${draftRevisionsPath(gameUUID)}${search}`,
         response: draftRevisionsResponseSchema,
       });
       if (!result.ok) return err(gamesFailure(result.error));

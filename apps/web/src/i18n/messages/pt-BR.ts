@@ -420,6 +420,7 @@ export const ptBR: Messages = {
   'history.files': '{count, plural, one {# arquivo} other {# arquivos}}',
   'history.current': 'Atual',
   'history.restore': 'Restaurar',
+  'history.older': 'Ver revisões anteriores',
 
   'share.title': 'Compartilhar com minha IA',
   'share.intro':

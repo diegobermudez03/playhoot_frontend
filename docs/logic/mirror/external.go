@@ -296,9 +296,10 @@ func RestoreRevision(gameUUID string, revision, baseRevision int, idempotencyKey
 	return ChangeResult{}, nil
 }
 
-// ListRevisions lists every revision, oldest first.
-// endpoint: GET /v1/games/{id}/draft/revisions -> [{number, source, files, created_at}]
-func ListRevisions(gameUUID string) ([]Revision, *GamesFailure) { return nil, nil }
+// ListRevisions lists a page of revisions, newest first: at most 100, below `before` when given
+// (from the current one otherwise).
+// endpoint: GET /v1/games/{id}/draft/revisions[?before=N] -> [{number, source, files, created_at}]
+func ListRevisions(gameUUID string, before *int) ([]Revision, *GamesFailure) { return nil, nil }
 
 // UploadAsset sends a declared asset's file as the raw body.
 // endpoint: PUT /v1/games/{id}/draft/assets/{key} (header Idempotency-Key)

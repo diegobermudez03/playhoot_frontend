@@ -413,6 +413,7 @@ export const en = {
   'history.files': '{count, plural, one {# file} other {# files}}',
   'history.current': 'Current',
   'history.restore': 'Restore',
+  'history.older': 'Show earlier revisions',
 
   'share.title': 'Share with my AI',
   'share.intro':

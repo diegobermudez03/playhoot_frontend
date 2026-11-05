@@ -7,8 +7,10 @@ type GameAuthoring struct {
 	GameUUID string
 	Load     string // loading | ready | failed(not-found | not-editable | unavailable)
 	Draft    Draft  // the current revision with its files' content; kept when a later read fails
-	// Revisions is every revision, oldest first; nil until Historial asks for it.
+	// Revisions are the revisions read so far, newest first; nil until Historial asks for them.
 	Revisions []Revision
+	// OlderRevisions: older revisions than the last one read exist ("Ver revisiones anteriores").
+	OlderRevisions bool
 	Busy      string        // the action in progress: change | edit | restore | upload | remove; one at a time
 	Result    *ActionResult // how the last action ended: applied(revision) | unchanged | conflict |
 	// invalid(diagnostics) | too-large(diagnostics) | not-declared | not-editable |
@@ -27,7 +29,7 @@ func (a *GameAuthoring) Reload() {
 	}
 	a.Draft = draft
 	if a.Revisions != nil {
-		a.Revisions, _ = ListRevisions(a.GameUUID)
+		a.LoadRevisions()
 	}
 	if draft.Build.Status == "QUEUED" || draft.Build.Status == "RUNNING" {
 		a.followBuild(draft.CurrentRevision)
@@ -186,4 +188,35 @@ type CardImage struct{ UUID, MIMEType, URL string }
 type Publication struct {
 	ReleaseUUID, VersionUUID, Visibility string
 	Sequence, Revision                   int
+}
+
+// LoadRevisions reads the newest page of the history.
+func (a *GameAuthoring) LoadRevisions() {
+	page, failure := ListRevisions(a.GameUUID, nil) // external.go
+	if failure != nil {
+		return
+	}
+	a.Revisions = page
+	a.OlderRevisions = hasOlder(page)
+}
+
+// LoadOlderRevisions reads the next page, below the oldest revision read.
+func (a *GameAuthoring) LoadOlderRevisions() {
+	read := a.Revisions
+	if len(read) == 0 {
+		return
+	}
+	oldest := read[len(read)-1].Number
+	page, failure := ListRevisions(a.GameUUID, &oldest) // external.go
+	// rule: a newer read of the first page replaced the list meanwhile -> this page is dropped.
+	if failure != nil || !same(a.Revisions, read) {
+		return
+	}
+	a.Revisions = append(read, page...)
+	a.OlderRevisions = hasOlder(page)
+}
+
+// rule: a full page (100) not ending at revision 1 may have older revisions after it.
+func hasOlder(page []Revision) bool {
+	return len(page) == 100 && page[len(page)-1].Number != 1
 }
