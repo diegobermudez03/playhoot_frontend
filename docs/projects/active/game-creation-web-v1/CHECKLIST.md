@@ -30,6 +30,62 @@ Order decided by the human on 2026-11-01. Backend items live in `../playhoot` `g
 ## Publish (plan delivery 3)
 
 - [x] E. Game card and publishing UI (2026-11-02): "Crear un juego" asks the name; "Ficha y publicación" (`?section=publish`) edits the card (name, description, logo, up to 8 discovery photos), publishes the current revision as public or private with each not-ready blocker linked to its section, shows the published state with a "create a Session of it" link (`/sessions/new?game=`), opens a new version; the draft sections explain the published state. `game.project.json` no longer has `name` (the card owns it). Verified end to end in headless Edge against the real backend.
-- [ ] F. Templates and remix UI.
+- [~] F. Templates and remix UI as the plan defined them: superseded 2026-11-05 by R below (templates are published games their owners mark; the AI discovers them).
 - [x] I. AI apps through MCP (2026-11-03): "Mis juegos" (`/games`), the OAuth consent page (`/connect-ai?request=`), "IAs conectadas" (`/account/ai-connections`), `GamesClient.listGames` and `AiAccessClient`, all with unit tests. Verified end to end in headless Edge against the backend's MCP with a real OAuth client (consent → Permitir → loopback callback → token → `list_my_games`/`create_game`; the game in Mis juegos opening its workspace; Desconectar → the next MCP call 401; No permitir → `error=access_denied`; a used request shows the restart message).
 - [x] G. Creation guide for agents, v1 (2026-11-02): English Markdown for AI readers at `apps/web/public/docs/sdk/v1/` (served as-is at `/docs/sdk/v1/*.md`): index, project, server, client, assets, changes, building, scenarios, recipes Tap Race and Number Guess. Documents only what exists; grows with each SDK module. Every TypeScript example is quoted from a fixture project the tools build (`fixtures/sdk-games/tap-race`, `number-guess`), checked by `packages/game-tools/src/guide.test.ts`; JSON examples must parse; the index must list every page. The backend context page links it (`PUBLIC_WEB_BASE_URL`).
+
+## Realignment (checklist `../docs/08_Playhoot_Checklist_Flujo_de_Creacion.md`, decided 2026-11-05)
+
+Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item's backend half and the decisions. `npm run check` and the logic mirror (`docs/logic/`) apply to every item.
+
+### L. Read surface in the workspace (B)
+
+- [ ] Historial newest first and paged (backend L); attempts list paged, showing the rejected content when the backend keeps it.
+
+### M. Patches (C)
+
+- [ ] `parsePastedChange` and "Cambios de mi IA" accept `edits` (find/replace): the summary shows each edited file and its edits, the applied diff from the answer, and `edit_not_found` / `edit_ambiguous` diagnostics.
+- [ ] Guide `changes.md`: edits are the default for existing files; whole files only for new files or rewrites; example from a fixture.
+
+### N. Provenance and diff (A P1)
+
+- [ ] Historial shows each revision's origin, parent, restored-from and template, and a diff view between two revisions (backend diff endpoint).
+
+### O. Scenarios with expectations (S, T, U)
+
+- [ ] Guide `scenarios.md`: `expect`, hold segments, saved scenarios run by path or all, compact result and reading state on demand.
+- [ ] Every fixture keeps scenarios with expectations under `scenarios/`, and a test runs them through the backend simulation contract (or a local check of their shape when the backend is not available).
+- [ ] "Escenarios" section: run a pasted scenario, one saved scenario or all; show passed/failed expectations with expected and actual; inspect one state on demand.
+
+### P. Guide for agents in small pieces (H, I, N, AN)
+
+- [ ] `capabilities.md`: the compact capability index (each capability one line: what it gives, its page, its example) with the SDK version; the backend serves it as `get_sdk_index`.
+- [ ] Every rule in the guide labelled as required, recommended or escape hatch.
+- [ ] `policies.md`: creation sequence (brief → templates → minimal changes → build → scenarios → assets → preview → the owner publishes), definition of done, testing policy, configure before rewrite, asset policy (HTML/CSS, then SVG as components, then Playhoot built-in assets, then the user's files, raster last; guidance against huge generated SVG).
+- [ ] The current `recipes/*` become `examples/*` (to learn the SDK, never cloned as a game); templates come from the backend catalog (R).
+- [ ] The guide ships with the toolchain package so the backend serves the version it builds with (backend P); the SDK gets a version string recorded in `build.json`.
+
+### Q. Game brief (K)
+
+- [ ] `playhoot.brief.v1` schema in `@playhoot/game-core` with the shared validation vectors; `brief.json` in every fixture and in the starter; guide `brief.md`.
+- [ ] The workspace shows the brief and its phase (read-only summary; edited as a file or through the AI).
+
+### R. Templates, step 1 (E1, E2, AI)
+
+- [ ] `GamesClient` template calls (browse, search, inspect, read file, create from template, use on a draft).
+- [ ] "Crear un juego" offers starting from a template (featured, categories, search; inspect before choosing) or from the minimal project; "Usar una plantilla" on a draft applies one as a new revision. Works with an empty catalog (shows only the minimal start).
+- [ ] Guide `templates.md`: browse first, inspect few candidates, read only needed files, decide "none fits", what is kept when switching templates.
+- [ ] `quiz` and `know-me` reworked as templates: generic, content in configuration (S), strong scenarios; seeded in the backend as published, allowed and featured, for acceptance case 2.
+
+### S. Template configuration (F)
+
+- [ ] `game.project.json` `config`: a schema of configurable values (number with range, boolean, enum, string, list of objects such as questions) with defaults; `config.json` holds the values; both server and client read them through a generated `@playhoot/config` module (typed); the build validates the values against the schema with diagnostics on `config.json`.
+- [ ] Guide page and fixtures using it (quiz questions, rounds, durations).
+
+### T. Build diagnostics with codes (Q)
+
+- [ ] Every game-tools diagnostic has a stable `code`; the build's full output is written as a bounded log the backend keeps (backend T).
+
+### V. Built-in assets (N, O; P1, after R)
+
+- [ ] A Playhoot library of common sound effects and icons with logical keys (`ui.click`, `ui.success`, `ui.error`, `game.coin`, `game.hit`, `game.whoosh`, `game.countdown`, `card.draw`, `card.flip`) usable from a game without uploads, listed in the capability index.
