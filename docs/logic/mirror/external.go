@@ -300,8 +300,17 @@ func RestoreRevision(gameUUID string, revision, baseRevision int, idempotencyKey
 
 // ListRevisions lists a page of revisions, newest first: at most 100, below `before` when given
 // (from the current one otherwise).
-// endpoint: GET /v1/games/{id}/draft/revisions[?before=N] -> [{number, source, files, created_at}]
+// endpoint: GET /v1/games/{id}/draft/revisions[?before=N] -> [{number, kind, origin?, actor,
+// parent?, restored_from?, from?{game_uuid, version_uuid, revision?}, sdk, files, created_at}]
 func ListRevisions(gameUUID string, before *int) ([]Revision, *GamesFailure) { return nil, nil }
+
+// DiffRevisions compares revision `from` (0: the empty project) with `to` (the current one when
+// nil), only `path` when given.
+// endpoint: GET /v1/games/{id}/draft/diff?from=N[&to=M][&path=P] -> {from, to, files[{path,
+// status added|modified|deleted, diff?, truncated?, omitted?}]}; 404 revision_not_found
+func DiffRevisions(gameUUID string, from int, to *int, path *string) (RevisionDiff, *GamesFailure) {
+	return RevisionDiff{}, nil
+}
 
 // UploadAsset sends a declared asset's file as the raw body.
 // endpoint: PUT /v1/games/{id}/draft/assets/{key} (header Idempotency-Key)

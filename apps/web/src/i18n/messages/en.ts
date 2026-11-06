@@ -412,12 +412,31 @@ export const en = {
   'history.title': 'Revisions',
   'history.loading': 'Loading the revisions…',
   'history.item': 'Revision {number}',
-  'history.source':
-    '{source, select, template {starting template} web {from the web} api {from the API} mcp {from an AI tool} restore {restored} asset {assets} other {other}}',
+  'history.kind':
+    '{kind, select, template {starting template} edition {new edition} change {change} restore {restore} asset {assets} other {other}}',
+  'history.origin':
+    '{origin, select, web {from the web} api {from the AI link} mcp {from an AI tool} other {other origin}}',
+  'history.restoredFrom': 'brings back revision {number}',
+  'history.editionFrom': 'copied from the published version',
+  'history.templateFrom': 'from a template',
+  'history.showChanges': 'Show changes',
+  'history.compareCurrent': 'Compare with current',
   'history.files': '{count, plural, one {# file} other {# files}}',
   'history.current': 'Current',
   'history.restore': 'Restore',
   'history.older': 'Show earlier revisions',
+
+  'diff.title': 'Changes from revision {from} to {to}',
+  'diff.titleFromEmpty': 'Files of revision {to}',
+  'diff.loading': 'Comparing…',
+  'diff.failed': 'Could not compare. Try again.',
+  'diff.empty': 'The files do not change between these revisions.',
+  'diff.status':
+    '{status, select, added {added} modified {modified} deleted {deleted} other {changed}}',
+  'diff.truncated': 'The diff was cut short.',
+  'diff.omitted': 'This file did not fit in the comparison.',
+  'diff.showFile': 'Show only this file',
+  'diff.close': 'Close',
 
   'share.title': 'Share with my AI',
   'share.intro':

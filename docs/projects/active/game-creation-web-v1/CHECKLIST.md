@@ -49,7 +49,7 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 
 ### N. Provenance and diff (A P1)
 
-- [ ] Historial shows each revision's origin, parent, restored-from and template, and a diff view between two revisions (backend diff endpoint).
+- [x] Historial shows each revision's provenance (2026-11-06): kind, origin, the revision a restore brings back, "copiada de la versión publicada" / "desde una plantilla" (the parent is always the revision before, so it is not shown; "Ver cambios" diffs against it). Diff view: "Ver cambios" (from the parent, 0 for revision 1) and "Comparar con la actual" open a comparison card with each file's status and the backend's diff, "Ver solo este archivo" for omitted ones; `diffRevisions` in the client, `compare` / `closeComparison` in the feature (stale answers dropped). Logic mirror and `BACKEND_CONTRACT.md` updated.
 
 ### O. Scenarios with expectations (S, T, U)
 

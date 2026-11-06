@@ -132,6 +132,86 @@ describe('createGamesClient', () => {
     });
   });
 
+  it('reads the history with the provenance of each revision', async () => {
+    const t = gamesWith(() =>
+      json(200, [
+        {
+          number: 3,
+          kind: 'restore',
+          origin: 'mcp',
+          actor: 'ai',
+          parent: 2,
+          restored_from: 1,
+          sdk: 'sdk-v1',
+          files: 5,
+          created_at: '2026-11-06T10:00:00Z',
+        },
+        {
+          number: 1,
+          kind: 'edition',
+          actor: 'platform',
+          from: { game_uuid: 'g-1', version_uuid: 'v-0', revision: 7 },
+          sdk: 'sdk-v1',
+          files: 5,
+          created_at: '2026-11-06T09:00:00Z',
+        },
+      ]),
+    );
+    const result = await t.games.listRevisions('g-1');
+    expect(result.ok && result.value).toEqual([
+      {
+        number: 3,
+        kind: 'restore',
+        origin: 'mcp',
+        actor: 'ai',
+        parent: 2,
+        restoredFrom: 1,
+        from: null,
+        sdk: 'sdk-v1',
+        files: 5,
+        createdAt: '2026-11-06T10:00:00Z',
+      },
+      {
+        number: 1,
+        kind: 'edition',
+        origin: null,
+        actor: 'platform',
+        parent: null,
+        restoredFrom: null,
+        from: { gameUUID: 'g-1', versionUUID: 'v-0', revision: 7 },
+        sdk: 'sdk-v1',
+        files: 5,
+        createdAt: '2026-11-06T09:00:00Z',
+      },
+    ]);
+  });
+
+  it('compares two revisions', async () => {
+    const t = gamesWith(() =>
+      json(200, {
+        from: 2,
+        to: 4,
+        files: [
+          { path: 'notes.md', status: 'modified', diff: '-a', truncated: true },
+          { path: 'shared/big.ts', status: 'added', omitted: true },
+        ],
+      }),
+    );
+    const result = await t.games.diffRevisions('g-1', 2, { path: 'notes.md' });
+    expect(t.fetchImpl.mock.calls[0]![0]).toBe('/v1/games/g-1/draft/diff?from=2&path=notes.md');
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        from: 2,
+        to: 4,
+        files: [
+          { path: 'notes.md', status: 'modified', diff: '-a', truncated: true, omitted: false },
+          { path: 'shared/big.ts', status: 'added', diff: null, truncated: false, omitted: true },
+        ],
+      },
+    });
+  });
+
   it('maps a conflict with the current revision, and invalid changes with diagnostics', async () => {
     const conflict = gamesWith(() =>
       json(409, { code: 'revision_conflict', message: 'm', current_revision: 5 }),

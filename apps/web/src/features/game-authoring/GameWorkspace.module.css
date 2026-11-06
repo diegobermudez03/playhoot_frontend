@@ -217,6 +217,10 @@
   color: var(--color-text);
 }
 
+.provenance > * + *::before {
+  content: ' · ';
+}
+
 .editedFile > * + * {
   margin-left: var(--space-2);
 }

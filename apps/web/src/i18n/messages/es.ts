@@ -422,12 +422,31 @@ export const es: Messages = {
   'history.title': 'Revisiones',
   'history.loading': 'Cargando las revisiones…',
   'history.item': 'Revisión {number}',
-  'history.source':
-    '{source, select, template {plantilla inicial} web {desde la web} api {desde la API} mcp {desde una herramienta de IA} restore {restaurada} asset {recursos} other {otro}}',
+  'history.kind':
+    '{kind, select, template {plantilla inicial} edition {nueva edición} change {cambio} restore {restauración} asset {recursos} other {otro}}',
+  'history.origin':
+    '{origin, select, web {desde la web} api {desde el enlace de IA} mcp {desde una herramienta de IA} other {otro origen}}',
+  'history.restoredFrom': 'trae de vuelta la revisión {number}',
+  'history.editionFrom': 'copiada de la versión publicada',
+  'history.templateFrom': 'desde una plantilla',
+  'history.showChanges': 'Ver cambios',
+  'history.compareCurrent': 'Comparar con la actual',
   'history.files': '{count, plural, one {# archivo} other {# archivos}}',
   'history.current': 'Actual',
   'history.restore': 'Restaurar',
   'history.older': 'Ver revisiones anteriores',
+
+  'diff.title': 'Cambios de la revisión {from} a la {to}',
+  'diff.titleFromEmpty': 'Archivos de la revisión {to}',
+  'diff.loading': 'Comparando…',
+  'diff.failed': 'No se pudo comparar. Inténtalo de nuevo.',
+  'diff.empty': 'Los archivos no cambian entre estas revisiones.',
+  'diff.status':
+    '{status, select, added {agregado} modified {modificado} deleted {eliminado} other {cambiado}}',
+  'diff.truncated': 'El diff se recortó.',
+  'diff.omitted': 'Este archivo no cupo en la comparación.',
+  'diff.showFile': 'Ver solo este archivo',
+  'diff.close': 'Cerrar',
 
   'share.title': 'Compartir con mi IA',
   'share.intro':

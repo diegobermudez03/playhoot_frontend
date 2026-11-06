@@ -10,6 +10,7 @@ export const createGamePath = '/v1/games';
 export const draftPath = (gameUUID: string) => `/v1/games/${encodeURIComponent(gameUUID)}/draft`;
 export const draftChangesPath = (gameUUID: string) => `${draftPath(gameUUID)}/changes`;
 export const draftRevisionsPath = (gameUUID: string) => `${draftPath(gameUUID)}/revisions`;
+export const draftDiffPath = (gameUUID: string) => `${draftPath(gameUUID)}/diff`;
 // The most revisions one page of the history holds (the backend's page).
 export const draftRevisionsPageSize = 100;
 export const draftRestorePath = (gameUUID: string) => `${draftPath(gameUUID)}/restore`;
@@ -275,14 +276,46 @@ export const simulationResultSchema = z
   })
   .passthrough();
 
+// A revision with its provenance. `kind`, `origin` and `actor` may grow; absent fields do not apply.
 export const draftRevisionsResponseSchema = z.array(
   z.object({
     number: z.number().int(),
-    source: z.string(),
+    kind: z.string(),
+    origin: z.string().optional(),
+    actor: z.string().optional().default(''),
+    parent: z.number().int().optional(),
+    restored_from: z.number().int().optional(),
+    from: z
+      .object({
+        game_uuid: z.string(),
+        version_uuid: z.string(),
+        revision: z.number().int().optional(),
+      })
+      .optional(),
+    sdk: z.string().optional().default(''),
     files: z.number(),
     created_at: z.string(),
   }),
 );
+
+// Two revisions compared: each differing file with its status and unified diff (cut at 8 KiB when
+// `truncated`, absent when `omitted` because the comparison's 64 KiB were spent).
+export const draftDiffResponseSchema = z.object({
+  from: z.number().int(),
+  to: z.number().int(),
+  files: z
+    .array(
+      z.object({
+        path: z.string(),
+        status: z.string(),
+        diff: z.string().optional(),
+        truncated: z.boolean().optional(),
+        omitted: z.boolean().optional(),
+      }),
+    )
+    .nullish()
+    .default([]),
+});
 
 export interface RestoreRevisionRequest {
   revision: number;

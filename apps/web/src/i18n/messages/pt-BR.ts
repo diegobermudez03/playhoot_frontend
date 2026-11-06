@@ -419,12 +419,31 @@ export const ptBR: Messages = {
   'history.title': 'Revisões',
   'history.loading': 'Carregando as revisões…',
   'history.item': 'Revisão {number}',
-  'history.source':
-    '{source, select, template {modelo inicial} web {pela web} api {pela API} mcp {por uma ferramenta de IA} restore {restaurada} asset {recursos} other {outro}}',
+  'history.kind':
+    '{kind, select, template {modelo inicial} edition {nova edição} change {mudança} restore {restauração} asset {recursos} other {outro}}',
+  'history.origin':
+    '{origin, select, web {pela web} api {pelo link de IA} mcp {por uma ferramenta de IA} other {outra origem}}',
+  'history.restoredFrom': 'traz de volta a revisão {number}',
+  'history.editionFrom': 'copiada da versão publicada',
+  'history.templateFrom': 'a partir de um modelo',
+  'history.showChanges': 'Ver mudanças',
+  'history.compareCurrent': 'Comparar com a atual',
   'history.files': '{count, plural, one {# arquivo} other {# arquivos}}',
   'history.current': 'Atual',
   'history.restore': 'Restaurar',
   'history.older': 'Ver revisões anteriores',
+
+  'diff.title': 'Mudanças da revisão {from} para a {to}',
+  'diff.titleFromEmpty': 'Arquivos da revisão {to}',
+  'diff.loading': 'Comparando…',
+  'diff.failed': 'Não foi possível comparar. Tente de novo.',
+  'diff.empty': 'Os arquivos não mudam entre estas revisões.',
+  'diff.status':
+    '{status, select, added {adicionado} modified {modificado} deleted {apagado} other {alterado}}',
+  'diff.truncated': 'O diff foi cortado.',
+  'diff.omitted': 'Este arquivo não coube na comparação.',
+  'diff.showFile': 'Ver só este arquivo',
+  'diff.close': 'Fechar',
 
   'share.title': 'Compartilhar com minha IA',
   'share.intro':

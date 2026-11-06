@@ -39,6 +39,12 @@ func GameWorkspaceView(gameUUID string, section string) {
 	WorkspaceOnRemoveAsset(authoring, "cardBack")
 	// WHEN **Restaurar** / Restore is pressed on a revision
 	WorkspaceOnRestore(authoring, 1)
+	// WHEN **Ver cambios** / Show changes is pressed on a revision: what it changed from its parent
+	authoring.Compare(0, nil, nil) // state_gameauthoring.go
+	// WHEN **Comparar con la actual** / Compare with current is pressed on a revision
+	authoring.Compare(1, nil, nil)
+	// WHEN **Cerrar** / Close is pressed on the comparison
+	authoring.CloseComparison()
 	// WHEN **Recargar el juego** / Reload the game is pressed after a conflict
 	authoring.Reload()
 
@@ -118,6 +124,12 @@ func WorkspaceOnRemoveAsset(authoring *GameAuthoring, key string) {
 func WorkspaceOnRestore(authoring *GameAuthoring, revision int) {
 	authoring.Restore(revision) // on the current revision as its base
 }
+
+// Historial shows each revision's provenance as words: its kind (starting template, new edition,
+// change, restore, assets), its origin (web, AI link, AI tool; none when the platform made it),
+// the revision a restore brings back, and "copied from the published version" / "from a
+// template" when it was copied from a version. The comparison lists each differing file with
+// its status and the backend's diff as it came; an omitted file offers to compare it alone.
 
 // WorkspaceOnStartPreview opens a new preview with the chosen number of participants on the
 // current revision's build (only enabled when it succeeded) and shows its game.

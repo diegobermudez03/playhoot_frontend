@@ -6,6 +6,7 @@ import type {
   DraftFileDiff,
   DraftRevision,
   GamesClient,
+  RevisionDiff,
   GamesFailure,
 } from '@playhoot/communication';
 import { buildStatuses, draftRevisionsPageSize } from '@playhoot/protocol';
@@ -43,8 +44,19 @@ export interface GameAuthoringState {
   revisions: DraftRevision[] | null;
   // Whether older revisions than the last one read exist and can be read.
   olderRevisions: boolean;
+  // The comparison of two revisions Historial shows; null when none is open.
+  comparison: RevisionComparison | null;
   busy: AuthoringAction | null;
   result: ActionResult | null;
+}
+
+// Two revisions being compared: `to` null means the current one; `path` one file only.
+export interface RevisionComparison {
+  from: number;
+  to: number | null;
+  path: string | null;
+  status: 'loading' | 'ready' | 'failed';
+  diff: RevisionDiff | null;
 }
 
 export interface GameAuthoringDeps {
@@ -61,6 +73,10 @@ export interface GameAuthoring {
   loadRevisions(): Promise<void>;
   // Reads the next page of older revisions.
   loadOlderRevisions(): Promise<void>;
+  // Opens the comparison of revision `from` (0: the empty project) with `to` (the current one when
+  // null), only `path` when given; a newer comparison replaces it.
+  compare(from: number, to: number | null, path?: string): Promise<void>;
+  closeComparison(): void;
   // A change parsed from what the person pasted.
   applyChange(change: DraftChange): Promise<ActionResult>;
   // One file written directly, on the current revision.
@@ -96,6 +112,7 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
     draft: null,
     revisions: null,
     olderRevisions: false,
+    comparison: null,
     busy: null,
     result: null,
   }));
@@ -188,6 +205,28 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
     });
   };
 
+  const compare = async (from: number, to: number | null, path?: string) => {
+    const comparison: RevisionComparison = {
+      from,
+      to,
+      path: path ?? null,
+      status: 'loading',
+      diff: null,
+    };
+    store.setState({ comparison });
+    const result = await games.diffRevisions(gameUUID, from, {
+      ...(to === null ? {} : { to }),
+      ...(path === undefined ? {} : { path }),
+    });
+    // A newer comparison, or closing it, replaced this one meanwhile.
+    if (disposed || store.getState().comparison !== comparison) return;
+    store.setState({
+      comparison: result.ok
+        ? { ...comparison, status: 'ready', diff: result.value }
+        : { ...comparison, status: 'failed' },
+    });
+  };
+
   const run = async (
     action: AuthoringAction,
     fingerprint: string,
@@ -212,6 +251,8 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
     reload,
     loadRevisions,
     loadOlderRevisions,
+    compare,
+    closeComparison: () => store.setState({ comparison: null }),
     applyChange: (change) =>
       run('change', JSON.stringify(change), (key) => games.applyChange(gameUUID, change, key)),
     editFile: (path, content) => {

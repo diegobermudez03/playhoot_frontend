@@ -246,7 +246,13 @@ describe('parsePastedChange', () => {
 describe('revision history', () => {
   const revision = (number: number) => ({
     number,
-    source: 'web',
+    kind: 'change',
+    origin: 'web',
+    actor: 'person',
+    parent: number - 1,
+    restoredFrom: null,
+    from: null,
+    sdk: 'sdk-v1',
     files: 5,
     createdAt: '2026-11-05T12:00:00Z',
   });
@@ -305,5 +311,60 @@ describe('revision history', () => {
     await older;
     expect(authoring.store.getState().revisions).toHaveLength(100);
     expect(authoring.store.getState().revisions?.[0]?.number).toBe(151);
+  });
+});
+
+describe('comparing revisions', () => {
+  const diff = (from: number, to: number) => ({
+    from,
+    to,
+    files: [{ path: 'notes.md', status: 'modified', diff: '-a', truncated: false, omitted: false }],
+  });
+
+  it('opens a comparison, reads it and closes it', async () => {
+    const diffRevisions = vi.fn(async () => ({ ok: true as const, value: diff(2, 4) }));
+    const authoring = createGameAuthoring({ games: fakeGames({ diffRevisions }), gameUUID: 'g-1' });
+
+    const pending = authoring.compare(2, null);
+    expect(authoring.store.getState().comparison).toMatchObject({
+      from: 2,
+      to: null,
+      status: 'loading',
+    });
+    await pending;
+    expect(diffRevisions).toHaveBeenLastCalledWith('g-1', 2, {});
+    expect(authoring.store.getState().comparison).toEqual({
+      from: 2,
+      to: null,
+      path: null,
+      status: 'ready',
+      diff: diff(2, 4),
+    });
+
+    await authoring.compare(1, 3, 'notes.md');
+    expect(diffRevisions).toHaveBeenLastCalledWith('g-1', 1, { to: 3, path: 'notes.md' });
+
+    authoring.closeComparison();
+    expect(authoring.store.getState().comparison).toBeNull();
+  });
+
+  it('keeps only the newest comparison and reports a failed one', async () => {
+    let answerFirst: (value: unknown) => void = () => {};
+    const diffRevisions = vi
+      .fn()
+      .mockReturnValueOnce(new Promise((resolve) => (answerFirst = resolve)))
+      .mockResolvedValueOnce({ ok: false, error: { kind: 'unavailable' } });
+    const authoring = createGameAuthoring({ games: fakeGames({ diffRevisions }), gameUUID: 'g-1' });
+
+    const first = authoring.compare(1, 2);
+    await authoring.compare(3, null);
+    answerFirst({ ok: true, value: diff(1, 2) });
+    await first;
+
+    expect(authoring.store.getState().comparison).toMatchObject({
+      from: 3,
+      status: 'failed',
+      diff: null,
+    });
   });
 });

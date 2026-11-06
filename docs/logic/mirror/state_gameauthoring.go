@@ -11,6 +11,9 @@ type GameAuthoring struct {
 	Revisions []Revision
 	// OlderRevisions: older revisions than the last one read exist ("Ver revisiones anteriores").
 	OlderRevisions bool
+	// Comparison is the open comparison of two revisions: {from, to (nil: current), path?,
+	// loading | ready(diff) | failed}; nil when none is open.
+	Comparison *RevisionComparison
 	Busy      string        // the action in progress: change | edit | restore | upload | remove; one at a time
 	Result    *ActionResult // how the last action ended: applied(revision) | unchanged | conflict |
 	// invalid(diagnostics) | too-large(diagnostics) | not-declared | not-editable |
@@ -223,3 +226,24 @@ func (a *GameAuthoring) LoadOlderRevisions() {
 func hasOlder(page []Revision) bool {
 	return len(page) == 100 && page[len(page)-1].Number != 1
 }
+
+// Compare opens the comparison of revision from with to (nil: the current one), only path when
+// given ("Ver cambios": from the revision's parent, 0 for revision 1; "Comparar con la actual":
+// from the revision to the current one; "Ver solo este archivo" on an omitted file).
+func (a *GameAuthoring) Compare(from int, to *int, path *string) {
+	opened := &RevisionComparison{From: from, To: to, Path: path, Status: "loading"}
+	a.Comparison = opened
+	diff, failure := DiffRevisions(a.GameUUID, from, to, path) // external.go
+	// rule: a newer comparison, or closing it, replaced this one meanwhile -> the answer is dropped.
+	if a.Comparison != opened {
+		return
+	}
+	if failure != nil {
+		a.Comparison.Status = "failed"
+		return
+	}
+	a.Comparison.Status, a.Comparison.Diff = "ready", &diff
+}
+
+// CloseComparison closes it ("Cerrar"); no call.
+func (a *GameAuthoring) CloseComparison() { a.Comparison = nil }

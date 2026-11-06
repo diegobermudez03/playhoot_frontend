@@ -9,6 +9,8 @@ import {
   draftAssetRemovePath,
   draftBuildPath,
   draftChangeResponseSchema,
+  draftDiffPath,
+  draftDiffResponseSchema,
   draftChangesPath,
   draftPath,
   draftRefusalSchema,
@@ -150,11 +152,38 @@ export interface Draft {
   lastSuccessfulBuild: DraftBuild | null;
 }
 
+// A revision with its provenance: what made it (`kind`: template, edition, change, restore,
+// asset, or one this client does not know), from where (`origin`: web, api, mcp; null when the
+// platform made it), the actor kind, its parent, the revision a restore brought back and the
+// version it was copied from (a template, or the published version of a new edition).
 export interface DraftRevision {
   number: number;
-  source: string;
+  kind: string;
+  origin: string | null;
+  actor: string;
+  parent: number | null;
+  restoredFrom: number | null;
+  from: { gameUUID: string; versionUUID: string; revision: number | null } | null;
+  sdk: string;
   files: number;
   createdAt: string;
+}
+
+// One file that differs between two revisions. `diff` is null when it was omitted (ask for that
+// path alone).
+export interface RevisionFileDiff {
+  path: string;
+  status: string;
+  diff: string | null;
+  truncated: boolean;
+  omitted: boolean;
+}
+
+// Revision `from` (0: the empty project) compared with revision `to`.
+export interface RevisionDiff {
+  from: number;
+  to: number;
+  files: RevisionFileDiff[];
 }
 
 // One find/replace edit of an existing file: `find` must appear once, or every occurrence is
@@ -369,6 +398,13 @@ export interface GamesClient {
     baseRevision: number,
     idempotencyKey: string,
   ): Promise<Result<DraftChangeResult, GamesFailure>>;
+  // Compares revision `from` (0: the empty project) with `to` (the current one when absent), only
+  // `path` when given.
+  diffRevisions(
+    gameUUID: string,
+    from: number,
+    options?: { to?: number; path?: string },
+  ): Promise<Result<RevisionDiff, GamesFailure>>;
   // A page of the history, newest first: the revisions below `before` (from the current one
   // when absent).
   listRevisions(gameUUID: string, before?: number): Promise<Result<DraftRevision[], GamesFailure>>;
@@ -604,11 +640,46 @@ export function createGamesClient(http: HttpClient): GamesClient {
       return ok(
         result.value.map((revision) => ({
           number: revision.number,
-          source: revision.source,
+          kind: revision.kind,
+          origin: revision.origin ?? null,
+          actor: revision.actor,
+          parent: revision.parent ?? null,
+          restoredFrom: revision.restored_from ?? null,
+          from: revision.from
+            ? {
+                gameUUID: revision.from.game_uuid,
+                versionUUID: revision.from.version_uuid,
+                revision: revision.from.revision ?? null,
+              }
+            : null,
+          sdk: revision.sdk,
           files: revision.files,
           createdAt: revision.created_at,
         })),
       );
+    },
+
+    async diffRevisions(gameUUID, from, options) {
+      const search = new URLSearchParams({ from: String(from) });
+      if (options?.to !== undefined) search.set('to', String(options.to));
+      if (options?.path !== undefined) search.set('path', options.path);
+      const result = await http.request({
+        method: 'GET',
+        path: `${draftDiffPath(gameUUID)}?${search.toString()}`,
+        response: draftDiffResponseSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({
+        from: result.value.from,
+        to: result.value.to,
+        files: (result.value.files ?? []).map((file) => ({
+          path: file.path,
+          status: file.status,
+          diff: file.diff ?? null,
+          truncated: file.truncated ?? false,
+          omitted: file.omitted ?? false,
+        })),
+      });
     },
 
     async uploadAsset(gameUUID, key, file, idempotencyKey) {
