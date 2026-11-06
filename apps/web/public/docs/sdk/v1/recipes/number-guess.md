@@ -207,7 +207,7 @@ export default function Game() {
 
 ## scenarios/two-players.json
 
-P1 guesses on its turn, then tries again out of turn (refused with `NOT_YOUR_TURN`), then P2 passes.
+P1 guesses on its turn, then tries again out of turn (refused with `NOT_YOUR_TURN`), then P2 passes; the expectations check one guess counted, its hint, that the secret stays hidden in the views, and whose turn it is.
 
 <!-- example: fixtures/sdk-games/number-guess/scenarios/two-players.json -->
 ```json
@@ -217,10 +217,67 @@ P1 guesses on its turn, then tries again out of turn (refused with `NOT_YOUR_TUR
   "seed": 7,
   "duration_ms": 40000,
   "steps": [
-    { "at_ms": 500, "player": "P1", "command": { "name": "guess", "payload": { "value": 50 } } },
-    { "at_ms": 600, "player": "P1", "command": { "name": "guess", "payload": { "value": 60 } } },
-    { "at_ms": 1000, "player": "P2", "command": { "name": "pass" } }
+    {
+      "at_ms": 500,
+      "player": "P1",
+      "command": {
+        "name": "guess",
+        "payload": {
+          "value": 50
+        }
+      }
+    },
+    {
+      "at_ms": 600,
+      "player": "P1",
+      "command": {
+        "name": "guess",
+        "payload": {
+          "value": 60
+        }
+      }
+    },
+    {
+      "at_ms": 1000,
+      "player": "P2",
+      "command": {
+        "name": "pass"
+      }
+    }
   ],
-  "observe_at_ms": [700, 20000]
+  "observe_at_ms": [700, 20000],
+  "expect": [
+    {
+      "at_ms": 700,
+      "path": "guesses",
+      "op": "len",
+      "value": 1
+    },
+    {
+      "at_ms": 700,
+      "path": "guesses[0].hint",
+      "op": "eq",
+      "value": "lower"
+    },
+    {
+      "at_ms": 700,
+      "of": "P1",
+      "path": "secret",
+      "op": "eq",
+      "value": null
+    },
+    {
+      "at_ms": 700,
+      "of": "P2",
+      "path": "turn",
+      "op": "eq",
+      "value": "P2"
+    },
+    {
+      "path": "winner",
+      "op": "eq",
+      "value": null
+    }
+  ]
 }
 ```

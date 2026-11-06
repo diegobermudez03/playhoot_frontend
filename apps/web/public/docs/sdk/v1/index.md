@@ -20,7 +20,7 @@ The person gives you a link to their game. Reading it shows the current revision
    - If you cannot send HTTP requests, give it to the person. They paste it in the section **Cambios de mi IA** (section id `ai`) and tell you when it is applied.
    - If you can, POST it to the link's `/changes` URL.
 3. Every new revision is built automatically. Read the link again (or wait on its `/build` URL) to see the result and fix diagnostics (`building.md`).
-4. Check behavior with a scenario (`scenarios.md`): POST it to the link's `/simulations` URL, or give it to the person, who pastes it in **Escenarios** (id `scenarios`) and sends you the result.
+4. Check behavior with a scenario with expectations (`scenarios.md`): POST it to the link's `/simulations` URL, or give it to the person, who pastes it in **Escenarios** (id `scenarios`) and sends you the result. Save the ones worth keeping under `scenarios/` and run them all after each change.
 5. The person plays it in **Probar juego** (id `preview`), switching between players.
 6. Images, audio and video are declared in `game.project.json`; the person uploads them in **Recursos** (id `assets`), or you PUT them (`assets.md`).
 7. Only the owner publishes, in **Ficha y publicación** (id `publish`). You cannot publish.
@@ -38,7 +38,7 @@ Keep `notes.md` current: purpose, rules agreed with the person, open decisions, 
 - `assets.md`: declaring and uploading images, audio and video.
 - `changes.md`: the change document (edits, files, delete), conflicts, idempotency, restore.
 - `building.md`: build stages and diagnostics.
-- `scenarios.md`: scenario and result formats.
+- `scenarios.md`: scenarios, holds, expectations, saved scenarios, the summary and reading states.
 - `phases.md`: timed phases, private submissions, scores and the end of the game.
 - `recipes/tap-race.md`: the starter game, every file explained.
 - `recipes/number-guess.md`: a turn-based game with private information, every file explained.

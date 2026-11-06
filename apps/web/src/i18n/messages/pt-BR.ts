@@ -477,7 +477,7 @@ export const ptBR: Messages = {
   'section.scenarios': 'Cenários',
   'section.preview': 'Testar jogo',
   'scenarios.intro':
-    'Cole um cenário que sua IA escreveu: o que cada jogador faz e quando. Ele é jogado sobre a construção da revisão {revision} e devolvemos o que aconteceu para você passar à sua IA.',
+    'Rode um cenário salvo no projeto, ou cole um que sua IA escreveu: o que cada jogador faz e quando, e o que deveria acontecer. Ele é jogado sobre a construção da revisão {revision} e você recebe o que aconteceu para passar à sua IA.',
   'scenarios.pasteLabel': 'Cenário da sua IA',
   'scenarios.placeholder': 'Cole o cenário aqui',
   'scenarios.run': 'Executar cenário',
@@ -505,6 +505,38 @@ export const ptBR: Messages = {
   'scenarios.copied': 'Copiado!',
   'scenarios.resultLabel': 'Resultado completo para sua IA',
   'scenarios.clear': 'Apagar resultado',
+  'scenarios.saved.title': 'Cenários salvos no projeto',
+  'scenarios.saved.empty':
+    'O projeto ainda não salva cenários (scenarios/*.json). Sua IA pode salvá-los.',
+  'scenarios.saved.run': 'Rodar',
+  'scenarios.saved.runAll': 'Rodar todos',
+  'scenarios.batch.title': 'Resultado de todos os cenários',
+  'scenarios.batch.invalid': 'Inválido',
+  'scenarios.batch.open': 'Ver detalhes',
+  'scenarios.batch.skipped':
+    '{count, plural, one {# cenário não rodou (no máximo 10 por vez).} other {# cenários não rodaram (no máximo 10 por vez).}}',
+  'scenarios.result.passed': 'Tudo se cumpriu',
+  'scenarios.result.failed': 'Algo não se cumpriu',
+  'scenarios.result.noExpectations': 'Sem expectativas',
+  'scenarios.result.expectations': '{passed} de {total} expectativas se cumpriram.',
+  'scenarios.expectation.failed':
+    '{when, select, end {no final} other {aos {at} ms}}: esperava-se {expected}, houve {actual}',
+  'scenarios.expectation.notObserved':
+    '{when, select, end {no final} other {aos {at} ms}}: a simulação não chegou a esse momento',
+  'scenarios.inspect.title': 'Ver um estado',
+  'scenarios.inspect.at': 'Momento',
+  'scenarios.inspect.end': 'No final',
+  'scenarios.inspect.instant': '{ms} ms',
+  'scenarios.inspect.of': 'De',
+  'scenarios.inspect.global': 'Estado completo',
+  'scenarios.inspect.path': 'Caminho',
+  'scenarios.inspect.pathPlaceholder': 'scores.P1 (vazio: tudo)',
+  'scenarios.inspect.read': 'Ver',
+  'scenarios.inspect.failed': 'Não conseguimos ler esse estado. Tente de novo.',
+  'scenarios.inspect.missing':
+    '{reason, select, expired {Este resultado não está mais disponível: rode o cenário de novo.} notObserved {Esse momento não foi observado.} pathNotFound {Não há nada nesse caminho.} other {Não há nada aí.}}',
+  'scenarios.inspect.tooLarge':
+    'É grande demais para mostrar ({size} bytes). Peça um caminho mais preciso{shape, select, object {: {keys}} other {: tem {length} itens}}.',
   'preview.intro':
     'Jogue seu rascunho como cada participante, um de cada vez. Testa-se o build da revisão {revision}.',
   'preview.players': 'Participantes',

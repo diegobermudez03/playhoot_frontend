@@ -470,7 +470,7 @@ export const en = {
   'section.scenarios': 'Scenarios',
   'section.preview': 'Test game',
   'scenarios.intro':
-    'Paste a scenario your AI wrote: what each player does and when. It is played on the build of revision {revision}, and you get back what happened to give to your AI.',
+    'Run a scenario the project saves, or paste one your AI wrote: what each player does and when, and what should happen. It is played on the build of revision {revision}, and you get back what happened to give to your AI.',
   'scenarios.pasteLabel': "Your AI's scenario",
   'scenarios.placeholder': 'Paste the scenario here',
   'scenarios.run': 'Run scenario',
@@ -499,6 +499,38 @@ export const en = {
   'scenarios.copied': 'Copied!',
   'scenarios.resultLabel': 'Full result for your AI',
   'scenarios.clear': 'Clear result',
+  'scenarios.saved.title': 'Scenarios saved in the project',
+  'scenarios.saved.empty':
+    'The project saves no scenarios yet (scenarios/*.json). Your AI can save them.',
+  'scenarios.saved.run': 'Run',
+  'scenarios.saved.runAll': 'Run all',
+  'scenarios.batch.title': 'Result of every scenario',
+  'scenarios.batch.invalid': 'Not valid',
+  'scenarios.batch.open': 'Show details',
+  'scenarios.batch.skipped':
+    '{count, plural, one {# scenario did not run (at most 10 at a time).} other {# scenarios did not run (at most 10 at a time).}}',
+  'scenarios.result.passed': 'Everything held',
+  'scenarios.result.failed': 'Something did not hold',
+  'scenarios.result.noExpectations': 'No expectations',
+  'scenarios.result.expectations': '{passed} of {total} expectations held.',
+  'scenarios.expectation.failed':
+    '{when, select, end {at the end} other {at {at} ms}}: expected {expected}, got {actual}',
+  'scenarios.expectation.notObserved':
+    '{when, select, end {at the end} other {at {at} ms}}: the simulation never reached that moment',
+  'scenarios.inspect.title': 'See a state',
+  'scenarios.inspect.at': 'Moment',
+  'scenarios.inspect.end': 'At the end',
+  'scenarios.inspect.instant': '{ms} ms',
+  'scenarios.inspect.of': 'Of',
+  'scenarios.inspect.global': 'Whole state',
+  'scenarios.inspect.path': 'Path',
+  'scenarios.inspect.pathPlaceholder': 'scores.P1 (empty: everything)',
+  'scenarios.inspect.read': 'Show',
+  'scenarios.inspect.failed': 'We could not read that state. Try again.',
+  'scenarios.inspect.missing':
+    '{reason, select, expired {This result is no longer available: run the scenario again.} notObserved {That moment was not observed.} pathNotFound {There is nothing at that path.} other {There is nothing there.}}',
+  'scenarios.inspect.tooLarge':
+    'It is too large to show ({size} bytes). Ask for a narrower path{shape, select, object {: {keys}} other {: it has {length} items}}.',
   'preview.intro':
     'Play your draft as each participant, one at a time. It tests the build of revision {revision}.',
   'preview.players': 'Participants',

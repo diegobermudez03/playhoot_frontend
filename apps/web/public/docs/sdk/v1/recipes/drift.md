@@ -228,7 +228,7 @@ const styles = {
 
 ## `scenarios/one-player.json`
 
-P1 holds right for one second, then lets go; the observations show the position moving and then staying.
+P1 holds right for one second (a `holds` segment, released to the neutral snapshot at its end); the expectations check that the position moved and that the move input is back to rest.
 
 ```json
 {
@@ -236,10 +236,48 @@ P1 holds right for one second, then lets go; the observations show the position 
   "players": 1,
   "seed": 5,
   "duration_ms": 4000,
-  "steps": [
-    { "at_ms": 100, "player": "P1", "inputs": { "move": [1, 0] } },
-    { "at_ms": 1100, "player": "P1", "inputs": { "move": [0, 0] } }
+  "observe_at_ms": [0, 1100, 3000],
+  "holds": [
+    {
+      "from_ms": 100,
+      "to_ms": 1100,
+      "player": "P1",
+      "inputs": {
+        "move": [1, 0]
+      }
+    }
   ],
-  "observe_at_ms": [0, 1100, 3000]
+  "expect": [
+    {
+      "at_ms": 0,
+      "path": "positions.P1",
+      "op": "eq",
+      "value": [20, 45]
+    },
+    {
+      "at_ms": 1100,
+      "path": "positions.P1[0]",
+      "op": "gt",
+      "value": 20
+    },
+    {
+      "at_ms": 3000,
+      "path": "moves.P1",
+      "op": "eq",
+      "value": [0, 0]
+    },
+    {
+      "at_ms": 1100,
+      "of": "P1",
+      "path": "me",
+      "op": "eq",
+      "value": "P1"
+    },
+    {
+      "path": "winner",
+      "op": "eq",
+      "value": null
+    }
+  ]
 }
 ```

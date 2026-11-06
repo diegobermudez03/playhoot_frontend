@@ -54,6 +54,12 @@ func GameWorkspaceView(gameUUID string, section string) {
 	// WHEN a scenario is pasted and **Ejecutar escenario** / Run scenario is pressed
 	// (enabled only when the current revision's build succeeded)
 	WorkspaceOnRunScenario(runner, "pasted text")
+	// WHEN **Ejecutar** / Run is pressed on a saved scenario, or **Ejecutar todos** / Run all
+	runner.RunSaved("scenarios/first-to-goal.json")
+	runner.RunAll()
+	// WHEN **Ver** / Show is pressed in "Ver un estado" (moment: an observed instant or the end; of:
+	// the whole state or a player; path)
+	runner.Inspect("result id", nil, "global", "")
 	// WHEN **Copiar resultado para mi IA** / Copy result for my AI is pressed
 	WorkspaceOnCopyScenarioResult(runner)
 
@@ -150,8 +156,12 @@ func WorkspaceOnRunScenario(runner *ScenarioRunner, text string) {
 	runner.Run(ParsePastedScenario(text))
 }
 
-// WorkspaceOnCopyScenarioResult copies the whole result as JSON (the exact answer, pretty-printed);
+// WorkspaceOnCopyScenarioResult copies the whole answer as JSON (the exact answer, pretty-printed);
 // the clipboard refusing leaves it on screen to copy by hand.
+// The result shows "Todo se cumplió" / "Algo no se cumplió" / "Sin expectativas", how many
+// expectations held, each failed one (of, path, op, at which moment, expected and actual as JSON),
+// how it ended and the counts; a batch lists each saved scenario with its badge or why it is not
+// valid, and "Ver detalle" opens one.
 func WorkspaceOnCopyScenarioResult(runner *ScenarioRunner) {}
 
 // PublishSection is "Ficha y publicación" (section publish): its state lives as long as the workspace.

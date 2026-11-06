@@ -4,10 +4,74 @@
   "seed": 3,
   "duration_ms": 5000,
   "steps": [
-    { "at_ms": 200, "player": "P2", "command": { "name": "flip", "payload": { "index": 0 } } },
-    { "at_ms": 300, "player": "P1", "command": { "name": "flip", "payload": { "index": 0 } } },
-    { "at_ms": 400, "player": "P1", "command": { "name": "flip", "payload": { "index": 1 } } },
-    { "at_ms": 500, "player": "P1", "command": { "name": "flip", "payload": { "index": 9 } } }
+    {
+      "at_ms": 200,
+      "player": "P2",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 0
+        }
+      }
+    },
+    {
+      "at_ms": 300,
+      "player": "P1",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 0
+        }
+      }
+    },
+    {
+      "at_ms": 400,
+      "player": "P1",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 1
+        }
+      }
+    },
+    {
+      "at_ms": 500,
+      "player": "P1",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 9
+        }
+      }
+    }
   ],
-  "observe_at_ms": [450]
+  "observe_at_ms": [450],
+  "expect": [
+    {
+      "at_ms": 450,
+      "path": "open",
+      "op": "eq",
+      "value": [0, 1]
+    },
+    {
+      "at_ms": 450,
+      "path": "turn",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "at_ms": 450,
+      "path": "matched",
+      "op": "len",
+      "value": 8
+    },
+    {
+      "path": "scores",
+      "op": "eq",
+      "value": {
+        "P1": 0,
+        "P2": 0
+      }
+    }
+  ]
 }

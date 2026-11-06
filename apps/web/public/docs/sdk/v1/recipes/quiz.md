@@ -216,7 +216,7 @@ export default function Game() {
 
 ## `scenarios/two-players.json`
 
-P1 answers right, P2 wrong: everyone answered, so the reveal starts at once (1500 ms). P2's answer during the reveal is refused (`WRONG_PHASE`), and P1's late answer for question 1 during question 2 is refused (`STALE_PHASE`). Question 2 times out with no answers. Both answer question 3 right and the game finishes after its reveal, P1 first with 2 points.
+Both players answer; the expectations check the submission, the reveal of the first question, the scores during and after the game, and that it ends in results.
 
 ```json
 {
@@ -228,34 +228,105 @@ P1 answers right, P2 wrong: everyone answered, so the reveal starts at once (150
     {
       "at_ms": 1000,
       "player": "P1",
-      "command": { "name": "answer", "payload": { "option": 1, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 1,
+          "phase": 1
+        }
+      }
     },
     {
       "at_ms": 1500,
       "player": "P2",
-      "command": { "name": "answer", "payload": { "option": 0, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 0,
+          "phase": 1
+        }
+      }
     },
     {
       "at_ms": 2000,
       "player": "P2",
-      "command": { "name": "answer", "payload": { "option": 1, "phase": 2 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 1,
+          "phase": 2
+        }
+      }
     },
     {
       "at_ms": 7000,
       "player": "P1",
-      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 2,
+          "phase": 1
+        }
+      }
     },
     {
       "at_ms": 32000,
       "player": "P1",
-      "command": { "name": "answer", "payload": { "option": 1, "phase": 5 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 1,
+          "phase": 5
+        }
+      }
     },
     {
       "at_ms": 32100,
       "player": "P2",
-      "command": { "name": "answer", "payload": { "option": 1, "phase": 5 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 1,
+          "phase": 5
+        }
+      }
     }
   ],
-  "observe_at_ms": [1200, 2000, 40000]
+  "observe_at_ms": [1200, 2000, 40000],
+  "expect": [
+    {
+      "at_ms": 1200,
+      "path": "phases.submissions.P1.option",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "at_ms": 2000,
+      "path": "game.reveal.correct",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "at_ms": 2000,
+      "path": "game.scores",
+      "op": "eq",
+      "value": {
+        "P1": 1
+      }
+    },
+    {
+      "path": "game.scores",
+      "op": "eq",
+      "value": {
+        "P1": 2,
+        "P2": 1
+      }
+    },
+    {
+      "path": "phases.current.name",
+      "op": "eq",
+      "value": "results"
+    }
+  ]
 }
 ```

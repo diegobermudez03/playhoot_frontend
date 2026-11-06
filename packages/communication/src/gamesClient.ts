@@ -19,6 +19,11 @@ import {
   draftRevisionsPath,
   draftRevisionsResponseSchema,
   draftSimulationsPath,
+  type ExpectationResultResponse,
+  notObservedSchema,
+  simulationFormats,
+  simulationStatePath,
+  simulationStateSchema,
   draftPreviewsPath,
   previewCreatedSchema,
   type CreatePreviewRequest,
@@ -230,9 +235,31 @@ export interface CreatedAiLink {
 
 // A simulation's result: `raw` is the backend's whole answer, kept as it came for the person to
 // copy back to their AI; the rest is what the workspace summarizes of it.
+// One expectation as checked: `atMs` null is the end; `actual` undefined when nothing was there.
+export interface ExpectationOutcome {
+  index: number;
+  atMs: number | null;
+  of: string;
+  path: string;
+  op: string;
+  expected: unknown;
+  actual: unknown;
+  passed: boolean;
+  notObserved: boolean;
+  problem: string | null;
+}
+
+// What one simulated scenario did. `raw` is the backend's answer, kept to hand to the AI.
 export interface SimulationResult {
   raw: unknown;
+  // The kept result's id, to read its states for a while; null when the backend kept none.
+  resultId: string | null;
   revision: number | null;
+  toolchainVersion: string | null;
+  players: string[];
+  // Whether every expectation passed; null without expectations.
+  passed: boolean | null;
+  expectations: { total: number; passed: number; failed: ExpectationOutcome[] } | null;
   // Whether the game ended (`finish()`) within the scenario.
   finished: boolean | null;
   // Why the simulation stopped before the scenario's end, when it did.
@@ -243,7 +270,46 @@ export interface SimulationResult {
   errors: number;
   // The message of the script's failure, when the game's code threw.
   scriptError: string | null;
+  // The instants observed, whose states can be read.
+  observedAtMs: number[];
 }
+
+// Every saved scenario run: each one's result, or why it could not run.
+export interface SimulationBatch {
+  raw: unknown;
+  revision: number | null;
+  passed: boolean | null;
+  scenarios: {
+    path: string;
+    result: SimulationResult | null;
+    diagnostics: { field: string; message: string }[];
+  }[];
+  skipped: string[];
+}
+
+export type SimulationAnswer =
+  { kind: 'single'; result: SimulationResult } | { kind: 'batch'; batch: SimulationBatch };
+
+// One value read from a kept result, or why there is none.
+export type SimulationState =
+  | {
+      status: 'found';
+      of: string;
+      path: string;
+      atMs: number;
+      final: boolean;
+      // Absent when too large: then its size and keys (object) or length (array).
+      value: unknown;
+      tooLarge: boolean;
+      size: number | null;
+      keys: string[];
+      length: number | null;
+    }
+  | {
+      status: 'missing';
+      reason: 'expired' | 'not-observed' | 'path-not-found';
+      observedAtMs: number[];
+    };
 
 // A preview opened for the creator: its connection is `PreviewConnector.connect(previewUUID)`.
 export interface CreatedPreview {
@@ -441,10 +507,18 @@ export interface GamesClient {
   ): Promise<Result<CreatedPreview, GamesFailure>>;
   // Runs `scenario` (a parsed `playhoot.scenario.v1` document, sent as is) against the build of
   // the current revision. Nothing is kept: the answer is the only copy of the result.
+  // Runs a scenario document, or `{scenario_path}` / `{all: true}` for the saved ones.
   runSimulation(
     gameUUID: string,
-    scenario: unknown,
-  ): Promise<Result<SimulationResult, GamesFailure>>;
+    request: unknown,
+  ): Promise<Result<SimulationAnswer, GamesFailure>>;
+  // Reads one value of a kept result: at `atMs` (the end when absent), of `of` (global or a
+  // player), at `path` (the whole value when absent).
+  readSimulationState(
+    gameUUID: string,
+    resultID: string,
+    query: { atMs?: number; of?: string; path?: string },
+  ): Promise<Result<SimulationState, GamesFailure>>;
 }
 
 export function createGamesClient(http: HttpClient): GamesClient {
@@ -768,15 +842,54 @@ export function createGamesClient(http: HttpClient): GamesClient {
       });
     },
 
-    async runSimulation(gameUUID, scenario) {
+    async runSimulation(gameUUID, request) {
       const result = await http.request({
         method: 'POST',
         path: draftSimulationsPath(gameUUID),
-        body: scenario,
+        body: request,
         response: simulationDecoder,
       });
       if (!result.ok) return err(gamesFailure(result.error));
-      return ok(simulationOf(result.value.raw, result.value.parsed));
+      return ok(simulationAnswerOf(result.value.raw, result.value.parsed));
+    },
+
+    async readSimulationState(gameUUID, resultID, query) {
+      const search = new URLSearchParams();
+      if (query.atMs !== undefined) search.set('at_ms', String(query.atMs));
+      if (query.of !== undefined && query.of !== '') search.set('of', query.of);
+      if (query.path !== undefined && query.path !== '') search.set('path', query.path);
+      const suffix = search.size > 0 ? `?${search.toString()}` : '';
+      const result = await http.request({
+        method: 'GET',
+        path: `${simulationStatePath(gameUUID, resultID)}${suffix}`,
+        response: simulationStateSchema,
+      });
+      if (!result.ok) {
+        const failure = result.error;
+        const reason = failure.kind === 'http' ? missingStateReason(failure.code) : null;
+        if (reason && failure.kind === 'http') {
+          const observed = notObservedSchema.safeParse(failure.body);
+          return ok({
+            status: 'missing',
+            reason,
+            observedAtMs: observed.success ? (observed.data.observed_at_ms ?? []) : [],
+          });
+        }
+        return err(gamesFailure(failure));
+      }
+      const state = result.value;
+      return ok({
+        status: 'found',
+        of: state.of,
+        path: state.path,
+        atMs: state.at_ms,
+        final: state.final ?? false,
+        value: state.value,
+        tooLarge: state.too_large ?? false,
+        size: state.size ?? null,
+        keys: state.keys ?? [],
+        length: state.length ?? null,
+      });
     },
   };
 }
@@ -824,18 +937,97 @@ const simulationDecoder: Decoder<{ raw: unknown; parsed: SimulationResultRespons
   },
 };
 
+function simulationAnswerOf(raw: unknown, body: SimulationResultResponse): SimulationAnswer {
+  if (body.format !== simulationFormats.batch) {
+    return { kind: 'single', result: simulationOf(raw, body) };
+  }
+  return {
+    kind: 'batch',
+    batch: {
+      raw,
+      revision: body.revision ?? null,
+      passed: body.passed ?? null,
+      scenarios: (body.scenarios ?? []).map((scenario) => {
+        const summary = simulationResultSchema.safeParse(scenario.summary);
+        return {
+          path: scenario.path,
+          result: summary.success ? simulationOf(scenario.summary, summary.data) : null,
+          diagnostics: scenario.diagnostics ?? [],
+        };
+      }),
+      skipped: body.skipped ?? [],
+    },
+  };
+}
+
 function simulationOf(raw: unknown, body: SimulationResultResponse): SimulationResult {
   return {
     raw,
+    resultId: body.result_id ?? null,
     revision: body.revision ?? null,
+    toolchainVersion: body.toolchain_version ?? null,
+    players: body.players ?? [],
+    passed: body.passed ?? null,
+    expectations: expectationsOf(body.expectations),
     finished: body.finished ?? null,
     stopped: reasonOf(body.stopped),
-    commands: body.commands?.length ?? 0,
-    rejected: body.rejected?.length ?? 0,
-    events: body.events?.length ?? 0,
-    errors: body.errors?.length ?? 0,
+    // The summary counts; the whole result lists.
+    commands: body.counts?.commands ?? body.commands?.length ?? 0,
+    rejected: body.counts?.rejected ?? body.rejected?.length ?? 0,
+    events: body.counts?.events ?? body.events?.length ?? 0,
+    errors: body.counts?.errors ?? body.errors?.length ?? 0,
     scriptError: reasonOf(body.script_error),
+    observedAtMs:
+      body.observed_at_ms ??
+      (body.observations ?? []).flatMap((observation) =>
+        observation.requested_at_ms === undefined ? [] : [observation.requested_at_ms],
+      ),
   };
+}
+
+function expectationsOf(
+  expectations: SimulationResultResponse['expectations'],
+): SimulationResult['expectations'] {
+  if (expectations === undefined) return null;
+  const outcome = (checked: ExpectationResultResponse): ExpectationOutcome => ({
+    index: checked.index,
+    atMs: checked.at_ms ?? null,
+    of: checked.of,
+    path: checked.path,
+    op: checked.op,
+    expected: checked.expected,
+    actual: checked.actual,
+    passed: checked.passed,
+    notObserved: checked.not_observed ?? false,
+    problem: checked.problem ?? null,
+  });
+  if (Array.isArray(expectations)) {
+    return {
+      total: expectations.length,
+      passed: expectations.filter((checked) => checked.passed).length,
+      failed: expectations.filter((checked) => !checked.passed).map(outcome),
+    };
+  }
+  return {
+    total: expectations.total,
+    passed: expectations.passed,
+    failed: (expectations.failed ?? []).map(outcome),
+  };
+}
+
+function missingStateReason(
+  code: string | undefined,
+): 'expired' | 'not-observed' | 'path-not-found' | null {
+  switch (code) {
+    case gamesErrorCodes.simulationNotFound:
+      return 'expired';
+    case gamesErrorCodes.notObserved:
+      return 'not-observed';
+    case gamesErrorCodes.pathNotFound:
+      return 'path-not-found';
+    default:
+      return null;
+  }
 }
 
 // A reason given as a string, or as an object with a `message` or `reason`.
@@ -1012,12 +1204,13 @@ function assetOf(asset: AssetBody): DraftAsset {
 
 function diagnosticOf(diagnostic: {
   path: string;
+  field?: string | undefined;
   code: string;
   edit?: number | undefined;
   message: string;
 }): DraftDiagnostic {
   return {
-    path: diagnostic.path,
+    path: diagnostic.path || (diagnostic.field ?? ''),
     code: diagnostic.code,
     ...(diagnostic.edit === undefined ? {} : { edit: diagnostic.edit }),
     message: diagnostic.message,

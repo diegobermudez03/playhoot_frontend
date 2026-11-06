@@ -53,9 +53,9 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 
 ### O. Scenarios with expectations (S, T, U)
 
-- [ ] Guide `scenarios.md`: `expect`, hold segments, saved scenarios run by path or all, compact result and reading state on demand.
-- [ ] Every fixture keeps scenarios with expectations under `scenarios/`, and a test runs them through the backend simulation contract (or a local check of their shape when the backend is not available).
-- [ ] "Escenarios" section: run a pasted scenario, one saved scenario or all; show passed/failed expectations with expected and actual; inspect one state on demand.
+- [x] Guide `scenarios.md` rewritten (2026-11-06): holds, `expect` (ops, paths, `of`, the end), saved scenarios by path or all, the summary, `detail: full`, reading a state, refusals; example from the drift fixture. `index.md` and the recipes (each quoting its fixture scenario, tap-race added) updated.
+- [x] Fixture scenarios with expectations (2026-11-06): drift (now a hold), know-me (private answers), number-guess (hidden secret), pairs, quiz and a new tap-race `first-to-goal.json`; expectations written against the real states (the backend simulation run on the built fixtures). The backend's `play/session/internal/fixturescenarios` test plays them on the built fixtures and requires every expectation to hold; `packages/game-tools/src/scenarios.test.ts` checks their shape here. The number-guess `dist/` (ignored) was stale; rebuilt.
+- [x] "Escenarios" (2026-11-06): saved scenarios listed from the draft with "Ejecutar" and "Ejecutar todos"; a pasted scenario as before; the result shows passed / failed / no expectations, how many held and each failed one (of, path, op, moment, expected and actual), how it ended and the counts; a batch lists each scenario (badge or diagnostics) and opens one; "Ver un estado" reads one value of the kept result (moment, whole state or a player, path; too large and missing answered in words). Client `runSimulation` answers single or batch, `readSimulationState`; runner `runSaved`, `runAll`, `inspect`. Logic mirror and `BACKEND_CONTRACT.md` updated.
 
 ### P. Guide for agents in small pieces (H, I, N, AN)
 

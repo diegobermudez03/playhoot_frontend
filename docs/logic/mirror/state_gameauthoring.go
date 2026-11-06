@@ -84,14 +84,30 @@ func (a *GameAuthoring) keyFor(action string, args any) string { return "" }
 // edited (each edited path with its number of edits, in first-edit order), deleted.
 func ParsePastedChange(text string, currentPaths []string) DraftChange { return DraftChange{} }
 
-// ScenarioRunner is "Escenarios": runs a pasted scenario and keeps its result in memory only.
+// ScenarioRunner is "Escenarios": runs a pasted scenario, a saved one or all of them, and reads
+// one state of a kept result on demand.
 // code: packages/features/game-authoring/src/scenarioRunner.ts
 type ScenarioRunner struct {
 	GameUUID string
-	Run      string // idle | running | done | failed
-	Result   *SimulationResult
+	Run      string            // idle | running | done | failed
+	Answer   *SimulationAnswer // single(result) | batch(scenarios)
 	Failure  *GamesFailure
+	// Inspection is the last state asked for: {resultID, atMs (nil: end), of, path, loading |
+	// done(state) | failed}; a newer one, a new run or clearing replaces it.
+	Inspection *StateInspection
 }
+
+// SavedScenarioPaths are the draft's scenarios/*.json paths, sorted: the saved scenarios listed.
+func SavedScenarioPaths(paths []string) []string { return nil }
+
+// RunSaved runs the scenario saved at path (RunSimulation {scenario_path}); RunAll every saved one
+// (RunSimulation {all: true}). Like Run, ignored while one runs.
+func (r *ScenarioRunner) RunSaved(path string) {}
+func (r *ScenarioRunner) RunAll()              {}
+
+// Inspect reads one value of a kept result (ReadSimulationState).
+// rule: an answer for an inspection no longer the last one is dropped.
+func (r *ScenarioRunner) Inspect(resultID string, atMs *int, of, path string) {}
 
 // ParsePastedScenario reads pasted text strictly as data, like ParsePastedChange: the JSON or it
 // inside ONE code fence; its format must be playhoot.scenario.v1. The backend checks the rest.

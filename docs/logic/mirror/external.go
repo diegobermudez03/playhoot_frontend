@@ -357,13 +357,23 @@ func CreatePreview(gameUUID string, players int) (string, *GamesFailure) { retur
 // preview_ended {reason}, rejected. Out: act_as, sample, command, resync, pause, resume, end.
 func PreviewConnect(previewUUID string) {}
 
-// RunSimulation plays a scenario on the build of the current revision and answers its result;
-// nothing is kept.
-// endpoint: POST /v1/games/{id}/draft/simulations (body: the scenario as pasted) ->
-// {format: playhoot.simulation-result.v1, revision, finished, stopped?, observations, final,
-// commands, rejected, events, errors, script_error?, ...}
-func RunSimulation(gameUUID string, scenario any) (SimulationResult, *GamesFailure) {
-	return SimulationResult{}, nil
+// RunSimulation plays a scenario (as pasted), or {scenario_path} / {all: true} for the saved ones,
+// on the build of the current revision. The backend keeps each result 30 minutes.
+// endpoint: POST /v1/games/{id}/draft/simulations -> {format: playhoot.simulation-summary.v1,
+// result_id, revision, toolchain_version?, players, passed?, expectations?{total, passed, failed[]},
+// finished, stopped, observed_at_ms, counts, rejected[<=10], errors[<=10], script_error?} | the
+// whole playhoot.simulation-result.v1 (detail full) | {format: playhoot.simulation-batch.v1,
+// passed?, scenarios[{path, summary | diagnostics}], skipped} (all)
+func RunSimulation(gameUUID string, request any) (SimulationAnswer, *GamesFailure) {
+	return SimulationAnswer{}, nil
+}
+
+// ReadSimulationState reads one value of a kept result.
+// endpoint: GET /v1/games/{id}/draft/simulations/{resultID}/state[?at_ms][&of][&path] ->
+// {of, path, at_ms, final?, value | too_large, size, keys | length}; 404 not_observed
+// {observed_at_ms} / path_not_found / simulation_not_found (expired) -> answered as missing(reason)
+func ReadSimulationState(gameUUID, resultID string, atMs *int, of, path string) (SimulationState, *GamesFailure) {
+	return SimulationState{}, nil
 }
 
 // SimulationResult keeps the whole answer (Raw) for the person to copy, plus what is summarized.

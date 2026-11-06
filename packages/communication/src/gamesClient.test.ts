@@ -343,16 +343,156 @@ describe('createGamesClient', () => {
     expect(t.fetchImpl.mock.calls[0]![0]).toBe('/v1/games/g-1/draft/simulations');
     expect(JSON.parse(t.fetchImpl.mock.calls[0]![1]!.body as string)).toEqual(scenario);
     expect(result.ok && result.value).toEqual({
-      raw: answer,
-      revision: 3,
-      finished: true,
-      stopped: null,
-      commands: 2,
-      rejected: 1,
-      events: 0,
-      errors: 0,
-      scriptError: null,
+      kind: 'single',
+      result: {
+        raw: answer,
+        resultId: null,
+        revision: 3,
+        toolchainVersion: null,
+        players: [],
+        passed: null,
+        expectations: null,
+        finished: true,
+        stopped: null,
+        commands: 2,
+        rejected: 1,
+        events: 0,
+        errors: 0,
+        scriptError: null,
+        observedAtMs: [],
+      },
     });
+  });
+
+  it('reads a summary with its failed expectations, and a batch', async () => {
+    const summary = {
+      format: 'playhoot.simulation-summary.v1',
+      result_id: 'r-1',
+      revision: 4,
+      toolchain_version: 'tc-1',
+      players: ['P1', 'P2'],
+      passed: false,
+      expectations: {
+        total: 2,
+        passed: 1,
+        failed: [
+          {
+            index: 1,
+            at_ms: 500,
+            of: 'P1',
+            path: 'score',
+            op: 'eq',
+            expected: 2,
+            passed: false,
+            actual: 1,
+          },
+        ],
+      },
+      finished: false,
+      stopped: 'duration',
+      observed_at_ms: [500],
+      counts: { commands: 3, rejected: 1, events: 2, errors: 0 },
+      rejected: [],
+      errors: [],
+    };
+    const t = gamesWith(() => json(200, summary));
+    const single = await t.games.runSimulation('g-1', { scenario_path: 'scenarios/a.json' });
+    expect(single.ok && single.value).toMatchObject({
+      kind: 'single',
+      result: {
+        resultId: 'r-1',
+        toolchainVersion: 'tc-1',
+        passed: false,
+        commands: 3,
+        events: 2,
+        observedAtMs: [500],
+        expectations: {
+          total: 2,
+          passed: 1,
+          failed: [
+            {
+              index: 1,
+              atMs: 500,
+              of: 'P1',
+              path: 'score',
+              expected: 2,
+              actual: 1,
+              notObserved: false,
+            },
+          ],
+        },
+      },
+    });
+
+    const batch = gamesWith(() =>
+      json(200, {
+        format: 'playhoot.simulation-batch.v1',
+        revision: 4,
+        passed: false,
+        scenarios: [
+          { path: 'scenarios/a.json', summary },
+          { path: 'scenarios/b.json', diagnostics: [{ field: 'format', message: 'must be v1' }] },
+        ],
+        skipped: [],
+      }),
+    );
+    const all = await batch.games.runSimulation('g-1', { all: true });
+    expect(all.ok && all.value.kind).toBe('batch');
+    if (!all.ok || all.value.kind !== 'batch') return;
+    expect(all.value.batch.passed).toBe(false);
+    expect(all.value.batch.scenarios[0]!.result?.resultId).toBe('r-1');
+    expect(all.value.batch.scenarios[1]).toEqual({
+      path: 'scenarios/b.json',
+      result: null,
+      diagnostics: [{ field: 'format', message: 'must be v1' }],
+    });
+  });
+
+  it('reads one state of a kept result, or why there is none', async () => {
+    const t = gamesWith(() =>
+      json(200, {
+        result_id: 'r-1',
+        of: 'P1',
+        path: 'hand',
+        requested_at_ms: 500,
+        at_ms: 500,
+        value: [1, 2],
+      }),
+    );
+    const found = await t.games.readSimulationState('g-1', 'r-1', {
+      atMs: 500,
+      of: 'P1',
+      path: 'hand',
+    });
+    expect(t.fetchImpl.mock.calls[0]![0]).toBe(
+      '/v1/games/g-1/draft/simulations/r-1/state?at_ms=500&of=P1&path=hand',
+    );
+    expect(found.ok && found.value).toEqual({
+      status: 'found',
+      of: 'P1',
+      path: 'hand',
+      atMs: 500,
+      final: false,
+      value: [1, 2],
+      tooLarge: false,
+      size: null,
+      keys: [],
+      length: null,
+    });
+
+    const notObserved = gamesWith(() =>
+      json(404, { code: 'not_observed', message: 'm', observed_at_ms: [100, 500] }),
+    );
+    const missing = await notObserved.games.readSimulationState('g-1', 'r-1', { atMs: 300 });
+    expect(missing.ok && missing.value).toEqual({
+      status: 'missing',
+      reason: 'not-observed',
+      observedAtMs: [100, 500],
+    });
+
+    const expired = gamesWith(() => json(404, { code: 'simulation_not_found', message: 'm' }));
+    const gone = await expired.games.readSimulationState('g-1', 'r-1', {});
+    expect(gone.ok && gone.value).toMatchObject({ status: 'missing', reason: 'expired' });
   });
 
   it('summarizes a script error and an early stop', async () => {
@@ -366,9 +506,8 @@ describe('createGamesClient', () => {
     );
     const result = await t.games.runSimulation('g-1', {});
     expect(result.ok && result.value).toMatchObject({
-      stopped: 'script_failure',
-      scriptError: 'update() threw: boom',
-      commands: 0,
+      kind: 'single',
+      result: { stopped: 'script_failure', scriptError: 'update() threw: boom', commands: 0 },
     });
   });
 

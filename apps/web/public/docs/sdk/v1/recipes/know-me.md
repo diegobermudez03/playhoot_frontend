@@ -155,7 +155,7 @@ export default function Game() {
 
 ## `scenarios/three-players.json`
 
-P1 is the subject of round 1 and picks option 2. P2 guesses right, P3 wrong: the round ends when the third answer arrives (1200 ms), P1 and P2 score 1 each. Nobody answers rounds 2 and 3, which end by their deadlines; the game finishes after the last reveal.
+Three players answer the first question; the expectations check each player sees only their own answer before the reveal, who matched the subject, the scores, and that the game ends in results.
 
 ```json
 {
@@ -167,19 +167,80 @@ P1 is the subject of round 1 and picks option 2. P2 guesses right, P3 wrong: the
     {
       "at_ms": 1000,
       "player": "P1",
-      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 2,
+          "phase": 1
+        }
+      }
     },
     {
       "at_ms": 1100,
       "player": "P2",
-      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 2,
+          "phase": 1
+        }
+      }
     },
     {
       "at_ms": 1200,
       "player": "P3",
-      "command": { "name": "answer", "payload": { "option": 0, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 0,
+          "phase": 1
+        }
+      }
     }
   ],
-  "observe_at_ms": [1150, 1300, 100000]
+  "observe_at_ms": [1150, 1300, 100000],
+  "expect": [
+    {
+      "at_ms": 1150,
+      "of": "P1",
+      "path": "phase.mine.option",
+      "op": "eq",
+      "value": 2
+    },
+    {
+      "at_ms": 1150,
+      "of": "P3",
+      "path": "phase.mine",
+      "op": "eq",
+      "value": null
+    },
+    {
+      "at_ms": 1150,
+      "of": "P3",
+      "path": "phase.submitted",
+      "op": "eq",
+      "value": ["P1", "P2"]
+    },
+    {
+      "at_ms": 1300,
+      "path": "game.reveal.matched",
+      "op": "eq",
+      "value": ["P2"]
+    },
+    {
+      "at_ms": 1300,
+      "path": "game.scores",
+      "op": "eq",
+      "value": {
+        "P1": 1,
+        "P2": 1
+      }
+    },
+    {
+      "path": "phases.current.name",
+      "op": "eq",
+      "value": "results"
+    }
+  ]
 }
 ```

@@ -7,18 +7,79 @@
     {
       "at_ms": 1000,
       "player": "P1",
-      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 2,
+          "phase": 1
+        }
+      }
     },
     {
       "at_ms": 1100,
       "player": "P2",
-      "command": { "name": "answer", "payload": { "option": 2, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 2,
+          "phase": 1
+        }
+      }
     },
     {
       "at_ms": 1200,
       "player": "P3",
-      "command": { "name": "answer", "payload": { "option": 0, "phase": 1 } }
+      "command": {
+        "name": "answer",
+        "payload": {
+          "option": 0,
+          "phase": 1
+        }
+      }
     }
   ],
-  "observe_at_ms": [1150, 1300, 100000]
+  "observe_at_ms": [1150, 1300, 100000],
+  "expect": [
+    {
+      "at_ms": 1150,
+      "of": "P1",
+      "path": "phase.mine.option",
+      "op": "eq",
+      "value": 2
+    },
+    {
+      "at_ms": 1150,
+      "of": "P3",
+      "path": "phase.mine",
+      "op": "eq",
+      "value": null
+    },
+    {
+      "at_ms": 1150,
+      "of": "P3",
+      "path": "phase.submitted",
+      "op": "eq",
+      "value": ["P1", "P2"]
+    },
+    {
+      "at_ms": 1300,
+      "path": "game.reveal.matched",
+      "op": "eq",
+      "value": ["P2"]
+    },
+    {
+      "at_ms": 1300,
+      "path": "game.scores",
+      "op": "eq",
+      "value": {
+        "P1": 1,
+        "P2": 1
+      }
+    },
+    {
+      "path": "phases.current.name",
+      "op": "eq",
+      "value": "results"
+    }
+  ]
 }

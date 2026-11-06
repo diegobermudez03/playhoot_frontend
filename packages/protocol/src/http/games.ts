@@ -28,6 +28,8 @@ export const aiLinkRevokePath = (gameUUID: string) => `${aiLinkPath(gameUUID)}/r
 // Runs a scenario against the build of the draft's current revision and answers its result at
 // once; nothing is kept.
 export const draftSimulationsPath = (gameUUID: string) => `${draftPath(gameUUID)}/simulations`;
+export const simulationStatePath = (gameUUID: string, resultID: string) =>
+  `${draftSimulationsPath(gameUUID)}/${encodeURIComponent(resultID)}/state`;
 
 // Opens a preview: a private test game of a revision's succeeded build, played by its creator as
 // each synthetic participant in turn over one live connection (`previewConnectPath`).
@@ -92,6 +94,10 @@ export const gamesErrorCodes = {
   buildNotFound: 'build_not_found',
   buildNotReady: 'build_not_ready',
   invalidScenario: 'invalid_scenario',
+  scenarioNotFound: 'scenario_not_found',
+  simulationNotFound: 'simulation_not_found',
+  notObserved: 'not_observed',
+  pathNotFound: 'path_not_found',
   simulationsBusy: 'simulations_busy',
   invalidPlayers: 'invalid_players',
   previewUnavailable: 'preview_unavailable',
@@ -151,6 +157,8 @@ export const createGameResponseSchema = z.object({
 
 export const draftDiagnosticSchema = z.object({
   path: z.string().optional().default(''),
+  // A scenario's diagnostics name the field instead of a path.
+  field: z.string().optional(),
   code: z.string().optional().default(''),
   // The index of the edit it is about (`edit_not_found`, `edit_ambiguous`, ...).
   edit: z.number().int().optional(),
@@ -260,21 +268,98 @@ export const draftRefusalSchema = z.object({
   max: z.number().int().optional(),
 });
 
-// What the workspace summarizes of a simulation's result. Every other field is kept untouched:
-// the person copies the whole result back to their AI.
+// The simulation answers: a summary (`playhoot.simulation-summary.v1`, the default), the whole
+// result (`playhoot.simulation-result.v1`, `detail: "full"`) or one summary per saved scenario
+// (`playhoot.simulation-batch.v1`, `all: true`).
+export const simulationFormats = {
+  summary: 'playhoot.simulation-summary.v1',
+  result: 'playhoot.simulation-result.v1',
+  batch: 'playhoot.simulation-batch.v1',
+} as const;
+
+export const expectationResultSchema = z.object({
+  index: z.number().int(),
+  at_ms: z.number().nullish(),
+  of: z.string(),
+  path: z.string(),
+  op: z.string(),
+  expected: z.unknown().optional(),
+  passed: z.boolean(),
+  not_observed: z.boolean().optional(),
+  actual: z.unknown().optional(),
+  problem: z.string().optional(),
+});
+
+// What the workspace reads of a simulation's answer. Every other field is kept untouched: the
+// person copies the whole answer back to their AI.
 export const simulationResultSchema = z
   .object({
     format: z.string(),
+    result_id: z.string().optional(),
     revision: z.number().optional(),
+    toolchain_version: z.string().optional(),
+    players: z.array(z.string()).nullish(),
+    passed: z.boolean().optional(),
+    // The summary's counts and failed expectations, or the whole result's list of them.
+    expectations: z
+      .union([
+        z.object({
+          total: z.number(),
+          passed: z.number(),
+          failed: z.array(expectationResultSchema).nullish(),
+        }),
+        z.array(expectationResultSchema),
+      ])
+      .optional(),
     finished: z.boolean().optional(),
     stopped: z.unknown().optional(),
+    counts: z
+      .object({
+        commands: z.number(),
+        rejected: z.number(),
+        events: z.number(),
+        errors: z.number(),
+      })
+      .optional(),
+    observed_at_ms: z.array(z.number()).nullish(),
+    observations: z
+      .array(z.object({ requested_at_ms: z.number().optional() }).passthrough())
+      .nullish(),
     commands: z.array(z.unknown()).nullish(),
     rejected: z.array(z.unknown()).nullish(),
     events: z.array(z.unknown()).nullish(),
     errors: z.array(z.unknown()).nullish(),
     script_error: z.unknown().optional(),
+    // A batch.
+    scenarios: z
+      .array(
+        z.object({
+          path: z.string(),
+          summary: z.unknown().optional(),
+          diagnostics: z.array(z.object({ field: z.string(), message: z.string() })).nullish(),
+        }),
+      )
+      .nullish(),
+    skipped: z.array(z.string()).nullish(),
   })
   .passthrough();
+
+// One value of a kept simulation result.
+export const simulationStateSchema = z.object({
+  result_id: z.string(),
+  of: z.string(),
+  path: z.string(),
+  requested_at_ms: z.number().nullish(),
+  at_ms: z.number(),
+  final: z.boolean().optional(),
+  value: z.unknown().optional(),
+  too_large: z.boolean().optional(),
+  size: z.number().optional(),
+  keys: z.array(z.string()).nullish(),
+  length: z.number().nullish(),
+});
+
+export const notObservedSchema = z.object({ observed_at_ms: z.array(z.number()).nullish() });
 
 // A revision with its provenance. `kind`, `origin` and `actor` may grow; absent fields do not apply.
 export const draftRevisionsResponseSchema = z.array(
@@ -351,6 +436,8 @@ export type BuildResponse = z.infer<typeof buildSchema>;
 export type DraftChangeResponse = z.infer<typeof draftChangeResponseSchema>;
 export type DraftRevisionsResponse = z.infer<typeof draftRevisionsResponseSchema>;
 export type SimulationResultResponse = z.infer<typeof simulationResultSchema>;
+export type SimulationStateResponse = z.infer<typeof simulationStateSchema>;
+export type ExpectationResultResponse = z.infer<typeof expectationResultSchema>;
 
 const cardImageSchema = z.object({
   uuid: z.string(),

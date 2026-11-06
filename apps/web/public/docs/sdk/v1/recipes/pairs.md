@@ -230,7 +230,7 @@ export default function Game() {
 
 ## `scenarios/two-players.json`
 
-P2 flips out of turn (an error to P2 and a refused command), P1 turns two cards, then sends an index the declaration refuses (listed under `rejected`).
+P2 flips out of turn (refused), P1 opens two cards that do not match and then asks for a card that does not exist (refused before the game sees it); the expectations check the open cards, the turn and the untouched scores.
 
 ```json
 {
@@ -239,11 +239,75 @@ P2 flips out of turn (an error to P2 and a refused command), P1 turns two cards,
   "seed": 3,
   "duration_ms": 5000,
   "steps": [
-    { "at_ms": 200, "player": "P2", "command": { "name": "flip", "payload": { "index": 0 } } },
-    { "at_ms": 300, "player": "P1", "command": { "name": "flip", "payload": { "index": 0 } } },
-    { "at_ms": 400, "player": "P1", "command": { "name": "flip", "payload": { "index": 1 } } },
-    { "at_ms": 500, "player": "P1", "command": { "name": "flip", "payload": { "index": 9 } } }
+    {
+      "at_ms": 200,
+      "player": "P2",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 0
+        }
+      }
+    },
+    {
+      "at_ms": 300,
+      "player": "P1",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 0
+        }
+      }
+    },
+    {
+      "at_ms": 400,
+      "player": "P1",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 1
+        }
+      }
+    },
+    {
+      "at_ms": 500,
+      "player": "P1",
+      "command": {
+        "name": "flip",
+        "payload": {
+          "index": 9
+        }
+      }
+    }
   ],
-  "observe_at_ms": [450]
+  "observe_at_ms": [450],
+  "expect": [
+    {
+      "at_ms": 450,
+      "path": "open",
+      "op": "eq",
+      "value": [0, 1]
+    },
+    {
+      "at_ms": 450,
+      "path": "turn",
+      "op": "eq",
+      "value": 1
+    },
+    {
+      "at_ms": 450,
+      "path": "matched",
+      "op": "len",
+      "value": 8
+    },
+    {
+      "path": "scores",
+      "op": "eq",
+      "value": {
+        "P1": 0,
+        "P2": 0
+      }
+    }
+  ]
 }
 ```
