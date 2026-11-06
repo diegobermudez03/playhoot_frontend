@@ -8,7 +8,7 @@ Status: IMPLEMENTED (game-creation-web-v1 CHECKLIST B): `createGameAuthoring` (r
 
 - The draft as the backend reports it, and the outcome of the last action as kinds and values.
 - One idempotency key per action: retrying the same action sends the same key; another action takes a new one.
-- Reading pasted text as the change envelope (`playhoot.project-change.v1`, or that JSON in one code fence) and its added / modified / deleted summary. Never guessing code inside free text, never repairing truncated JSON.
+- Reading pasted text as the change envelope (`playhoot.project-change.v1`, or that JSON in one code fence) and its added / modified / edited (find/replace, with each file's number of edits) / deleted summary. Never guessing code inside free text, never repairing truncated JSON.
 
 ## Does not own
 

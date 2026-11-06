@@ -22,6 +22,24 @@ export function ActionResultNotice({
       data-kind={result.kind}
     >
       <p>{message(result)}</p>
+      {result.kind === 'applied' && result.diffs && (
+        <div className={styles.summaryLine} data-testid="applied-diffs">
+          <FormattedMessage id="result.diffs" />
+          {result.diffs.map((diff) => (
+            <div key={diff.path} className={styles.summaryLine}>
+              <code>{diff.path}</code>
+              {/* The diff is the backend's text, shown as it came (user-facing-text.md, allowed
+                  exceptions). */}
+              <pre className={styles.diff}>{diff.diff}</pre>
+              {diff.truncated && (
+                <span className={styles.muted}>
+                  <FormattedMessage id="result.diffTruncated" />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
       {(result.kind === 'invalid' || result.kind === 'too-large') &&
         result.diagnostics.length > 0 && (
           <DiagnosticList

@@ -16,7 +16,7 @@ Shared declarations (the commands players may send, the view's type) live in `sh
 The person gives you a link to their game. Reading it shows the current revision, its build result, assets, recent attempts, `notes.md` and the sources.
 
 1. Read the link. Note the revision you read.
-2. Produce a change: a JSON document with the files you change (`changes.md`).
+2. Produce a change: a JSON document with find/replace edits of existing files and new files whole (`changes.md`).
    - If you cannot send HTTP requests, give it to the person. They paste it in the section **Cambios de mi IA** (section id `ai`) and tell you when it is applied.
    - If you can, POST it to the link's `/changes` URL.
 3. Every new revision is built automatically. Read the link again (or wait on its `/build` URL) to see the result and fix diagnostics (`building.md`).
@@ -36,7 +36,7 @@ Keep `notes.md` current: purpose, rules agreed with the person, open decisions, 
 - `client.md`: the React hooks, languages and texts, and what the frame allows.
 - `ui.md`: layout, controls (activate, select, text), game-state components, presentation, and which devices a game plays on.
 - `assets.md`: declaring and uploading images, audio and video.
-- `changes.md`: the change document, conflicts, idempotency, restore.
+- `changes.md`: the change document (edits, files, delete), conflicts, idempotency, restore.
 - `building.md`: build stages and diagnostics.
 - `scenarios.md`: scenario and result formats.
 - `phases.md`: timed phases, private submissions, scores and the end of the game.

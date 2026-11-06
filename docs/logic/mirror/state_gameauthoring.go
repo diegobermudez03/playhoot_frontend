@@ -73,9 +73,12 @@ func (a *GameAuthoring) keyFor(action string, args any) string { return "" }
 // ParsePastedChange reads pasted text strictly as data.
 // rule: the whole text is the JSON envelope, or that JSON inside ONE code fence; text around it or
 // two fences -> not-an-envelope; invalid JSON (often cut off) -> not-json, never repaired; another
-// format -> wrong-format; base_revision not a whole number, files not [{path, content}] or delete
-// not [paths] -> malformed(field); a path twice -> repeated-path.
-// computes: the summary: added (paths not in the draft), modified (paths in it), deleted.
+// format -> wrong-format; base_revision not a whole number, files not [{path, content}], edits not
+// [{path, find, replace, all?: boolean}] or delete not [paths] -> malformed(field); files, edits and
+// delete may each be absent; a path written twice, or in more than one of files / edits / delete
+// -> repeated-path (several edits of one path are fine).
+// computes: the summary: added (written paths not in the draft), modified (written paths in it),
+// edited (each edited path with its number of edits, in first-edit order), deleted.
 func ParsePastedChange(text string, currentPaths []string) DraftChange { return DraftChange{} }
 
 // ScenarioRunner is "Escenarios": runs a pasted scenario and keeps its result in memory only.

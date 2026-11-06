@@ -70,6 +70,7 @@ export function AiChangesSection({ authoring }: { authoring: GameAuthoring }) {
             </p>
             <SummaryLine id="ai.summary.added" paths={parsed.summary.added} />
             <SummaryLine id="ai.summary.modified" paths={parsed.summary.modified} />
+            <EditedLine edited={parsed.summary.edited} />
             <SummaryLine id="ai.summary.deleted" paths={parsed.summary.deleted} />
             {parsed.change.baseRevision !== draft.currentRevision && (
               <p className={styles.warningText}>
@@ -149,6 +150,25 @@ function SummaryLine({
         {paths.map((path) => (
           <li key={path}>
             <code>{path}</code>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function EditedLine({ edited }: { edited: { path: string; edits: number }[] }) {
+  if (edited.length === 0) return null;
+  return (
+    <div className={styles.summaryLine}>
+      <FormattedMessage id="ai.summary.edited" values={{ count: edited.length }} />
+      <ul className={styles.pathList}>
+        {edited.map((file) => (
+          <li key={file.path} className={styles.editedFile}>
+            <code>{file.path}</code>
+            <span className={styles.muted}>
+              <FormattedMessage id="ai.summary.edits" values={{ count: file.edits }} />
+            </span>
           </li>
         ))}
       </ul>

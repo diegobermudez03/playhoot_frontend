@@ -283,9 +283,11 @@ func ReadDraft(gameUUID string) (Draft, *GamesFailure) { return Draft{}, nil }
 
 // ApplyChange sends the change envelope on its base revision, all or nothing.
 // endpoint: POST /v1/games/{id}/draft/changes {format "playhoot.project-change.v1", base_revision,
-// files[{path, content}], delete[], idempotency_key}
-// answer: 200 {outcome applied|unchanged, revision, build{status}}; 409 revision_conflict
-// {current_revision}; 422 invalid_change {diagnostics}; 409 idempotency_conflict
+// files[{path, content}], edits?[{path, find, replace, all?}] (only when the change has any),
+// delete[], idempotency_key}
+// answer: 200 {outcome applied|unchanged, revision, build{status}, diffs?[{path, diff, truncated?}]};
+// 409 revision_conflict {current_revision}; 422 invalid_change {diagnostics[{path, code, edit?,
+// message}]}; 409 idempotency_conflict
 func ApplyChange(gameUUID string, change DraftChange, idempotencyKey string) (ChangeResult, *GamesFailure) {
 	return ChangeResult{}, nil
 }

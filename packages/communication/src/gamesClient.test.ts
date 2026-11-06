@@ -80,6 +80,58 @@ describe('createGamesClient', () => {
     });
   });
 
+  it('sends edits and maps the diffs and edit diagnostics they answer', async () => {
+    const t = gamesWith(() =>
+      json(200, {
+        outcome: 'applied',
+        revision: 4,
+        diffs: [{ path: 'notes.md', diff: '-a\n+b\n', truncated: true }],
+      }),
+    );
+    const edits = [{ path: 'notes.md', find: 'a', replace: 'b', all: true }];
+    const result = await t.games.applyChange(
+      'g-1',
+      { baseRevision: 3, files: [], edits, delete: [] },
+      'k-3',
+    );
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        outcome: 'applied',
+        revision: 4,
+        buildStatus: null,
+        asset: null,
+        diffs: [{ path: 'notes.md', diff: '-a\n+b\n', truncated: true }],
+      },
+    });
+    expect(JSON.parse(t.fetchImpl.mock.calls[0]![1]!.body as string)).toMatchObject({ edits });
+
+    const ambiguous = gamesWith(() =>
+      json(422, {
+        code: 'invalid_change',
+        message: 'm',
+        diagnostics: [
+          { path: 'notes.md', code: 'edit_ambiguous', edit: 0, message: 'edit 0: twice' },
+        ],
+      }),
+    );
+    expect(
+      await ambiguous.games.applyChange(
+        'g',
+        { baseRevision: 1, files: [], edits, delete: [] },
+        'k',
+      ),
+    ).toEqual({
+      ok: false,
+      error: {
+        kind: 'invalid',
+        diagnostics: [
+          { path: 'notes.md', code: 'edit_ambiguous', edit: 0, message: 'edit 0: twice' },
+        ],
+      },
+    });
+  });
+
   it('maps a conflict with the current revision, and invalid changes with diagnostics', async () => {
     const conflict = gamesWith(() =>
       json(409, { code: 'revision_conflict', message: 'm', current_revision: 5 }),

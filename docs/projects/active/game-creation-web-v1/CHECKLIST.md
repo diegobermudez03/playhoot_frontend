@@ -44,8 +44,8 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 
 ### M. Patches (C)
 
-- [ ] `parsePastedChange` and "Cambios de mi IA" accept `edits` (find/replace): the summary shows each edited file and its edits, the applied diff from the answer, and `edit_not_found` / `edit_ambiguous` diagnostics.
-- [ ] Guide `changes.md`: edits are the default for existing files; whole files only for new files or rewrites; example from a fixture.
+- [x] `parsePastedChange` and "Cambios de mi IA" accept `edits` (find/replace) (2026-11-05): `files`, `edits` and `delete` may each be absent; a path in more than one of them is `repeated-path`; the summary adds "Editar N archivos" with each file's number of edits; the client sends `edits` only when there are some and maps `diffs` and the diagnostics' `edit`; an applied result shows each edited file's diff as the backend sent it (`applied-diffs`, marked when truncated); `edit_not_found` / `edit_ambiguous` show in the diagnostics list with the backend's message ("edit N: ..."). Logic mirror, `BACKEND_CONTRACT.md` and the package README updated.
+- [x] Guide `changes.md` (2026-11-05): edits are the default for existing files, whole files only for new files or rewrites, `all` for renames; example from the Tap Race fixture (`GOAL`, `DURATION_MS`); the answers table names `diffs` and the edit diagnostics. `index.md` updated.
 
 ### N. Provenance and diff (A P1)
 

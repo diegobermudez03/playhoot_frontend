@@ -352,6 +352,8 @@ export const ptBR: Messages = {
   'ai.summary.title': 'Esta mudança vai:',
   'ai.summary.added': '{count, plural, one {Adicionar # arquivo} other {Adicionar # arquivos}}',
   'ai.summary.modified': '{count, plural, one {Alterar # arquivo} other {Alterar # arquivos}}',
+  'ai.summary.edited': '{count, plural, one {Editar # arquivo} other {Editar # arquivos}}',
+  'ai.summary.edits': '{count, plural, one {# edição} other {# edições}}',
   'ai.summary.deleted': '{count, plural, one {Apagar # arquivo} other {Apagar # arquivos}}',
   'ai.summary.baseMismatch':
     'Ela foi feita para a revisão {base} e o jogo está na revisão {current}, então provavelmente será recusada. Peça para sua IA ler o jogo de novo.',
@@ -365,6 +367,8 @@ export const ptBR: Messages = {
     'Falta o campo {field} na mudança, ou ele está errado. Peça para sua IA enviar de novo.',
   'ai.error.repeatedPath': 'A mudança cita {path} duas vezes.',
 
+  'result.diffs': 'O que as edições mudaram:',
+  'result.diffTruncated': 'O diff foi cortado.',
   'result.applied': 'Pronto: o jogo agora está na revisão {revision}.',
   'result.unchanged': 'Nada mudou: o jogo já tinha exatamente isto.',
   'result.conflict': 'O jogo mudou enquanto você trabalhava. Recarregue e faça a mudança de novo.',

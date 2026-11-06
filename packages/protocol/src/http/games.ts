@@ -151,6 +151,8 @@ export const createGameResponseSchema = z.object({
 export const draftDiagnosticSchema = z.object({
   path: z.string().optional().default(''),
   code: z.string().optional().default(''),
+  // The index of the edit it is about (`edit_not_found`, `edit_ambiguous`, ...).
+  edit: z.number().int().optional(),
   message: z.string(),
 });
 
@@ -226,6 +228,8 @@ export interface ProjectChangeRequest {
   format: typeof projectChangeFormat;
   base_revision: number;
   files: { path: string; content: string }[];
+  // Find/replace edits of existing files, applied in order on the base revision.
+  edits?: { path: string; find: string; replace: string; all?: boolean }[];
   delete: string[];
   idempotency_key: string;
 }
@@ -235,6 +239,10 @@ export const draftChangeResponseSchema = z.object({
   revision: z.number().int(),
   build: z.object({ status: z.string() }).nullish(),
   asset: draftAssetSchema.nullish(),
+  // The unified diff of each file the change edited, cut at 8 KiB when truncated.
+  diffs: z
+    .array(z.object({ path: z.string(), diff: z.string(), truncated: z.boolean().optional() }))
+    .nullish(),
 });
 
 // The body of a refused change, upload or restore: the backend's error body plus what it adds.

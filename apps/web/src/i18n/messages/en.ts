@@ -345,6 +345,8 @@ export const en = {
   'ai.summary.title': 'This change will:',
   'ai.summary.added': '{count, plural, one {Add # file} other {Add # files}}',
   'ai.summary.modified': '{count, plural, one {Change # file} other {Change # files}}',
+  'ai.summary.edited': '{count, plural, one {Edit # file} other {Edit # files}}',
+  'ai.summary.edits': '{count, plural, one {# edit} other {# edits}}',
   'ai.summary.deleted': '{count, plural, one {Delete # file} other {Delete # files}}',
   'ai.summary.baseMismatch':
     'It was made for revision {base} and the game is at revision {current}, so it will probably be refused. Ask your AI to read the game again.',
@@ -357,6 +359,8 @@ export const en = {
     'The change is missing its {field} field or has it wrong. Ask your AI to send it again.',
   'ai.error.repeatedPath': 'The change names {path} twice.',
 
+  'result.diffs': 'What the edits changed:',
+  'result.diffTruncated': 'The diff was cut short.',
   'result.applied': 'Done: the game is now at revision {revision}.',
   'result.unchanged': 'Nothing changed: the game already had exactly this.',
   'result.conflict':

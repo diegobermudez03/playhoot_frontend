@@ -163,8 +163,54 @@ describe('parsePastedChange', () => {
     expect(parsePastedChange(JSON.stringify(envelope), ['server/game.ts', 'notes.md'])).toEqual({
       ok: true,
       change: { baseRevision: 3, files: envelope.files, delete: ['notes.md'] },
-      summary: { added: ['shared/new.ts'], modified: ['server/game.ts'], deleted: ['notes.md'] },
+      summary: {
+        added: ['shared/new.ts'],
+        modified: ['server/game.ts'],
+        edited: [],
+        deleted: ['notes.md'],
+      },
     });
+  });
+
+  it('reads find/replace edits in order and summarizes each edited file', () => {
+    const edits = {
+      format: 'playhoot.project-change.v1',
+      base_revision: 4,
+      edits: [
+        { path: 'server/game.ts', find: 'a', replace: 'b' },
+        { path: 'client/Game.tsx', find: 'c', replace: 'd', all: true },
+        { path: 'server/game.ts', find: 'e', replace: 'f' },
+      ],
+    };
+    expect(parsePastedChange(JSON.stringify(edits), ['server/game.ts', 'client/Game.tsx'])).toEqual(
+      {
+        ok: true,
+        change: { baseRevision: 4, files: [], edits: edits.edits, delete: [] },
+        summary: {
+          added: [],
+          modified: [],
+          edited: [
+            { path: 'server/game.ts', edits: 2 },
+            { path: 'client/Game.tsx', edits: 1 },
+          ],
+          deleted: [],
+        },
+      },
+    );
+  });
+
+  it('refuses malformed edits and a path both edited and written', () => {
+    const edited = (edit: unknown) => JSON.stringify({ ...envelope, edits: [edit] });
+    expect(parsePastedChange(edited({ path: 'notes.md', find: 1, replace: '' }), [])).toEqual({
+      ok: false,
+      error: { kind: 'malformed', field: 'edits' },
+    });
+    expect(
+      parsePastedChange(edited({ path: 'notes.md', find: 'a', replace: 'b', all: 'yes' }), []),
+    ).toEqual({ ok: false, error: { kind: 'malformed', field: 'edits' } });
+    expect(
+      parsePastedChange(edited({ path: 'server/game.ts', find: 'a', replace: 'b' }), []),
+    ).toEqual({ ok: false, error: { kind: 'repeated-path', path: 'server/game.ts' } });
   });
 
   it('accepts one wrapping code fence and nothing else around it', () => {

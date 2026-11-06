@@ -3,6 +3,7 @@ import type {
   DraftChange,
   DraftChangeResult,
   DraftDiagnostic,
+  DraftFileDiff,
   DraftRevision,
   GamesClient,
   GamesFailure,
@@ -15,7 +16,8 @@ export type AuthoringAction = 'change' | 'edit' | 'restore' | 'upload' | 'remove
 
 // How the last action ended, as kinds and values: presentation writes the text.
 export type ActionResult =
-  | { action: AuthoringAction; kind: 'applied'; revision: number }
+  // `diffs`: what a change's edits did to each edited file, when it edited any.
+  | { action: AuthoringAction; kind: 'applied'; revision: number; diffs?: DraftFileDiff[] }
   | { action: AuthoringAction; kind: 'unchanged'; revision: number }
   // The draft changed since the change was made: reload and redo it.
   | { action: AuthoringAction; kind: 'conflict'; currentRevision: number | null }
@@ -248,11 +250,12 @@ function actionResult(
   answer: { ok: true; value: DraftChangeResult } | { ok: false; error: GamesFailure },
 ): ActionResult {
   if (answer.ok) {
-    const { outcome, revision } = answer.value;
+    const { outcome, revision, diffs } = answer.value;
     // `applied`, `attached` and `removed` made a revision; `unchanged` did not. An outcome this
     // client does not know is read by whether the revision moved, which the reload shows.
-    return outcome === 'unchanged'
-      ? { action, kind: 'unchanged', revision }
+    if (outcome === 'unchanged') return { action, kind: 'unchanged', revision };
+    return diffs && diffs.length > 0
+      ? { action, kind: 'applied', revision, diffs }
       : { action, kind: 'applied', revision };
   }
   const failure = answer.error;

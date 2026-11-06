@@ -94,10 +94,13 @@ func WorkspaceOnSectionChosen(section string) {
 
 func WorkspaceOnApplyChange(authoring *GameAuthoring, pasted string) {
 	// computes: ParsePastedChange(pasted, the current paths) (state_gameauthoring.go). Refused text
-	// shows why and disables the button; a valid change shows what it adds, changes and deletes, and
-	// warns when its base revision is not the current one (the backend will answer a conflict).
+	// shows why and disables the button; a valid change shows what it adds, changes, edits (each file
+	// with its number of edits) and deletes, and warns when its base revision is not the current one
+	// (the backend will answer a conflict).
 	change := ParsePastedChange(pasted, authoring.Draft.Paths())
-	authoring.ApplyChange(change) // -> the answer shows below; the box empties when applied or unchanged
+	// -> the answer shows below, with each edited file's diff as the backend sent it (marked when cut
+	// short); the box empties when applied or unchanged.
+	authoring.ApplyChange(change)
 }
 
 func WorkspaceOnSaveFile(authoring *GameAuthoring, path, content string) {

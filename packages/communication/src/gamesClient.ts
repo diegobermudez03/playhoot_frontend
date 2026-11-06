@@ -81,6 +81,8 @@ export interface CreatedGame {
 export interface DraftDiagnostic {
   path: string;
   code: string;
+  // The index of the edit it is about, when it is about one.
+  edit?: number;
   message: string;
 }
 
@@ -155,10 +157,28 @@ export interface DraftRevision {
   createdAt: string;
 }
 
+// One find/replace edit of an existing file: `find` must appear once, or every occurrence is
+// replaced with `all`.
+export interface DraftFileEdit {
+  path: string;
+  find: string;
+  replace: string;
+  all?: boolean;
+}
+
 export interface DraftChange {
   baseRevision: number;
   files: { path: string; content: string }[];
+  // Applied in order on the base revision, before `files` and `delete`; absent means none.
+  edits?: DraftFileEdit[];
   delete: string[];
+}
+
+// An edited file's unified diff, as the backend answered it (cut at 8 KiB when `truncated`).
+export interface DraftFileDiff {
+  path: string;
+  diff: string;
+  truncated: boolean;
 }
 
 // What a change, restore, upload or removal answered. `outcome` is `applied`, `unchanged`,
@@ -169,6 +189,8 @@ export interface DraftChangeResult {
   // The build of `revision` as just queued, when a revision was made.
   buildStatus: string | null;
   asset: DraftAsset | null;
+  // The diffs of the files a change edited; absent when it edited none.
+  diffs?: DraftFileDiff[];
 }
 
 // A link for the creator's AI, as created: `url` holds the secret token and is never answered again.
@@ -541,6 +563,7 @@ export function createGamesClient(http: HttpClient): GamesClient {
         format: projectChangeFormat,
         base_revision: change.baseRevision,
         files: change.files,
+        ...(change.edits && change.edits.length > 0 ? { edits: change.edits } : {}),
         delete: change.delete,
         idempotency_key: idempotencyKey,
       };
@@ -764,11 +787,17 @@ function changeResult(
   result: Result<DraftChangeResponse, HttpFailure>,
 ): Result<DraftChangeResult, GamesFailure> {
   if (!result.ok) return err(gamesFailure(result.error));
+  const diffs = (result.value.diffs ?? []).map((diff) => ({
+    path: diff.path,
+    diff: diff.diff,
+    truncated: diff.truncated ?? false,
+  }));
   return ok({
     outcome: result.value.outcome,
     revision: result.value.revision,
     buildStatus: result.value.build?.status ?? null,
     asset: result.value.asset ? assetOf(result.value.asset) : null,
+    ...(diffs.length > 0 ? { diffs } : {}),
   });
 }
 
@@ -910,6 +939,16 @@ function assetOf(asset: AssetBody): DraftAsset {
   };
 }
 
-function diagnosticOf(diagnostic: { path: string; code: string; message: string }) {
-  return { path: diagnostic.path, code: diagnostic.code, message: diagnostic.message };
+function diagnosticOf(diagnostic: {
+  path: string;
+  code: string;
+  edit?: number | undefined;
+  message: string;
+}): DraftDiagnostic {
+  return {
+    path: diagnostic.path,
+    code: diagnostic.code,
+    ...(diagnostic.edit === undefined ? {} : { edit: diagnostic.edit }),
+    message: diagnostic.message,
+  };
 }
