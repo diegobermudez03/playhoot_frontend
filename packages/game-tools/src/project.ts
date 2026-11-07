@@ -4,6 +4,8 @@ import { join, relative, sep } from 'node:path';
 
 import { gameLanguages, type GameLanguage } from '@playhoot/game-core';
 
+import { configFile, loadConfig, type Config } from './config.ts';
+
 export const projectFormat = 'playhoot.project.v1';
 
 // The logical viewports the backend offers (play_game_versions.aspect_ratio).
@@ -35,6 +37,8 @@ export interface Project {
   languages: [GameLanguage, ...GameLanguage[]];
   // Declared assets by key, in key order.
   assets: Record<string, DeclaredAsset>;
+  // The configurable values: their declaration and the values the game is built with.
+  config: Config;
   // Source files relative to root, with forward slashes.
   files: string[];
 }
@@ -80,6 +84,13 @@ export async function loadProject(root: string): Promise<Project> {
 
   const languages = declaredLanguages(declared.languages, problem);
   const assets = declaredAssets(declared.assets, problem);
+  let valuesText: string | null = null;
+  try {
+    valuesText = await readFile(join(root, configFile), 'utf8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  }
+  const config = loadConfig(declared.config, valuesText, languages, problem);
 
   const files: string[] = [];
   for (const area of sourceAreas) {
@@ -98,6 +109,7 @@ export async function loadProject(root: string): Promise<Project> {
     aspectRatio: aspectRatio as AspectRatio,
     languages: languages as [GameLanguage, ...GameLanguage[]],
     assets,
+    config,
     files: files.sort(),
   };
 }

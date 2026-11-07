@@ -1,11 +1,13 @@
+import { config } from '@playhoot/config/server';
 import { addPoints, defineGame, ranking, type Scores } from '@playhoot/game-server';
 
 import { commands, type View } from '../shared/actions';
 
-// A timed quiz: every question lasts 20 seconds or until everyone answered, then the right answer
-// is revealed for 5 seconds. Answers stay private until the reveal. The question texts are in
-// shared/questions.ts (the client shows them); the right option of each question only here.
-const CORRECT = [1, 2, 1];
+// A timed quiz: every question lasts config.questionSeconds or until everyone answered, then the
+// right answer is revealed for config.revealSeconds. Answers stay private until the reveal. The
+// questions are configuration (config.json); which option is right is private, so only this
+// server code reads it.
+const QUESTIONS = config.questions;
 
 type State = {
   players: string[];
@@ -20,12 +22,13 @@ export default defineGame({
   setup: (players): State => ({ players, index: 0, scores: {}, reveal: null }),
   phases: {
     question: {
-      seconds: 20,
+      seconds: config.questionSeconds,
       submit: 'answer',
       end(state, { submissions }) {
-        const correct = CORRECT[state.index];
-        const counts = [0, 0, 0, 0];
+        const { correct, options } = QUESTIONS[state.index];
+        const counts = options.map(() => 0);
         for (const [player, { option }] of Object.entries(submissions)) {
+          if (option >= counts.length) continue;
           counts[option] += 1;
           if (option === correct) addPoints(state.scores, player, 1);
         }
@@ -34,11 +37,11 @@ export default defineGame({
       },
     },
     reveal: {
-      seconds: 5,
+      seconds: config.revealSeconds,
       end(state, { finish }) {
         state.reveal = null;
         state.index += 1;
-        if (state.index < CORRECT.length) return 'question';
+        if (state.index < QUESTIONS.length) return 'question';
         finish();
         return 'results';
       },
@@ -46,9 +49,9 @@ export default defineGame({
     results: {},
   },
   view: (state): Omit<View, 'phase'> => ({
-    question: state.index < CORRECT.length ? { number: state.index + 1 } : null,
+    question: state.index < QUESTIONS.length ? { number: state.index + 1 } : null,
     reveal: state.reveal,
     standings: ranking(state.scores, state.players),
-    total: CORRECT.length,
+    total: QUESTIONS.length,
   }),
 });

@@ -1,5 +1,61 @@
 {
   "format": "playhoot.project.v1",
   "languages": ["es", "en"],
-  "aspectRatio": "16:9"
+  "aspectRatio": "16:9",
+  "config": {
+    "questions": {
+      "type": "list",
+      "description": "The questions, asked in this order.",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "description": "One question.",
+        "fields": {
+          "text": {
+            "type": "text",
+            "description": "What is asked.",
+            "maxLength": 200,
+            "translated": true
+          },
+          "options": {
+            "type": "list",
+            "description": "The options players choose from.",
+            "minItems": 2,
+            "maxItems": 4,
+            "items": {
+              "type": "text",
+              "description": "One option.",
+              "maxLength": 60,
+              "translated": true
+            }
+          },
+          "correct": {
+            "type": "number",
+            "description": "Which option is right, counting from 0.",
+            "integer": true,
+            "min": 0,
+            "max": 3,
+            "private": true
+          }
+        }
+      }
+    },
+    "questionSeconds": {
+      "type": "number",
+      "description": "How long each question stays open, in seconds.",
+      "integer": true,
+      "min": 5,
+      "max": 120,
+      "default": 20
+    },
+    "revealSeconds": {
+      "type": "number",
+      "description": "How long the right answer shows, in seconds.",
+      "integer": true,
+      "min": 2,
+      "max": 30,
+      "default": 5
+    }
+  }
 }

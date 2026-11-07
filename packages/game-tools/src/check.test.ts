@@ -8,8 +8,11 @@ describe('checkSource', () => {
   it('accepts functions, constants and SDK definitions at the top level', () => {
     const text = `
       import { defineGame } from '@playhoot/game-server';
+      import { config } from '@playhoot/config/server';
       import { commands } from '../shared/actions';
       const GOAL = 20;
+      const ROUNDS = config.rounds;
+      const SECONDS = config.timing.seconds;
       const QUESTIONS = [{ q: '2+2', a: 4 }, ...[]];
       type State = { n: number };
       export default defineGame({ players: { min: 1, max: 2 }, commands, setup: (): State => ({ n: 0 }), view: (s) => s });
@@ -26,6 +29,17 @@ describe('checkSource', () => {
     expect(found).toHaveLength(5);
     expect(found[0]).toContain('let/var');
     expect(found[2]).toContain('top-level constants may only hold');
+  });
+
+  it('refuses property reads that reach constructors, and computed ones', () => {
+    const found = messages(
+      'server/game.ts',
+      `const A = { a: 1 };
+const B = A.constructor;
+const C = A['a'];
+const D = make().a;`,
+    );
+    expect(found.filter((m) => m.includes('top-level constants may only hold'))).toHaveLength(3);
   });
 
   it('refuses enums, top-level statements and reserved names', () => {

@@ -449,6 +449,7 @@ export const es: Messages = {
   'templates.use': 'Usar esta plantilla',
   'templates.actions': 'Acciones:',
   'templates.files': '{count, plural, one {# archivo} other {# archivos}}',
+  'templates.configurable': 'Se puede cambiar sin tocar el código:',
   'templates.close': 'Cerrar',
   'templates.useTitle': 'Empezar de nuevo con una plantilla',
   'templates.useHint':

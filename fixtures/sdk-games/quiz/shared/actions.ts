@@ -7,7 +7,7 @@ export const commands = defineCommands({
 });
 
 export type View = {
-  // Which question is asked (1-based); its text is in shared/questions.ts, in the player's language.
+  // Which question is asked (1-based); its text and options are configuration (`@playhoot/config`).
   question: { number: number } | null;
   // Shown only once the question ended.
   reveal: { correct: number; counts: number[] } | null;

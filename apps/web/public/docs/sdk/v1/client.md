@@ -105,32 +105,19 @@ const texts = defineTexts(languages, {
         <Text tone="muted">{t('question', { number: question.number, total: view.total })}</Text>
 ```
 
-Content in several languages (questions, cards, words) is plain data keyed by language. Typed with `useLanguage(languages)`, the language is one of the listed ones, so the lookup type-checks:
+Content in several languages (questions, cards, words) is data with one text per language. Declared as a translated configuration text (`config.md`), the type has one entry per listed language, and `useLanguage(languages)` returns one of them, so the lookup type-checks:
 
-<!-- example: fixtures/sdk-games/quiz/shared/questions.ts -->
-```ts
-// The questions players read, in each language the game is written in. Public: the client shows
-// them, so the right answers live only in server/game.ts.
-export const QUESTIONS = {
-  es: [
-    { text: '¿Cuánto es 7 x 8?', options: ['54', '56', '64', '48'] },
-    { text: '¿Qué planeta es el más grande?', options: ['Marte', 'Tierra', 'Júpiter', 'Venus'] },
-    { text: '¿Cuántos lados tiene un hexágono?', options: ['5', '6', '7', '8'] },
-  ],
-  en: [
-    { text: 'What is 7 x 8?', options: ['54', '56', '64', '48'] },
-    { text: 'Which planet is the largest?', options: ['Mars', 'Earth', 'Jupiter', 'Venus'] },
-    { text: 'How many sides has a hexagon?', options: ['5', '6', '7', '8'] },
-  ],
-};
+<!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
+```tsx
+  const { text, options } = config.questions[question.number - 1];
 ```
 
 <!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
 ```tsx
-  const { text, options } = QUESTIONS[language][question.number - 1];
+      <Text size="xl">{text[language]}</Text>
 ```
 
-**Recommended:** keep texts in the client. The server sends data the client turns into words (the question's number, an option's index, a code), never sentences: a player's language is a matter of their screen, and the same view then serves every language. Secret data stays on the server (the quiz keeps its right answers in `server/game.ts`).
+**Recommended:** keep texts in the client. The server sends data the client turns into words (the question's number, an option's index, a code), never sentences: a player's language is a matter of their screen, and the same view then serves every language. Secret data stays on the server (the quiz's right answers are private configuration, read only by `server/game.ts`).
 
 ## The frame (required)
 

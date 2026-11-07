@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import ts from 'typescript';
 
+import { configModule } from './config.ts';
 import { assetsModule, projectModule, type Diagnostic, type Project } from './project.ts';
 
 // Packages resolve from the toolchain, wherever the project lives.
@@ -24,36 +25,37 @@ const options: ts.CompilerOptions = {
   types: [],
 };
 
-// Where the generated `@playhoot/assets` and `@playhoot/project` modules are type-checked from;
-// they exist only in memory.
-const assetsFileName = '__playhoot_assets__.ts';
-const projectFileName = '__playhoot_project__.ts';
+// Where the generated modules are type-checked from, by import; they exist only in memory.
+const generatedModules = {
+  '@playhoot/assets': '__playhoot_assets__.ts',
+  '@playhoot/project': '__playhoot_project__.ts',
+  '@playhoot/config': '__playhoot_config__.ts',
+  '@playhoot/config/server': '__playhoot_config_server__.ts',
+} as const;
+type GeneratedModule = keyof typeof generatedModules;
 
 export function typecheck(project: Project): Diagnostic[] {
   const host = ts.createCompilerHost(options);
-  const assetsFile = join(project.root, assetsFileName).split('\\').join('/');
-  const assetsSource = ts.createSourceFile(
-    assetsFile,
-    assetsModule(project, true),
-    ts.ScriptTarget.ES2022,
-  );
-  const projectFile = join(project.root, projectFileName).split('\\').join('/');
-  const projectSource = ts.createSourceFile(
-    projectFile,
-    projectModule(project, true),
-    ts.ScriptTarget.ES2022,
-  );
-  const generated = new Map([
-    [assetsFile, assetsSource],
-    [projectFile, projectSource],
-  ]);
+  const contents: Record<GeneratedModule, string> = {
+    '@playhoot/assets': assetsModule(project, true),
+    '@playhoot/project': projectModule(project, true),
+    '@playhoot/config': configModule(project.config, project.languages, false, true),
+    '@playhoot/config/server': configModule(project.config, project.languages, true, true),
+  };
+  const files = new Map<string, string>();
+  const generated = new Map<string, ts.SourceFile>();
+  for (const name of Object.keys(generatedModules) as GeneratedModule[]) {
+    const file = join(project.root, generatedModules[name]).split('\\').join('/');
+    files.set(name, file);
+    generated.set(file, ts.createSourceFile(file, contents[name], ts.ScriptTarget.ES2022));
+  }
   const getSourceFile = host.getSourceFile.bind(host);
   host.getSourceFile = (fileName, ...rest) =>
     generated.get(fileName) ?? getSourceFile(fileName, ...rest);
   host.resolveModuleNameLiterals = (literals, containingFile) =>
     literals.map((literal) => {
-      if (literal.text === '@playhoot/assets' || literal.text === '@playhoot/project') {
-        const resolvedFileName = literal.text === '@playhoot/assets' ? assetsFile : projectFile;
+      const resolvedFileName = files.get(literal.text);
+      if (resolvedFileName !== undefined) {
         return { resolvedModule: { resolvedFileName, extension: ts.Extension.Ts } };
       }
       const from = literal.text.startsWith('.') ? containingFile : toolchainFile;

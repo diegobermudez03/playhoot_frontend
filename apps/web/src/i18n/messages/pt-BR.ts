@@ -444,6 +444,7 @@ export const ptBR: Messages = {
   'templates.use': 'Usar este modelo',
   'templates.actions': 'Ações:',
   'templates.files': '{count, plural, one {# arquivo} other {# arquivos}}',
+  'templates.configurable': 'Pode ser mudado sem mexer no código:',
   'templates.close': 'Fechar',
   'templates.useTitle': 'Recomeçar com um modelo',
   'templates.useHint':

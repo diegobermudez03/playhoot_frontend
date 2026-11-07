@@ -200,6 +200,16 @@ export const templateSchema = z.object({
     })
     .passthrough()
     .optional(),
+  // What the template lets change as data: game.project.json's "config" and config.json.
+  config: z
+    .object({
+      declared: z.record(
+        z.string(),
+        z.object({ type: z.string().optional(), description: z.string().optional() }).passthrough(),
+      ),
+      values: z.unknown().optional(),
+    })
+    .optional(),
   files: z.array(z.object({ path: z.string(), size: z.number() }).passthrough()).nullish(),
 });
 

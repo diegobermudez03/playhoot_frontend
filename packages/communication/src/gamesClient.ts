@@ -287,6 +287,8 @@ export interface TemplateDetails {
   brief: unknown;
   players: { min: number; max: number } | null;
   commands: string[];
+  // The values it lets change without touching code (config.json), as declared.
+  configurable: { key: string; type: string; description: string }[];
   files: { path: string; size: number }[];
 }
 
@@ -690,6 +692,11 @@ export function createGamesClient(http: HttpClient): GamesClient {
         brief: body.brief ?? null,
         players: body.manifest?.players ?? null,
         commands: Object.keys(body.manifest?.commands ?? {}),
+        configurable: Object.entries(body.config?.declared ?? {}).map(([key, field]) => ({
+          key,
+          type: field.type ?? '',
+          description: field.description ?? '',
+        })),
         files: (body.files ?? []).map((file) => ({ path: file.path, size: file.size })),
       });
     },

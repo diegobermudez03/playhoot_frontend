@@ -12,10 +12,10 @@ import {
   useText,
   useView,
 } from '@playhoot/game-react';
+import { config } from '@playhoot/config';
 import { languages } from '@playhoot/project';
 
 import { commands, type View } from '../shared/actions';
-import { QUESTIONS } from '../shared/questions';
 
 const texts = defineTexts(languages, {
   es: {
@@ -54,7 +54,8 @@ export default function Game() {
       </Screen>
     );
   }
-  const { text, options } = QUESTIONS[language][question.number - 1];
+  // The question's public part: its text and options (which one is right stays on the server).
+  const { text, options } = config.questions[question.number - 1];
   const points = view.standings.find((s) => s.player === id)?.points ?? 0;
   return (
     <Screen>
@@ -62,10 +63,12 @@ export default function Game() {
         <Text tone="muted">{t('question', { number: question.number, total: view.total })}</Text>
         <Countdown />
       </Stack>
-      <Text size="xl">{text}</Text>
+      <Text size="xl">{text[language]}</Text>
       <Choices
         label={t('yourAnswer')}
-        options={options.map((option, i) => (reveal ? `${option} (${reveal.counts[i]})` : option))}
+        options={options.map((option, i) =>
+          reveal ? `${option[language]} (${reveal.counts[i]})` : option[language],
+        )}
         value={phase.mine?.option ?? null}
         onChange={(option) => answer({ option })}
         disabled={phase.name !== 'question'}

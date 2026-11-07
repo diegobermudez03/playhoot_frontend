@@ -196,6 +196,22 @@ function Inspected({
               <code>{details.commands.join(', ')}</code>
             </p>
           )}
+          {details.configurable.length > 0 && (
+            <div data-testid="template-configurable">
+              <p className={styles.summaryTitle}>
+                <FormattedMessage id="templates.configurable" />
+              </p>
+              {/* Descriptions are the template author's texts, shown as written. */}
+              <ul className={styles.list}>
+                {details.configurable.map((value) => (
+                  <li key={value.key} className={styles.editedFile}>
+                    <code>{value.key}</code>
+                    <span>{value.description}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <p className={styles.muted}>
             <FormattedMessage id="templates.files" values={{ count: details.files.length }} />
           </p>

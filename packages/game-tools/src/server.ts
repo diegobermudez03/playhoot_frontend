@@ -8,9 +8,12 @@ import { parse, type Node, type Program } from 'acorn';
 import { rolldown, type Plugin } from 'rolldown';
 
 import { reservedNames } from './check.ts';
+import { configModule } from './config.ts';
 import { serverEntry, type Diagnostic, type Project } from './project.ts';
 
 const entryId = '\0playhoot-server-entry';
+const configId = '\0playhoot-config';
+const serverConfigId = '\0playhoot-config-server';
 const toolchainFile = fileURLToPath(import.meta.url);
 
 const adapterFunctions = [
@@ -51,6 +54,8 @@ function entryPlugin(project: Project): Plugin {
     name: 'playhoot-server-entry',
     async resolveId(source, importer) {
       if (source === entryId) return entryId;
+      if (source === '@playhoot/config') return configId;
+      if (source === '@playhoot/config/server') return serverConfigId;
       // SDK packages resolve from the toolchain, wherever the project lives.
       if (!source.startsWith('.') && !source.startsWith('\0') && importer !== undefined) {
         return this.resolve(source, toolchainFile, { skipSelf: true });
@@ -58,6 +63,10 @@ function entryPlugin(project: Project): Plugin {
       return null;
     },
     load(id) {
+      if (id === configId) return configModule(project.config, project.languages, false, false);
+      if (id === serverConfigId) {
+        return configModule(project.config, project.languages, true, false);
+      }
       if (id !== entryId) return null;
       return [
         `import game from ${JSON.stringify(gameFile)};`,

@@ -10,12 +10,13 @@ For games that move through timed steps: ask, answer, reveal, results. Declare t
 ```ts
   phases: {
     question: {
-      seconds: 20,
+      seconds: config.questionSeconds,
       submit: 'answer',
       end(state, { submissions }) {
-        const correct = CORRECT[state.index];
-        const counts = [0, 0, 0, 0];
+        const { correct, options } = QUESTIONS[state.index];
+        const counts = options.map(() => 0);
         for (const [player, { option }] of Object.entries(submissions)) {
+          if (option >= counts.length) continue;
           counts[option] += 1;
           if (option === correct) addPoints(state.scores, player, 1);
         }
@@ -24,11 +25,11 @@ For games that move through timed steps: ask, answer, reveal, results. Declare t
       },
     },
     reveal: {
-      seconds: 5,
+      seconds: config.revealSeconds,
       end(state, { finish }) {
         state.reveal = null;
         state.index += 1;
-        if (state.index < CORRECT.length) return 'question';
+        if (state.index < QUESTIONS.length) return 'question';
         finish();
         return 'results';
       },
@@ -71,7 +72,7 @@ export const commands = defineCommands({
 });
 
 export type View = {
-  // Which question is asked (1-based); its text is in shared/questions.ts, in the player's language.
+  // Which question is asked (1-based); its text and options are configuration (`@playhoot/config`).
   question: { number: number } | null;
   // Shown only once the question ended.
   reveal: { correct: number; counts: number[] } | null;
@@ -102,10 +103,10 @@ The type is `PhaseView<Name, Submission>` from `@playhoot/game-core`. In the cli
 <!-- example: fixtures/sdk-games/quiz/server/game.ts -->
 ```ts
   view: (state): Omit<View, 'phase'> => ({
-    question: state.index < CORRECT.length ? { number: state.index + 1 } : null,
+    question: state.index < QUESTIONS.length ? { number: state.index + 1 } : null,
     reveal: state.reveal,
     standings: ranking(state.scores, state.players),
-    total: CORRECT.length,
+    total: QUESTIONS.length,
   }),
 ```
 

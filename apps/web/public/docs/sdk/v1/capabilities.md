@@ -35,6 +35,7 @@ SDK version 1.0.0. One line per capability: what it gives, where it is explained
 | Capability | What it gives | Page |
 |---|---|---|
 | Project | Files, `game.project.json`, imports, limits | `project.md` |
+| Configuration | Values changed as data, not code (questions, rounds, durations), typed, private ones server-only | `config.md` |
 | Changes | Find/replace edits, whole files, deletes, conflicts, restore | `changes.md` |
 | Builds | Stages and diagnostics | `building.md` |
 | Scenarios | Scripted players, holds, expectations checked by the platform, saved scenarios, states on demand | `scenarios.md` |

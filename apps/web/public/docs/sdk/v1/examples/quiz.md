@@ -2,19 +2,122 @@
 
 An example to learn the SDK from, every file explained. Do not copy it as the start of a game: start from a template (`policies.md`), or from the starter project.
 
-A timed quiz for 1 to 30 players. Each question lasts 20 seconds or until everyone answered; then the right answer and how many chose each option are shown for 5 seconds. Answers stay private until the reveal. After the last question, the final ranking stays on screen. It shows phases, private submissions, stale answers refused and scores, and a game written in two languages (Spanish first, English): each player sees it in their Playhoot language when it is one of them, in Spanish otherwise.
+A timed quiz for 1 to 30 players. Each question lasts 20 seconds (configurable) or until everyone answered; then the right answer and how many chose each option are shown for 5 seconds. Answers stay private until the reveal. After the last question, the final ranking stays on screen. It shows configuration (its questions and durations are data a template user changes), phases, private submissions, stale answers refused and scores, and a game written in two languages (Spanish first, English): each player sees it in their Playhoot language when it is one of them, in Spanish otherwise.
 
 ## `game.project.json`
+
+Besides the languages, it declares what the quiz lets change without touching code (`config.md`): the questions (each one's text and options in every language, and which option is right, `private` so only the server reads it) and how long a question and its reveal last, with their limits.
 
 <!-- example: fixtures/sdk-games/quiz/game.project.json -->
 ```json
 {
   "format": "playhoot.project.v1",
-  "languages": [
-    "es",
-    "en"
-  ],
-  "aspectRatio": "16:9"
+  "languages": ["es", "en"],
+  "aspectRatio": "16:9",
+  "config": {
+    "questions": {
+      "type": "list",
+      "description": "The questions, asked in this order.",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "description": "One question.",
+        "fields": {
+          "text": {
+            "type": "text",
+            "description": "What is asked.",
+            "maxLength": 200,
+            "translated": true
+          },
+          "options": {
+            "type": "list",
+            "description": "The options players choose from.",
+            "minItems": 2,
+            "maxItems": 4,
+            "items": {
+              "type": "text",
+              "description": "One option.",
+              "maxLength": 60,
+              "translated": true
+            }
+          },
+          "correct": {
+            "type": "number",
+            "description": "Which option is right, counting from 0.",
+            "integer": true,
+            "min": 0,
+            "max": 3,
+            "private": true
+          }
+        }
+      }
+    },
+    "questionSeconds": {
+      "type": "number",
+      "description": "How long each question stays open, in seconds.",
+      "integer": true,
+      "min": 5,
+      "max": 120,
+      "default": 20
+    },
+    "revealSeconds": {
+      "type": "number",
+      "description": "How long the right answer shows, in seconds.",
+      "integer": true,
+      "min": 2,
+      "max": 30,
+      "default": 5
+    }
+  }
+}
+```
+
+## `config.json`
+
+The values: the three questions. The durations are not set, so their defaults apply. Making another quiz from this one means changing this file, not the code.
+
+<!-- example: fixtures/sdk-games/quiz/config.json -->
+```json
+{
+  "format": "playhoot.config.v1",
+  "values": {
+    "questions": [
+      {
+        "text": { "es": "¿Cuánto es 7 x 8?", "en": "What is 7 x 8?" },
+        "options": [
+          { "es": "54", "en": "54" },
+          { "es": "56", "en": "56" },
+          { "es": "64", "en": "64" },
+          { "es": "48", "en": "48" }
+        ],
+        "correct": 1
+      },
+      {
+        "text": { "es": "¿Qué planeta es el más grande?", "en": "Which planet is the largest?" },
+        "options": [
+          { "es": "Marte", "en": "Mars" },
+          { "es": "Tierra", "en": "Earth" },
+          { "es": "Júpiter", "en": "Jupiter" },
+          { "es": "Venus", "en": "Venus" }
+        ],
+        "correct": 2
+      },
+      {
+        "text": {
+          "es": "¿Cuántos lados tiene un hexágono?",
+          "en": "How many sides has a hexagon?"
+        },
+        "options": [
+          { "es": "5", "en": "5" },
+          { "es": "6", "en": "6" },
+          { "es": "7", "en": "7" },
+          { "es": "8", "en": "8" }
+        ],
+        "correct": 1
+      }
+    ]
+  }
 }
 ```
 
@@ -33,7 +136,7 @@ export const commands = defineCommands({
 });
 
 export type View = {
-  // Which question is asked (1-based); its text is in shared/questions.ts, in the player's language.
+  // Which question is asked (1-based); its text and options are configuration (`@playhoot/config`).
   question: { number: number } | null;
   // Shown only once the question ended.
   reveal: { correct: number; counts: number[] } | null;
@@ -43,42 +146,22 @@ export type View = {
 };
 ```
 
-## `shared/questions.ts`
-
-The questions as players read them, once per language. Public: the client shows them. Only the server knows which option is right.
-
-<!-- example: fixtures/sdk-games/quiz/shared/questions.ts -->
-```ts
-// The questions players read, in each language the game is written in. Public: the client shows
-// them, so the right answers live only in server/game.ts.
-export const QUESTIONS = {
-  es: [
-    { text: '¿Cuánto es 7 x 8?', options: ['54', '56', '64', '48'] },
-    { text: '¿Qué planeta es el más grande?', options: ['Marte', 'Tierra', 'Júpiter', 'Venus'] },
-    { text: '¿Cuántos lados tiene un hexágono?', options: ['5', '6', '7', '8'] },
-  ],
-  en: [
-    { text: 'What is 7 x 8?', options: ['54', '56', '64', '48'] },
-    { text: 'Which planet is the largest?', options: ['Mars', 'Earth', 'Jupiter', 'Venus'] },
-    { text: 'How many sides has a hexagon?', options: ['5', '6', '7', '8'] },
-  ],
-};
-```
-
 ## `server/game.ts`
 
-Three phases: `question` collects answers (`submit: 'answer'`), `reveal` shows the result, `results` has no deadline and is where the game ends. Scores are counted in `question`'s `end`, the only place the answers are visible. There is no command handler: the platform records the submissions.
+Three phases: `question` collects answers (`submit: 'answer'`), `reveal` shows the result, `results` has no deadline and is where the game ends. The questions and durations come from `@playhoot/config/server`, the only module with the private `correct`. Scores are counted in `question`'s `end`, the only place the answers are visible. There is no command handler: the platform records the submissions.
 
 <!-- example: fixtures/sdk-games/quiz/server/game.ts -->
 ```ts
+import { config } from '@playhoot/config/server';
 import { addPoints, defineGame, ranking, type Scores } from '@playhoot/game-server';
 
 import { commands, type View } from '../shared/actions';
 
-// A timed quiz: every question lasts 20 seconds or until everyone answered, then the right answer
-// is revealed for 5 seconds. Answers stay private until the reveal. The question texts are in
-// shared/questions.ts (the client shows them); the right option of each question only here.
-const CORRECT = [1, 2, 1];
+// A timed quiz: every question lasts config.questionSeconds or until everyone answered, then the
+// right answer is revealed for config.revealSeconds. Answers stay private until the reveal. The
+// questions are configuration (config.json); which option is right is private, so only this
+// server code reads it.
+const QUESTIONS = config.questions;
 
 type State = {
   players: string[];
@@ -93,12 +176,13 @@ export default defineGame({
   setup: (players): State => ({ players, index: 0, scores: {}, reveal: null }),
   phases: {
     question: {
-      seconds: 20,
+      seconds: config.questionSeconds,
       submit: 'answer',
       end(state, { submissions }) {
-        const correct = CORRECT[state.index];
-        const counts = [0, 0, 0, 0];
+        const { correct, options } = QUESTIONS[state.index];
+        const counts = options.map(() => 0);
         for (const [player, { option }] of Object.entries(submissions)) {
+          if (option >= counts.length) continue;
           counts[option] += 1;
           if (option === correct) addPoints(state.scores, player, 1);
         }
@@ -107,11 +191,11 @@ export default defineGame({
       },
     },
     reveal: {
-      seconds: 5,
+      seconds: config.revealSeconds,
       end(state, { finish }) {
         state.reveal = null;
         state.index += 1;
-        if (state.index < CORRECT.length) return 'question';
+        if (state.index < QUESTIONS.length) return 'question';
         finish();
         return 'results';
       },
@@ -119,17 +203,17 @@ export default defineGame({
     results: {},
   },
   view: (state): Omit<View, 'phase'> => ({
-    question: state.index < CORRECT.length ? { number: state.index + 1 } : null,
+    question: state.index < QUESTIONS.length ? { number: state.index + 1 } : null,
     reveal: state.reveal,
     standings: ranking(state.scores, state.players),
-    total: CORRECT.length,
+    total: QUESTIONS.length,
   }),
 });
 ```
 
 ## `client/Game.tsx`
 
-The client reads the phase from the view: the seconds left (`Countdown`), who answered, and its own answer (`phase.mine`), which `Choices` shows as chosen. It never sees another player's answer before the reveal; `marks` colors the right option once revealed.
+The client reads each question's text and options from `@playhoot/config` (without `correct`) in the player's language, and the phase from the view: the seconds left (`Countdown`), who answered, and its own answer (`phase.mine`), which `Choices` shows as chosen. It never sees another player's answer before the reveal; `marks` colors the right option once revealed.
 
 <!-- example: fixtures/sdk-games/quiz/client/Game.tsx -->
 ```tsx
@@ -147,10 +231,10 @@ import {
   useText,
   useView,
 } from '@playhoot/game-react';
+import { config } from '@playhoot/config';
 import { languages } from '@playhoot/project';
 
 import { commands, type View } from '../shared/actions';
-import { QUESTIONS } from '../shared/questions';
 
 const texts = defineTexts(languages, {
   es: {
@@ -189,7 +273,8 @@ export default function Game() {
       </Screen>
     );
   }
-  const { text, options } = QUESTIONS[language][question.number - 1];
+  // The question's public part: its text and options (which one is right stays on the server).
+  const { text, options } = config.questions[question.number - 1];
   const points = view.standings.find((s) => s.player === id)?.points ?? 0;
   return (
     <Screen>
@@ -197,10 +282,12 @@ export default function Game() {
         <Text tone="muted">{t('question', { number: question.number, total: view.total })}</Text>
         <Countdown />
       </Stack>
-      <Text size="xl">{text}</Text>
+      <Text size="xl">{text[language]}</Text>
       <Choices
         label={t('yourAnswer')}
-        options={options.map((option, i) => (reveal ? `${option} (${reveal.counts[i]})` : option))}
+        options={options.map((option, i) =>
+          reveal ? `${option[language]} (${reveal.counts[i]})` : option[language],
+        )}
         value={phase.mine?.option ?? null}
         onChange={(option) => answer({ option })}
         disabled={phase.name !== 'question'}

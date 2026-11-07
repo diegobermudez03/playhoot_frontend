@@ -9,13 +9,20 @@ import { areaOf, type Diagnostic, type SourceArea } from './project.ts';
 
 // Packages each area may import. Anything else is not available to games.
 const allowedPackages: Record<SourceArea, readonly string[]> = {
-  shared: ['@playhoot/game-core'],
-  server: ['@playhoot/game-core', '@playhoot/game-server'],
+  shared: ['@playhoot/game-core', '@playhoot/config'],
+  // Only server code reads the private configuration values.
+  server: [
+    '@playhoot/game-core',
+    '@playhoot/game-server',
+    '@playhoot/config',
+    '@playhoot/config/server',
+  ],
   client: [
     '@playhoot/game-core',
     '@playhoot/game-react',
     '@playhoot/assets',
     '@playhoot/project',
+    '@playhoot/config',
     'react',
   ],
 };
@@ -158,7 +165,7 @@ function checkTopLevel(statement: ts.Statement, report: Report) {
 }
 
 const constantMessage =
-  'top-level constants may only hold literals, objects and arrays of them, functions, or ' +
+  'top-level constants may only hold literals, objects and arrays of them, property reads of other constants, functions, or ' +
   `${definitionFunctions.join('/')}(...); compute anything else inside a function`;
 
 function checkName(name: ts.Identifier, report: Report) {
@@ -190,6 +197,14 @@ function isConstant(node: ts.Expression): boolean {
     node.kind === ts.SyntaxKind.NullKeyword
   ) {
     return true;
+  }
+  // Reading a property of another constant (config.rounds) runs no code; constructors stay out.
+  if (ts.isPropertyAccessExpression(node)) {
+    return (
+      !forbiddenProperties.includes(node.name.text) &&
+      (ts.isIdentifier(node.expression) || ts.isPropertyAccessExpression(node.expression)) &&
+      isConstant(node.expression)
+    );
   }
   if (ts.isPrefixUnaryExpression(node)) {
     return (

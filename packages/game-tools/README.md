@@ -18,6 +18,8 @@ Steps, stopping at the first that fails with diagnostics (stage, file, line):
 
 `game.project.json`'s `"assets"` (checked with the backend's rules) becomes the module `@playhoot/assets` the client imports: one handle per key, generated for the bundle and, in memory, for the type check, so an undeclared key is a type error.
 
+`game.project.json`'s `"config"` and `config.json` (`src/config.ts`, 2026-11-07) are checked together (declaration problems on `game.project.json`, value problems on `config.json`, each with the value's path) and become two generated modules, typed from the declaration: `@playhoot/config` (private values left out; shared, server and client may import it) and `@playhoot/config/server` (every value; server only). Rules for agents: `apps/web/public/docs/sdk/v1/config.md`.
+
 Outputs `server.js`, `client.html`, `manifest.json` (derived from the definition) and `build.json` (profile, aspect ratio, hashes). The backend's scriptcheck profile `sdk-v1` checks `server.js` again and decides.
 
 SDK packages always resolve from the toolchain, wherever the project lives.

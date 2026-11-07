@@ -6,7 +6,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { validateBrief } from '@playhoot/game-core';
+import { validateBrief } from '@playhoot/game-core/brief';
 import { describe, expect, it } from 'vitest';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));

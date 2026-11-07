@@ -437,6 +437,7 @@ export const en = {
   'templates.use': 'Use this template',
   'templates.actions': 'Actions:',
   'templates.files': '{count, plural, one {# file} other {# files}}',
+  'templates.configurable': 'Can be changed without touching the code:',
   'templates.close': 'Close',
   'templates.useTitle': 'Start over from a template',
   'templates.useHint':

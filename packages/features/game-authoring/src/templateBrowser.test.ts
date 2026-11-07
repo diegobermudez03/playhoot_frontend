@@ -37,6 +37,7 @@ describe('createTemplateBrowser', () => {
           brief: { goal: 'Answer right' },
           players: { min: 1, max: 30 },
           commands: ['answer'],
+          configurable: [],
           files: [],
         },
       })),

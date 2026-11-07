@@ -374,7 +374,7 @@ func RunSimulation(gameUUID string, request any) (SimulationAnswer, *GamesFailur
 //
 // Templates (any account): BrowseTemplates GET /v1/templates -> {featured[entry], categories};
 // SearchTemplates GET /v1/templates/search?q&category&players&page -> {page, templates, more};
-// InspectTemplate GET /v1/templates/{id} -> {card, revision, brief?, manifest?, files}; UseTemplate
+// InspectTemplate GET /v1/templates/{id} -> {card, revision, brief?, manifest?, config?, files}; UseTemplate
 // POST /v1/games/{id}/draft/template {template_game_uuid, base_revision, idempotency_key} -> as a
 // change; 404 template_not_found.
 

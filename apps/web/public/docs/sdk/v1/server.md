@@ -94,7 +94,7 @@ The server code is checked before it is accepted (`building.md`). At the top lev
 
 - `import` and `export` declarations, types and interfaces;
 - `function` declarations;
-- `const` bindings holding literals, objects and arrays of literals, functions, other constants, or calls to `defineGame`, `defineCommands`, `defineInputs`.
+- `const` bindings holding literals, objects and arrays of literals, functions, other constants or their properties (`config.rounds`), or calls to `defineGame`, `defineCommands`, `defineInputs`.
 
 Not allowed:
 

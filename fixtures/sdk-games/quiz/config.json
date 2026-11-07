@@ -1,0 +1,40 @@
+{
+  "format": "playhoot.config.v1",
+  "values": {
+    "questions": [
+      {
+        "text": { "es": "¿Cuánto es 7 x 8?", "en": "What is 7 x 8?" },
+        "options": [
+          { "es": "54", "en": "54" },
+          { "es": "56", "en": "56" },
+          { "es": "64", "en": "64" },
+          { "es": "48", "en": "48" }
+        ],
+        "correct": 1
+      },
+      {
+        "text": { "es": "¿Qué planeta es el más grande?", "en": "Which planet is the largest?" },
+        "options": [
+          { "es": "Marte", "en": "Mars" },
+          { "es": "Tierra", "en": "Earth" },
+          { "es": "Júpiter", "en": "Jupiter" },
+          { "es": "Venus", "en": "Venus" }
+        ],
+        "correct": 2
+      },
+      {
+        "text": {
+          "es": "¿Cuántos lados tiene un hexágono?",
+          "en": "How many sides has a hexagon?"
+        },
+        "options": [
+          { "es": "5", "en": "5" },
+          { "es": "6", "en": "6" },
+          { "es": "7", "en": "7" },
+          { "es": "8", "en": "8" }
+        ],
+        "correct": 1
+      }
+    ]
+  }
+}

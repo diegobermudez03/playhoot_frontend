@@ -42,6 +42,7 @@ Keep `brief.json` current with what is agreed and where the work stands, and `no
 - `brief.md`: `brief.json`, the agreed game and the phase of the work.
 - `templates.md`: finding a template, inspecting few, starting from one or switching to one.
 - `project.md`: files, folders, `game.project.json`, import rules, limits.
+- `config.md`: values a game lets change without code (`config.json`), typed and checked by the build.
 - `server.md`: `defineGame`, commands, handlers, timing, sandbox rules.
 - `client.md`: the React hooks, languages and texts, and what the frame allows.
 - `ui.md`: layout, controls (activate, select, text), game-state components, presentation, and which devices a game plays on.

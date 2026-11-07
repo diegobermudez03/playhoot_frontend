@@ -452,6 +452,3 @@ export function effectiveLanguage(
 
 // The SDK's version: the guide for agents names it (capabilities.md), and every build records it.
 export const sdkVersion = '1.0.0';
-
-// brief.json (playhoot.brief.v1): the agreed game and the phase of the work.
-export * from './brief';

@@ -1,5 +1,5 @@
 import type { DraftFile } from '@playhoot/communication';
-import { validateBrief, type Brief, type BriefPhase } from '@playhoot/game-core';
+import { validateBrief, type Brief, type BriefPhase } from '@playhoot/game-core/brief';
 
 // The draft's brief.json as the workspace shows it: the agreed game and the phase of the work.
 export type DraftBrief =

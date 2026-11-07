@@ -255,6 +255,10 @@ describe('createGamesClient', () => {
         revision: 9,
         brief: { goal: 'Answer' },
         manifest: { players: { min: 1, max: 30 }, commands: { answer: {} } },
+        config: {
+          declared: { rounds: { type: 'number', description: 'Rounds', default: 3 } },
+          values: { format: 'playhoot.config.v1', values: { rounds: 5 } },
+        },
         files: [{ path: 'server/game.ts', sha256: 's', size: 10 }],
       }),
     );
@@ -263,6 +267,7 @@ describe('createGamesClient', () => {
       revision: 9,
       players: { min: 1, max: 30 },
       commands: ['answer'],
+      configurable: [{ key: 'rounds', type: 'number', description: 'Rounds' }],
       files: [{ path: 'server/game.ts', size: 10 }],
     });
 
