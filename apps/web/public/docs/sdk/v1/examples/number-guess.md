@@ -1,4 +1,6 @@
-# Recipe: Number Guess
+# Example: Number Guess
+
+An example to learn the SDK from, every file explained. Do not copy it as the start of a game: start from a template (`policies.md`), or from the starter project.
 
 A turn-based game with private information. Players take turns guessing a secret number from 1 to 100; each guess gets a hint; a turn lasts 15 seconds. It shows commands with fields, `reject` and `error`, `emit`, a turn clock in `update`, `leave` and `rejoin`, helpers in another server file, and a view that hides the secret until the end.
 

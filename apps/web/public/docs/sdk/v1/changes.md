@@ -2,7 +2,7 @@
 
 A change is one JSON document. It applies all or nothing, on the revision you read.
 
-- **Edits** change files the project already has: each one replaces a piece of text with another. They are the default way to change an existing file: small, cheap and easy to review.
+- **Recommended:** **edits** change files the project already has: each one replaces a piece of text with another. They are the default way to change an existing file: small, cheap and easy to review.
 - **Files** hold new files, or files you rewrite substantially, each with its complete content.
 - **Delete** removes files.
 

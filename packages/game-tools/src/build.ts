@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { validateManifest } from '@playhoot/game-core';
+import { sdkVersion, validateManifest } from '@playhoot/game-core';
 
 import { checkSource } from './check.ts';
 import { buildClient } from './client.ts';
@@ -35,6 +35,8 @@ export interface Artifact {
 export interface BuildRecord {
   format: typeof buildFormat;
   profile: typeof compileProfile;
+  // The SDK version the project was built with.
+  sdk: string;
   aspectRatio: string;
   // The languages the game is written in, its main one first.
   languages: string[];
@@ -105,6 +107,7 @@ export async function build(root: string): Promise<BuildResult> {
     record: {
       format: buildFormat,
       profile: compileProfile,
+      sdk: sdkVersion,
       aspectRatio: project.aspectRatio,
       languages: [...project.languages],
       server: artifact(server.script),

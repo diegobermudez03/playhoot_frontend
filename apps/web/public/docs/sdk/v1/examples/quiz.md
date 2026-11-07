@@ -1,4 +1,6 @@
-# Recipe: Quiz
+# Example: Quiz
+
+An example to learn the SDK from, every file explained. Do not copy it as the start of a game: start from a template (`policies.md`), or from the starter project.
 
 A timed quiz for 1 to 30 players. Each question lasts 20 seconds or until everyone answered; then the right answer and how many chose each option are shown for 5 seconds. Answers stay private until the reveal. After the last question, the final ranking stays on screen. It shows phases, private submissions, stale answers refused and scores, and a game written in two languages (Spanish first, English): each player sees it in their Playhoot language when it is one of them, in Spanish otherwise.
 

@@ -1,6 +1,6 @@
 # Playhoot SDK guide, version 1
 
-Start here. This guide is written for an AI agent building a game with a person on Playhoot. It describes only what exists in this version.
+Start here. This guide is written for an AI agent building a game with a person on Playhoot. It describes only what exists in this version (SDK 1.0.0). Then read `capabilities.md`, the one-line index of what the SDK gives, and only the pages your game needs.
 
 ## What a Playhoot game is
 
@@ -29,8 +29,16 @@ Never claim something happened (applied, built, uploaded, passed) without readin
 
 Keep `notes.md` current: purpose, rules agreed with the person, open decisions, known problems. Whoever continues the game starts there.
 
+## How rules are marked
+
+- **Required:** the platform refuses anything else, or the game breaks for players.
+- **Recommended:** do it this way unless the person asks otherwise or it cannot work; it is cheaper, safer or plays better.
+- **Escape hatch:** allowed when the recommended way cannot do what the game needs; it costs something (devices, size, review), so say why in `notes.md`.
+
 ## Pages
 
+- `capabilities.md`: what the SDK gives, one line each, with its page and an example.
+- `policies.md`: the order of work, what done means, testing and assets.
 - `project.md`: files, folders, `game.project.json`, import rules, limits.
 - `server.md`: `defineGame`, commands, handlers, timing, sandbox rules.
 - `client.md`: the React hooks, languages and texts, and what the frame allows.
@@ -40,11 +48,13 @@ Keep `notes.md` current: purpose, rules agreed with the person, open decisions, 
 - `building.md`: build stages and diagnostics.
 - `scenarios.md`: scenarios, holds, expectations, saved scenarios, the summary and reading states.
 - `phases.md`: timed phases, private submissions, scores and the end of the game.
-- `recipes/tap-race.md`: the starter game, every file explained.
-- `recipes/number-guess.md`: a turn-based game with private information, every file explained.
-- `recipes/pairs.md`: a memory game with an optional image, events and errors.
-- `recipes/drift.md`: a movement game driven by held inputs and `update`.
-- `recipes/quiz.md`: a timed quiz with private answers, a reveal and a final ranking, in two languages.
-- `recipes/know-me.md`: players guess one another's answers, round by round.
+Examples teach the SDK; they are not templates to copy as a game:
+
+- `examples/tap-race.md`: the starter game, every file explained.
+- `examples/number-guess.md`: a turn-based game with private information, every file explained.
+- `examples/pairs.md`: a memory game with an optional image, events and errors.
+- `examples/drift.md`: a movement game driven by held inputs and `update`.
+- `examples/quiz.md`: a timed quiz with private answers, a reveal and a final ranking, in two languages.
+- `examples/know-me.md`: players guess one another's answers, round by round.
 
 All pages are under the same address as this one.

@@ -1,4 +1,6 @@
-# Recipe: Drift
+# Example: Drift
+
+An example to learn the SDK from, every file explained. Do not copy it as the start of a game: start from a template (`policies.md`), or from the starter project.
 
 A movement game for 1 to 6 players: each player holds arrows to move; touching the star scores; the first to 3 stars wins. It shows continuous inputs, movement integrated in `update`, and world units scaled by the client.
 

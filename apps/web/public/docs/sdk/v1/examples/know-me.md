@@ -1,4 +1,6 @@
-# Recipe: How well do we know each other
+# Example: How well do we know each other
+
+An example to learn the SDK from, every file explained. Do not copy it as the start of a game: start from a template (`policies.md`), or from the starter project.
 
 For 2 to 12 players. Each round one player is the subject and answers a question about themselves; everyone else guesses their answer. Every right guess gives 1 point to the guesser and 1 to the subject. Everyone is the subject once, then the ranking shows who knows whom best. It shows one submission per player per round, compared at the reveal.
 

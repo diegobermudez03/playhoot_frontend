@@ -1,6 +1,6 @@
 # Assets
 
-Images, audio and video a game needs are declared in `game.project.json` and uploaded separately. Code never embeds them.
+Images, audio and video a game needs are declared in `game.project.json` and uploaded separately. **Required:** code never embeds them. Which kind to use first is in `policies.md` (HTML/CSS, then SVG, files last).
 
 ## Declaring
 
@@ -43,7 +43,7 @@ Reading the link lists every declared asset as `missing` or `ready`, and content
 - `missing`: this version holds no file for it (an optional asset nobody uploaded). Render a fallback.
 - `error`: it could not be loaded.
 
-Always render something while it is not `ready`. `AssetImage` does it for images:
+**Required:** always render something while it is not `ready`. `AssetImage` does it for images:
 
 <!-- example: fixtures/sdk-games/pairs/client/Game.tsx -->
 ```tsx

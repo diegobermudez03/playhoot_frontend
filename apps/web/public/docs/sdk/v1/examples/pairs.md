@@ -1,4 +1,6 @@
-# Recipe: Pairs
+# Example: Pairs
+
+An example to learn the SDK from, every file explained. Do not copy it as the start of a game: start from a template (`policies.md`), or from the starter project.
 
 A memory game for 1 to 4 players. Players take turns turning two cards: a pair scores and the player goes again, a miss passes the turn. It shows an optional image asset with a fallback, hiding information in the view, and the server's events and errors reaching the client.
 

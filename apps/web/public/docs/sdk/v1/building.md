@@ -27,4 +27,4 @@ Status: `QUEUED`, `RUNNING`, `SUCCEEDED`, `FAILED`, `SUPERSEDED`. A diagnostic:
 { "stage": "types", "file": "server/game.ts", "line": 20, "column": 13, "message": "Property 'tapz' does not exist on type 'State'." }
 ```
 
-Fix every diagnostic of the failed build in one change when you can. The link also shows the last successful build, so you know what still works. Scenarios and the preview need a `SUCCEEDED` build of the revision they use.
+**Recommended:** fix every diagnostic of the failed build in one change. The link also shows the last successful build, so you know what still works. Scenarios and the preview need a `SUCCEEDED` build of the revision they use.

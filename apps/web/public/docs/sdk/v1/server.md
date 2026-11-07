@@ -20,7 +20,7 @@
 
 ## State
 
-- Plain JSON (objects, arrays, strings, numbers, booleans, null). No functions, Maps, Sets, Dates or classes.
+- **Required:** plain JSON (objects, arrays, strings, numbers, booleans, null). No functions, Maps, Sets, Dates or classes.
 - Handlers change it in place: `state.score[player] += 1`. Each call receives a fresh copy; there is nothing to return.
 - At most 256 KiB. Each view, each command answer and each call's events and errors are bounded the same way.
 
@@ -66,7 +66,7 @@ A command handler gets the state and a context:
 
 The handler's return value is the answer the sender's `useCommand` call receives: nothing → `{ ok: true }`, a value → `{ ok: true, value }`, `reject(code, details?)` → `{ ok: false, code, details }`.
 
-**Validate before changing the state.** A rejection does not undo changes made before it.
+**Recommended:** validate before changing the state. A rejection does not undo changes made before it.
 
 `input`, `update`, `leave` and `rejoin` get the same context without `payload` (`input` has `inputs`, `leave`/`rejoin` have `player`, `update` has no `player`).
 
@@ -78,7 +78,7 @@ The handler's return value is the answer the sender's `useCommand` call receives
 
 - Every ~100 ms the platform runs one step: pending inputs and commands in arrival order, then `update` at the step's time.
 - A command does not wait for the next step: it runs at its arrival, with the inputs that arrived before it, followed by `update` at that time.
-- There are no timers. Keep deadlines in the state (`endsAt: now + 15000`) and check them in `update`.
+- **Required:** there are no timers. Keep deadlines in the state (`endsAt: now + 15000`) and check them in `update`.
 - `Date.now()` and `new Date()` give Session time (0 at start), never the real clock.
 - `Math.random()` is seeded per Session (a scenario with the same seed repeats exactly). It throws inside `view`.
 
@@ -88,7 +88,7 @@ The handler's return value is the answer the sender's `useCommand` call receives
 - When the last participant leaves, the Session ends.
 - With `rejoin`, a player who left may come back if it returns `true`.
 
-## Sandbox rules
+## Sandbox rules (required)
 
 The server code is checked before it is accepted (`building.md`). At the top level of every `server/` and `shared/` file only these are allowed:
 
@@ -106,7 +106,7 @@ Everything inside functions is ordinary TypeScript.
 
 ## Failures
 
-A handler that throws, runs longer than 5 seconds or uses more than 64 MiB ends a real Session as aborted. Use `reject` for rule violations, never exceptions. Simulate before asking the person to play (`scenarios.md`).
+A handler that throws, runs longer than 5 seconds or uses more than 64 MiB ends a real Session as aborted. **Required:** use `reject` for rule violations, never exceptions. **Recommended:** simulate before asking the person to play (`scenarios.md`).
 
 ## Limits a game observes
 

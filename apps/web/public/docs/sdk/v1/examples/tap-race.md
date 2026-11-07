@@ -1,4 +1,6 @@
-# Recipe: Tap Race
+# Example: Tap Race
+
+An example to learn the SDK from, every file explained. Do not copy it as the start of a game: start from a template (`policies.md`), or from the starter project.
 
 The starter game every new project begins with. Every player taps a button; the first to 20 taps wins, or whoever leads after 30 seconds. It shows the smallest complete game: one command, a deadline in `update`, `finish`, and a view per player.
 

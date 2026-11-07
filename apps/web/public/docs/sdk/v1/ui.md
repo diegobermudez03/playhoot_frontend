@@ -1,6 +1,6 @@
 # UI: layout, controls and presentation
 
-`@playhoot/game-react` ships the pieces most screens need. Use them instead of raw elements: they keep text legible and targets comfortable on every screen, work the same with touch, a mouse, a keyboard and screen readers, and keep the game playable on phones (see "What the device must have").
+`@playhoot/game-react` ships the pieces most screens need. **Recommended:** use them instead of raw elements: they keep text legible and targets comfortable on every screen, work the same with touch, a mouse, a keyboard and screen readers, and keep the game playable on phones (see "What the device must have").
 
 ## Layout
 
@@ -14,7 +14,7 @@
 
 `gap` is `none`, `sm`, `md` (default) or `lg`. `theme` overrides any of `background`, `surface`, `text`, `muted`, `accent`, `onAccent`, `positive`, `negative` (CSS colors); a person who asks for high contrast gets a high-contrast theme instead.
 
-Sizes: `u(n)` is `n` UI units as a CSS length, and 100 units are the viewport's short side (`u(50)` is half of it). Use it (or `vmin`, the same) for sizes and positions you set yourself. Never use pixel sizes for text: the SDK's text never shows smaller than 16 CSS pixels on the device.
+Sizes: `u(n)` is `n` UI units as a CSS length, and 100 units are the viewport's short side (`u(50)` is half of it). Use it (or `vmin`, the same) for sizes and positions you set yourself. **Recommended:** never use pixel sizes for text: the SDK's text never shows smaller than 16 CSS pixels on the device.
 
 ## Controls
 
@@ -74,4 +74,4 @@ When a version is published, the build reads the client to decide which devices 
 - Your own keyboard listeners (`onKeyDown`, `addEventListener('keydown', …)`) make the game need a physical keyboard: it plays on computers only.
 - Hover listeners (`onMouseEnter`, `mouseover`…) together with pressing also restrict it to computers.
 
-Prefer the SDK's controls. Use keyboard listeners only when the game really needs held keys (`recipes/drift.md`).
+**Recommended:** the SDK's controls. **Escape hatch:** keyboard or hover listeners, only when the game really needs held keys (`examples/drift.md`); the game then plays on computers only.

@@ -18,7 +18,7 @@
 | `usePhase()` | The current phase of a game with phases (`PhaseView`: name, id, round, secondsLeft, submitted, mine), or `null` (`phases.md`). |
 | `usePresentation()` | How the game shows on this device: size, density, pointer, safe area, preferences (`ui.md`). |
 
-Build the screen with the SDK's layout, controls and state components (`Screen`, `Stack`, `Grid`, `Button`, `Choices`, `TextAnswer`, `Countdown`, `Scoreboard`…): `ui.md`.
+**Recommended:** build the screen with the SDK's layout, controls and state components (`Screen`, `Stack`, `Grid`, `Button`, `Choices`, `TextAnswer`, `Countdown`, `Scoreboard`…): `ui.md`.
 
 `ranking(scores, players)` is exported too, to order scores in the client.
 
@@ -54,7 +54,7 @@ Inputs are for what a player holds (keys, a joystick); commands are for discrete
 
 ## Events and errors
 
-`emit()` and `error()` reach the client once each, beside the view. Use them for moments (a sound, a toast), never for state: a player who reconnects gets the view, not past events.
+`emit()` and `error()` reach the client once each, beside the view. **Required:** use them for moments (a sound, a toast), never for state: a player who reconnects gets the view, not past events.
 
 <!-- example: fixtures/sdk-games/pairs/client/Game.tsx -->
 ```tsx
@@ -130,9 +130,9 @@ export const QUESTIONS = {
   const { text, options } = QUESTIONS[language][question.number - 1];
 ```
 
-Keep texts in the client. The server sends data the client turns into words (the question's number, an option's index, a code), never sentences: a player's language is a matter of their screen, and the same view then serves every language. Secret data stays on the server (the quiz keeps its right answers in `server/game.ts`).
+**Recommended:** keep texts in the client. The server sends data the client turns into words (the question's number, an option's index, a code), never sentences: a player's language is a matter of their screen, and the same view then serves every language. Secret data stays on the server (the quiz keeps its right answers in `server/game.ts`).
 
-## The frame
+## The frame (required)
 
 - The game is drawn at a fixed logical size given by `aspectRatio`: 1920×1080 (`16:9`), 1080×1920 (`9:16`), 1440×1080 (`4:3`), 1080×1440 (`3:4`), 1080×1080 (`1:1`). The platform scales it to the screen; `Screen` fills it and `usePresentation()` says how big it really shows (`ui.md`).
 - No network: `fetch`, WebSocket and external URLs (images, fonts, scripts) do not load. Styles are inline or in the component.

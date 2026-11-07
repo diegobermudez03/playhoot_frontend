@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { sdkVersion } from '@playhoot/game-core';
+
 import { build } from './build.ts';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
@@ -108,6 +110,25 @@ describe('the SDK guide', { timeout: 60_000 }, async () => {
     }
     for (const [, listed] of index.matchAll(/^- `([^`]+\.md)`/gm)) {
       expect(texts.has(listed ?? ''), `index.md lists ${listed}`).toBe(true);
+    }
+  });
+
+  it('names the SDK version it describes, and indexes only pages that exist', () => {
+    const capabilities = texts.get('capabilities.md') ?? '';
+    expect(capabilities).toContain(`SDK version ${sdkVersion}.`);
+    expect(texts.get('index.md')).toContain(`(SDK ${sdkVersion})`);
+    for (const [, cited] of capabilities.matchAll(/`([\w/-]+\.md)`/g)) {
+      expect(texts.has(cited ?? ''), `capabilities.md cites ${cited}`).toBe(true);
+    }
+  });
+
+  it('marks rules only with the three labels index.md defines', () => {
+    for (const [page, text] of texts) {
+      for (const [, label] of text.matchAll(/\*\*([A-Z][a-z]+(?: [a-z]+)*)(?:,[^*]*)?:\*\*/g)) {
+        expect(['Required', 'Recommended', 'Escape hatch'], `${page}: **${label}:**`).toContain(
+          label,
+        );
+      }
     }
   });
 

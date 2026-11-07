@@ -449,3 +449,6 @@ export function effectiveLanguage(
   const same = languages.find((language) => language.split('-')[0]?.toLowerCase() === base);
   return same ?? languages[0];
 }
+
+// The SDK's version: the guide for agents names it (capabilities.md), and every build records it.
+export const sdkVersion = '1.0.0';

@@ -56,7 +56,7 @@ Games with phases always get `update` calls; declare `update` only for your own 
 ## Commands in phases
 
 - A command that some phase lists (in `submit` or `accepts`) is refused in the other phases with `WRONG_PHASE`. A command no phase lists is allowed in every phase.
-- Declare a `phase: 'number'` field in a command to protect it from arriving late: `useCommand` fills it with the current phase's `id`, and the platform refuses it as `STALE_PHASE` if the phase changed meanwhile (an answer meant for question 2 never counts for question 3).
+- **Recommended:** declare a `phase: 'number'` field in a command to protect it from arriving late: `useCommand` fills it with the current phase's `id`, and the platform refuses it as `STALE_PHASE` if the phase changed meanwhile (an answer meant for question 2 never counts for question 3).
 - Handlers receive `phase` (the current phase or null) and `endPhase()`, which ends it at once.
 - A handler of a `submit` command runs first; if it returns `reject(...)`, the submission is not recorded.
 
@@ -111,6 +111,6 @@ The type is `PhaseView<Name, Submission>` from `@playhoot/game-core`. In the cli
 
 ## When the game ends
 
-`finish()` ends the game after the current operation. Each player's last view is the final one, and their screen keeps showing it, with a notice that the game is over, until they leave. Make the last phase a results screen, as the quiz's `results` is.
+`finish()` ends the game after the current operation. Each player's last view is the final one, and their screen keeps showing it, with a notice that the game is over, until they leave. **Recommended:** make the last phase a results screen, as the quiz's `results` is.
 
-See `recipes/quiz.md` and `recipes/know-me.md`.
+See `examples/quiz.md` and `examples/know-me.md`.

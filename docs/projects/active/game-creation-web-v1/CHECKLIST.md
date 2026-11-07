@@ -59,11 +59,11 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 
 ### P. Guide for agents in small pieces (H, I, N, AN)
 
-- [ ] `capabilities.md`: the compact capability index (each capability one line: what it gives, its page, its example) with the SDK version; the backend serves it as `get_sdk_index`.
-- [ ] Every rule in the guide labelled as required, recommended or escape hatch.
-- [ ] `policies.md`: creation sequence (brief → templates → minimal changes → build → scenarios → assets → preview → the owner publishes), definition of done, testing policy, configure before rewrite, asset policy (HTML/CSS, then SVG as components, then Playhoot built-in assets, then the user's files, raster last; guidance against huge generated SVG).
-- [ ] The current `recipes/*` become `examples/*` (to learn the SDK, never cloned as a game); templates come from the backend catalog (R).
-- [ ] The guide ships with the toolchain package so the backend serves the version it builds with (backend P); the SDK gets a version string recorded in `build.json`.
+- [x] `capabilities.md` (2026-11-06): one line per capability (what it gives, its page, an example), grouped as game logic, screen and working on a project, the SDK version (`SDK version 1.0.0.`), and what this version does not provide (decks, boards, spatial helpers, animation, a built-in asset library, timers). The backend serves it as `get_sdk_index`. Tests: it names `sdkVersion` and cites only pages that exist.
+- [x] Rules labelled (2026-11-06): `index.md` defines **Required**, **Recommended** and **Escape hatch**; the rules of `project.md`, `server.md`, `client.md`, `ui.md`, `assets.md`, `building.md`, `changes.md` and `phases.md` carry them (whole sections marked "(required)" where every rule is); a test refuses any other bold label.
+- [x] `policies.md` (2026-11-06): order of work (agree the game in `notes.md` → a template when the tools offer one → minimal edits, configure before rewrite → build → scenarios → assets → **Probar juego** → the owner publishes), definition of done, testing policy, asset order (HTML/CSS, SVG components kept small, the person's files, generated raster last; no built-in Playhoot assets exist yet).
+- [x] `recipes/*` became `examples/*` (2026-11-06), each headed "Example" and told not to be copied as a game; references updated. Templates come from the backend catalog (R).
+- [x] The guide ships with the toolchain (2026-11-06): the backend reads it from the same checkout it builds with (`GAME_TOOLCHAIN_DIR`); `@playhoot/game-core` exports `sdkVersion` (`1.0.0`) and every build records it in `build.json` (`sdk`).
 
 ### Q. Game brief (K)
 
