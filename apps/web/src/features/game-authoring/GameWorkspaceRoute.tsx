@@ -2,6 +2,7 @@ import {
   createGameAuthoring,
   createGamePreview,
   createGamePublishing,
+  draftBrief,
   type GameAuthoring,
   type GamePreview,
   type GamePublishing,
@@ -17,6 +18,7 @@ import type { MessageId } from '../../i18n/catalogs';
 import { AppShell, Button, Card, Owl, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
+import { BriefPhaseChip, BriefSummary } from './BriefSummary';
 import { BuildStatusBadge } from './BuildStatusBadge';
 import styles from './GameWorkspace.module.css';
 import { AiChangesSection } from './sections/AiChangesSection';
@@ -237,6 +239,7 @@ function WorkspaceScreen({
                 />
               </span>
               <BuildStatusBadge status={draft.build?.status ?? null} />
+              <BriefPhaseChip brief={draftBrief(draft.files)} />
             </>
           ) : (
             <span className={styles.revisionChip} data-testid="published-chip">
@@ -304,7 +307,7 @@ function DraftSections({
 }) {
   return (
     <>
-      {section === 'ai' && <AiChangesSection authoring={authoring} />}
+      {section === 'ai' && <AiSection authoring={authoring} />}
       {section === 'files' && <FilesSection authoring={authoring} />}
       {section === 'assets' && <AssetsSection authoring={authoring} />}
       {section === 'build' && <BuildSection authoring={authoring} />}
@@ -316,5 +319,16 @@ function DraftSections({
       )}
       {section === 'history' && <HistorySection authoring={authoring} />}
     </>
+  );
+}
+
+// "Cambios de mi IA" opens with what the person and their AI agreed (brief.json).
+function AiSection({ authoring }: { authoring: GameAuthoring }) {
+  const files = useStore(authoring.store, (state) => state.draft?.files ?? null);
+  return (
+    <div className={styles.sectionStack}>
+      {files && <BriefSummary brief={draftBrief(files)} />}
+      <AiChangesSection authoring={authoring} />
+    </div>
   );
 }

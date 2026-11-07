@@ -1,7 +1,8 @@
 // The vectors the SDK runs (packages/game-core) are copies of the backend's: the field vectors of
 // validateValues (../playhoot/play/internal/business/inputs/testdata/vectors.json) and the
 // declaration vectors of validateManifest
-// (../playhoot/play/session/internal/business/manifest/testdata/declaration-vectors.json). Each
+// (../playhoot/play/session/internal/business/manifest/testdata/declaration-vectors.json), and the
+// brief vectors of validateBrief (../playhoot/play/session/internal/business/gamebrief). Each
 // pair must stay identical so what the SDK accepts is what the backend accepts. Checked when both
 // checkouts sit side by side; the backend checks the same from its side.
 import { existsSync, readFileSync } from 'node:fs';
@@ -20,6 +21,12 @@ const copies = [
     frontend: '../../game-core/src/testdata/declaration-vectors.json',
     backend:
       '../../../../playhoot/play/session/internal/business/manifest/testdata/declaration-vectors.json',
+  },
+  {
+    name: 'brief vectors',
+    frontend: '../../game-core/src/testdata/brief-vectors.json',
+    backend:
+      '../../../../playhoot/play/session/internal/business/gamebrief/testdata/brief-vectors.json',
   },
 ].map((copy) => ({
   name: copy.name,

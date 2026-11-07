@@ -1,0 +1,18 @@
+{
+  "format": "playhoot.brief.v1",
+  "phase": "ready",
+  "players": {
+    "min": 1,
+    "max": 8
+  },
+  "goal": "Be the first to tap 20 times.",
+  "loop": "Every player taps their button as fast as they can; everyone sees everyone's count.",
+  "actions": ["Tap the button."],
+  "private_information": [],
+  "rounds": "One race of at most 30 seconds.",
+  "scoring": "Each tap adds one to the player's count.",
+  "ending": "The first to 20 taps wins; after 30 seconds, whoever leads.",
+  "capabilities": ["Game definition", "Commands", "Time and deadlines", "Ending"],
+  "assets": [],
+  "open_questions": []
+}

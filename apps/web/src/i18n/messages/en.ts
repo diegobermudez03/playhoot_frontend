@@ -409,6 +409,20 @@ export const en = {
   'build.lastSuccessful': 'Last revision that built: {revision}',
   'build.lastSuccessfulNone': 'No revision has built yet.',
 
+  'brief.title': 'What you agreed with your AI',
+  'brief.absent':
+    'Your AI has not written what you agreed yet (brief.json). Ask it to agree it with you and write it before coding.',
+  'brief.invalid': 'The brief.json of this revision cannot be read. Ask your AI to fix it.',
+  'brief.phase':
+    'Phase: {phase, select, brief {agreeing the game} foundation {foundation} building {building} testing {testing} assets {assets} ready {ready} other {{phase}}}',
+  'brief.players': '{min, plural, one {# player} other {# players}} to {max}',
+  'brief.goal': 'Goal:',
+  'brief.rounds': 'Rounds:',
+  'brief.scoring': 'Scoring:',
+  'brief.ending': 'Ending:',
+  'brief.private': 'What not everyone sees:',
+  'brief.openQuestions': 'Still to decide:',
+
   'history.title': 'Revisions',
   'history.loading': 'Loading the revisions…',
   'history.item': 'Revision {number}',

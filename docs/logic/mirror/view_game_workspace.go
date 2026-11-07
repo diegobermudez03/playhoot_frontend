@@ -104,6 +104,10 @@ func WorkspaceOnSectionChosen(section string) {
 	ReplaceURL("?section=" + section) // the URL says which section is open; no call
 }
 
+// The header shows the brief's phase beside the revision, and "Cambios de mi IA" opens with what
+// the person and their AI agreed: DraftBrief(Draft.Files) (code: packages/features/game-authoring/
+// src/brief.ts) is absent, invalid, or valid with the brief and its phase; read-only, no call.
+
 func WorkspaceOnApplyChange(authoring *GameAuthoring, pasted string) {
 	// computes: ParsePastedChange(pasted, the current paths) (state_gameauthoring.go). Refused text
 	// shows why and disables the button; a valid change shows what it adds, changes, edits (each file

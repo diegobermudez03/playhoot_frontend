@@ -6,6 +6,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { validateBrief } from '@playhoot/game-core';
 import { describe, expect, it } from 'vitest';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
@@ -79,6 +80,19 @@ describe('fixture scenarios', () => {
       }
     }
     expect(checked.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('every fixture keeps a valid brief.json, its work done', async () => {
+    const games = await readdir(fixtures, { withFileTypes: true });
+    for (const game of games.filter((entry) => entry.isDirectory())) {
+      const brief = JSON.parse(
+        await readFile(join(fixtures, game.name, 'brief.json'), 'utf8'),
+      ) as unknown;
+      expect(validateBrief(brief), `${game.name}/brief.json`).toMatchObject({
+        ok: true,
+        phase: 'ready',
+      });
+    }
   });
 
   it('refuses a broken scenario', () => {

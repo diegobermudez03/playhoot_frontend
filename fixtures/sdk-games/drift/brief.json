@@ -1,0 +1,18 @@
+{
+  "format": "playhoot.brief.v1",
+  "phase": "ready",
+  "players": {
+    "min": 1,
+    "max": 6
+  },
+  "goal": "Be the first to touch the star 3 times.",
+  "loop": "Players hold arrows to move around the field; touching the star scores and moves it.",
+  "actions": ["Hold the arrows to move."],
+  "private_information": [],
+  "rounds": "One continuous race.",
+  "scoring": "One point each time a player touches the star.",
+  "ending": "The first to 3 stars wins.",
+  "capabilities": ["Continuous inputs", "Time and deadlines", "Randomness", "Ending"],
+  "assets": [],
+  "open_questions": []
+}

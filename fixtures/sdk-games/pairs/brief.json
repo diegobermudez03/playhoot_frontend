@@ -1,0 +1,18 @@
+{
+  "format": "playhoot.brief.v1",
+  "phase": "ready",
+  "players": {
+    "min": 1,
+    "max": 4
+  },
+  "goal": "Find more pairs of cards than the others.",
+  "loop": "On their turn a player turns two cards; a pair scores and they go again, a miss passes the turn.",
+  "actions": ["Turn a card on your turn."],
+  "private_information": ["Which symbol a face-down card hides."],
+  "rounds": "Turns until every pair is found.",
+  "scoring": "One point per pair found.",
+  "ending": "Every pair is found; the most pairs wins.",
+  "capabilities": ["Commands", "Randomness", "Private information", "Events and errors", "Assets"],
+  "assets": ["cardBack: the back of a card (optional; drawn when missing)."],
+  "open_questions": []
+}

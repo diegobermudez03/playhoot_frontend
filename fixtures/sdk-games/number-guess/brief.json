@@ -1,0 +1,25 @@
+{
+  "format": "playhoot.brief.v1",
+  "phase": "ready",
+  "players": {
+    "min": 2,
+    "max": 6
+  },
+  "goal": "Guess the secret number from 1 to 100 before the others.",
+  "loop": "Players take turns; the player whose turn it is guesses or passes, and a guess gets a hint: higher or lower.",
+  "actions": ["Guess a number from 1 to 100 on your turn.", "Pass your turn."],
+  "private_information": ["The secret number, until the game ends."],
+  "rounds": "Turns of 15 seconds, in join order; a player who runs out of time loses the turn.",
+  "scoring": "No points: the first right guess wins.",
+  "ending": "A player guesses the number.",
+  "capabilities": [
+    "Commands",
+    "Time and deadlines",
+    "Randomness",
+    "Private information",
+    "Events and errors",
+    "Leaving and rejoining"
+  ],
+  "assets": [],
+  "open_questions": []
+}

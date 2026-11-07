@@ -15,7 +15,7 @@ Shared declarations (the commands players may send, the view's type) live in `sh
 
 The person gives you a link to their game. Reading it shows the current revision, its build result, assets, recent attempts, `notes.md` and the sources.
 
-1. Read the link. Note the revision you read.
+1. Read the link. Note the revision you read, and the brief (`brief.md`): the agreed game and the phase the work is in. Without one, agree the game with the person and write it first.
 2. Produce a change: a JSON document with find/replace edits of existing files and new files whole (`changes.md`).
    - If you cannot send HTTP requests, give it to the person. They paste it in the section **Cambios de mi IA** (section id `ai`) and tell you when it is applied.
    - If you can, POST it to the link's `/changes` URL.
@@ -27,7 +27,7 @@ The person gives you a link to their game. Reading it shows the current revision
 
 Never claim something happened (applied, built, uploaded, passed) without reading the link again or getting the answer of the request.
 
-Keep `notes.md` current: purpose, rules agreed with the person, open decisions, known problems. Whoever continues the game starts there.
+Keep `brief.json` current with what is agreed and where the work stands, and `notes.md` with anything else worth keeping (decisions and why, known problems). Whoever continues the game starts there.
 
 ## How rules are marked
 
@@ -39,6 +39,7 @@ Keep `notes.md` current: purpose, rules agreed with the person, open decisions, 
 
 - `capabilities.md`: what the SDK gives, one line each, with its page and an example.
 - `policies.md`: the order of work, what done means, testing and assets.
+- `brief.md`: `brief.json`, the agreed game and the phase of the work.
 - `project.md`: files, folders, `game.project.json`, import rules, limits.
 - `server.md`: `defineGame`, commands, handlers, timing, sandbox rules.
 - `client.md`: the React hooks, languages and texts, and what the frame allows.

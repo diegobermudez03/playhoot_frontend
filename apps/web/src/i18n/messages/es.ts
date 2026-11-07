@@ -419,6 +419,21 @@ export const es: Messages = {
   'build.lastSuccessful': 'Última revisión que se construyó: {revision}',
   'build.lastSuccessfulNone': 'Todavía no se ha construido ninguna revisión.',
 
+  'brief.title': 'Lo acordado con tu IA',
+  'brief.absent':
+    'Tu IA todavía no escribió lo acordado (brief.json). Pídele que lo acuerde contigo y lo escriba antes de programar.',
+  'brief.invalid':
+    'El brief.json de esta revisión no se puede leer. Pídele a tu IA que lo corrija.',
+  'brief.phase':
+    'Fase: {phase, select, brief {acordando el juego} foundation {base del juego} building {construyendo} testing {probando} assets {recursos} ready {listo} other {{phase}}}',
+  'brief.players': '{min, plural, one {# jugador} other {# jugadores}} a {max}',
+  'brief.goal': 'Objetivo:',
+  'brief.rounds': 'Rondas:',
+  'brief.scoring': 'Puntaje:',
+  'brief.ending': 'Final:',
+  'brief.private': 'Lo que no todos ven:',
+  'brief.openQuestions': 'Pendiente de decidir:',
+
   'history.title': 'Revisiones',
   'history.loading': 'Cargando las revisiones…',
   'history.item': 'Revisión {number}',

@@ -416,6 +416,20 @@ export const ptBR: Messages = {
   'build.lastSuccessful': 'Última revisão que compilou: {revision}',
   'build.lastSuccessfulNone': 'Nenhuma revisão compilou ainda.',
 
+  'brief.title': 'O que você combinou com sua IA',
+  'brief.absent':
+    'Sua IA ainda não escreveu o que foi combinado (brief.json). Peça que combine com você e escreva antes de programar.',
+  'brief.invalid': 'O brief.json desta revisão não pode ser lido. Peça à sua IA que o corrija.',
+  'brief.phase':
+    'Fase: {phase, select, brief {combinando o jogo} foundation {base do jogo} building {construindo} testing {testando} assets {recursos} ready {pronto} other {{phase}}}',
+  'brief.players': '{min, plural, one {# jogador} other {# jogadores}} a {max}',
+  'brief.goal': 'Objetivo:',
+  'brief.rounds': 'Rodadas:',
+  'brief.scoring': 'Pontuação:',
+  'brief.ending': 'Final:',
+  'brief.private': 'O que nem todos veem:',
+  'brief.openQuestions': 'Ainda a decidir:',
+
   'history.title': 'Revisões',
   'history.loading': 'Carregando as revisões…',
   'history.item': 'Revisão {number}',

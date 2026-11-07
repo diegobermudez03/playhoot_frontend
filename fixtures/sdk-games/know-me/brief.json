@@ -1,0 +1,21 @@
+{
+  "format": "playhoot.brief.v1",
+  "phase": "ready",
+  "players": {
+    "min": 2,
+    "max": 12
+  },
+  "goal": "Know the others best: guess what each subject answers about themselves.",
+  "loop": "Each round one player is the subject and answers a question about themselves; everyone else guesses their answer; then the answers are revealed.",
+  "actions": [
+    "Answer about yourself when you are the subject.",
+    "Guess the subject's answer otherwise."
+  ],
+  "private_information": ["Each answer and guess, until the reveal."],
+  "rounds": "One round per player, each the subject once.",
+  "scoring": "A right guess gives 1 point to the guesser and 1 to the subject.",
+  "ending": "After every player was the subject, the ranking shows who knows whom best.",
+  "capabilities": ["Phases", "Scores and ranking", "Private information", "Controls"],
+  "assets": [],
+  "open_questions": []
+}

@@ -67,8 +67,8 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 
 ### Q. Game brief (K)
 
-- [ ] `playhoot.brief.v1` schema in `@playhoot/game-core` with the shared validation vectors; `brief.json` in every fixture and in the starter; guide `brief.md`.
-- [ ] The workspace shows the brief and its phase (read-only summary; edited as a file or through the AI).
+- [x] `playhoot.brief.v1` in `@playhoot/game-core` (2026-11-07): `validateBrief`, `briefPhases`, `briefFormat`, `Brief`; the shared vectors (`testdata/brief-vectors.json`, identical to the backend's, checked by `packages/game-tools/src/vectors.test.ts`); `brief.json` in every fixture (phase `ready`, written from each game's rules; `scenarios.test.ts` checks them, the backend's fixture test too); the starter's empty brief lives in the backend template. Guide `brief.md` (fields, limits, phases, an example quoted from number-guess); `index.md`, `project.md`, `policies.md` and `capabilities.md` point to it.
+- [x] The workspace shows the brief and its phase (2026-11-07): a phase chip in the header and, at the top of "Cambios de mi IA", "Lo acordado con tu IA" (players, goal, rounds, scoring, ending, what not everyone sees, what is still to decide), read-only; `draftBrief(files)` in the feature (absent / invalid / valid). Texts in es, en, pt-BR.
 
 ### R. Templates, step 1 (E1, E2, AI)
 

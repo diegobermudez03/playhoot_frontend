@@ -39,6 +39,7 @@ SDK version 1.0.0. One line per capability: what it gives, where it is explained
 | Builds | Stages and diagnostics | `building.md` |
 | Scenarios | Scripted players, holds, expectations checked by the platform, saved scenarios, states on demand | `scenarios.md` |
 | Policies | The order of work, what done means, testing and assets | `policies.md` |
+| Brief | The agreed game and the phase of the work, in `brief.json` | `brief.md` |
 
 ## Not in this version
 

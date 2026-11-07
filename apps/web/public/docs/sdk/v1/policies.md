@@ -4,7 +4,7 @@ How to build a game with a person on Playhoot, cheaply and safely. Rules are mar
 
 ## Order of work
 
-1. **Required:** agree the game with the person before writing code: players, goal, how a round goes, the actions, what each player may see, scoring, how it ends, and the assets it needs. Keep it in `notes.md`.
+1. **Required:** agree the game with the person before writing code: players, goal, how a round goes, the actions, what each player may see, scoring, how it ends, and the assets it needs. Write it in `brief.json` (`brief.md`), with `phase` `brief`, and move the phase forward as the work does.
 2. **Recommended:** look for a template that already plays close to that game, if your tools offer them, and start from it. Never start from an example of this guide: examples teach the SDK, templates are made to be changed.
 3. **Recommended:** make the smallest change that moves the game forward, with find/replace edits (`changes.md`). Configure what exists (a number, a list of questions, a text) before rewriting behavior.
 4. **Required:** wait for the build of your revision and fix its diagnostics before anything else (`building.md`).
@@ -21,7 +21,7 @@ A game is done when all of these hold:
 - **Required:** saved scenarios with expectations cover the agreed rules, and running them all passes on the current revision.
 - **Required:** every asset that is not `optional` is uploaded, or the game no longer declares it (it draws the thing instead).
 - **Required:** the person played it and confirmed it.
-- **Recommended:** `notes.md` says what the game is, the agreed rules and anything still open.
+- **Recommended:** `brief.json` holds the agreed game with `phase` `ready` and no `open_questions` left; `notes.md` keeps anything else worth knowing.
 
 ## Testing
 

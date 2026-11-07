@@ -1,0 +1,27 @@
+{
+  "format": "playhoot.brief.v1",
+  "phase": "ready",
+  "players": {
+    "min": 1,
+    "max": 30
+  },
+  "goal": "Answer the most questions right.",
+  "loop": "Each question lasts 20 seconds or until everyone answered; then the right answer and how many chose each option show for 5 seconds.",
+  "actions": ["Choose one of four options while the question is open."],
+  "private_information": [
+    "Each player's answer, until the reveal.",
+    "The right answers, until each reveal."
+  ],
+  "rounds": "Three questions.",
+  "scoring": "One point per right answer.",
+  "ending": "After the last question, the final ranking stays on screen.",
+  "capabilities": [
+    "Phases",
+    "Scores and ranking",
+    "Controls",
+    "Game state display",
+    "Languages and texts"
+  ],
+  "assets": [],
+  "open_questions": []
+}

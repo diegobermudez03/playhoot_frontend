@@ -9,7 +9,8 @@
 | `client/Game.tsx` | yes | Default export: the React component of one player's screen. Other `client/*.tsx`/`*.ts` files may hold components. |
 | `shared/*.ts` | no | Declarations both sides import: commands, inputs, the view's type. |
 | `scenarios/*.json` | no | Scenarios kept with the project (`scenarios.md`). Never built. |
-| `notes.md` | no | Purpose, agreed rules, open decisions, known problems. |
+| `brief.json` | no | The agreed game and the phase of the work (`brief.md`). Checked when written. |
+| `notes.md` | no | Decisions and why, known problems, anything else worth keeping. |
 
 **Required:** no other paths are accepted.
 
