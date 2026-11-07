@@ -212,6 +212,66 @@ describe('createGamesClient', () => {
     });
   });
 
+  it('creates a game from a template and finds templates', async () => {
+    const created = gamesWith(() => json(201, { game_uuid: 'g', version_uuid: 'v', revision: 1 }));
+    await created.games.createGame('Quiz', 'k', 't-1');
+    expect(JSON.parse(created.fetchImpl.mock.calls[0]![1]!.body as string)).toEqual({
+      name: 'Quiz',
+      idempotency_key: 'k',
+      template_game_uuid: 't-1',
+    });
+
+    const entry = {
+      game_uuid: 't-1',
+      name: 'Quiz',
+      players_min: 1,
+      players_max: 30,
+      featured: true,
+    };
+    const search = gamesWith(() => json(200, { page: 2, templates: [entry], more: true }));
+    const page = await search.games.searchTemplates({ text: 'quiz', players: 4, page: 2 });
+    expect(search.fetchImpl.mock.calls[0]![0]).toBe('/v1/templates/search?q=quiz&players=4&page=2');
+    expect(page.ok && page.value).toEqual({
+      page: 2,
+      more: true,
+      templates: [
+        {
+          gameUUID: 't-1',
+          name: 'Quiz',
+          description: '',
+          categories: [],
+          playersMin: 1,
+          playersMax: 30,
+          languages: [],
+          featured: true,
+        },
+      ],
+    });
+
+    const inspect = gamesWith(() =>
+      json(200, {
+        game_uuid: 't-1',
+        name: 'Quiz',
+        revision: 9,
+        brief: { goal: 'Answer' },
+        manifest: { players: { min: 1, max: 30 }, commands: { answer: {} } },
+        files: [{ path: 'server/game.ts', sha256: 's', size: 10 }],
+      }),
+    );
+    const details = await inspect.games.inspectTemplate('t-1');
+    expect(details.ok && details.value).toMatchObject({
+      revision: 9,
+      players: { min: 1, max: 30 },
+      commands: ['answer'],
+      files: [{ path: 'server/game.ts', size: 10 }],
+    });
+
+    const gone = gamesWith(() => json(404, { code: 'template_not_found', message: 'm' }));
+    const refused = await gone.games.useTemplate('g', 't-1', 3, 'k');
+    expect(gone.fetchImpl.mock.calls[0]![0]).toBe('/v1/games/g/draft/template');
+    expect(!refused.ok && refused.error).toEqual({ kind: 'template-not-found' });
+  });
+
   it('maps a conflict with the current revision, and invalid changes with diagnostics', async () => {
     const conflict = gamesWith(() =>
       json(409, { code: 'revision_conflict', message: 'm', current_revision: 5 }),

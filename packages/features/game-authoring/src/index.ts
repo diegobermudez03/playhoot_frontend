@@ -8,3 +8,4 @@ export * from './preview';
 export * from './scenarioRunner';
 export * from './publishing';
 export * from './brief';
+export * from './templateBrowser';

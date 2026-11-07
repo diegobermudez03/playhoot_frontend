@@ -40,6 +40,7 @@ Keep `brief.json` current with what is agreed and where the work stands, and `no
 - `capabilities.md`: what the SDK gives, one line each, with its page and an example.
 - `policies.md`: the order of work, what done means, testing and assets.
 - `brief.md`: `brief.json`, the agreed game and the phase of the work.
+- `templates.md`: finding a template, inspecting few, starting from one or switching to one.
 - `project.md`: files, folders, `game.project.json`, import rules, limits.
 - `server.md`: `defineGame`, commands, handlers, timing, sandbox rules.
 - `client.md`: the React hooks, languages and texts, and what the frame allows.

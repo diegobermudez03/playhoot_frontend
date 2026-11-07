@@ -434,6 +434,33 @@ export const es: Messages = {
   'brief.private': 'Lo que no todos ven:',
   'brief.openQuestions': 'Pendiente de decidir:',
 
+  'templates.loading': 'Buscando plantillas…',
+  'templates.failed': 'No pudimos cargar las plantillas. Intenta de nuevo.',
+  'templates.empty':
+    'Todavía no hay plantillas disponibles: tu juego empieza con el proyecto mínimo.',
+  'templates.searchLabel': 'Buscar una plantilla',
+  'templates.searchPlaceholder': 'trivia, memoria, carreras…',
+  'templates.search': 'Buscar',
+  'templates.noResults': 'Ninguna plantilla coincide.',
+  'templates.players': '{min} a {max} jugadores',
+  'templates.chosen': 'Elegida',
+  'templates.inspect': 'Ver detalle',
+  'templates.choose': 'Empezar con esta',
+  'templates.use': 'Usar esta plantilla',
+  'templates.actions': 'Acciones:',
+  'templates.files': '{count, plural, one {# archivo} other {# archivos}}',
+  'templates.close': 'Cerrar',
+  'templates.useTitle': 'Empezar de nuevo con una plantilla',
+  'templates.useHint':
+    'El código pasa a ser el de la plantilla, como una revisión nueva. Se conservan notes.md, brief.json y los recursos que la plantilla también usa. Puedes volver atrás desde el historial.',
+  'createGame.startTitle': 'Punto de partida',
+  'createGame.fromStarter': 'Proyecto mínimo: un juego simple que tu IA transforma en el tuyo.',
+  'createGame.fromTemplate': 'Plantilla: {name}',
+  'createGame.useStarter': 'Usar el proyecto mínimo',
+  'createGame.templateGone':
+    'Esa plantilla ya no está disponible. Elige otra o empieza con el proyecto mínimo.',
+  'result.templateNotFound': 'Esa plantilla ya no está disponible.',
+
   'history.title': 'Revisiones',
   'history.loading': 'Cargando las revisiones…',
   'history.item': 'Revisión {number}',

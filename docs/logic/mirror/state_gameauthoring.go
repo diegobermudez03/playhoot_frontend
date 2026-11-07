@@ -97,6 +97,13 @@ type ScenarioRunner struct {
 	Inspection *StateInspection
 }
 
+// TemplateBrowser finds a template: featured and categories on load, a search (the newest wins),
+// one inspected (the newest wins). An empty catalog is ready with nothing in it.
+// code: packages/features/game-authoring/src/templateBrowser.ts
+//
+// GameAuthoring.UseTemplate(templateGameUUID) is an action like Restore: UseTemplate on the
+// current revision with the action's key; template-not-found is its own result.
+
 // SavedScenarioPaths are the draft's scenarios/*.json paths, sorted: the saved scenarios listed.
 func SavedScenarioPaths(paths []string) []string { return nil }
 

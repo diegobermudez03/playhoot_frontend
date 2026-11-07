@@ -3,7 +3,18 @@ import {
   aiLinkPath,
   aiLinkRevokePath,
   aiLinkStatusSchema,
+  browseTemplatesSchema,
   createGamePath,
+  draftTemplatePath,
+  searchTemplatesSchema,
+  templateFilesPath,
+  templateFilesSchema,
+  templatePath,
+  templateSchema,
+  templatesPath,
+  templatesSearchPath,
+  type UseTemplateRequest,
+  type TemplateEntryResponse,
   createGameResponseSchema,
   draftAssetPath,
   draftAssetRemovePath,
@@ -235,6 +246,50 @@ export interface CreatedAiLink {
 
 // A simulation's result: `raw` is the backend's whole answer, kept as it came for the person to
 // copy back to their AI; the rest is what the workspace summarizes of it.
+// A template as the catalog lists it: a published game its owner lets others start from.
+export interface TemplateEntry {
+  gameUUID: string;
+  name: string;
+  description: string;
+  categories: string[];
+  playersMin: number;
+  playersMax: number;
+  languages: string[];
+  featured: boolean;
+}
+
+export interface TemplateBrowse {
+  featured: TemplateEntry[];
+  categories: { name: string; templates: number }[];
+}
+
+export interface TemplateQuery {
+  text?: string;
+  category?: string;
+  players?: number;
+  page?: number;
+}
+
+export interface TemplatePage {
+  page: number;
+  templates: TemplateEntry[];
+  more: boolean;
+}
+
+// A template inspected before choosing it: its card, brief, what its build declares and its
+// files, never its code.
+export interface TemplateDetails {
+  gameUUID: string;
+  name: string;
+  description: string;
+  featured: boolean;
+  revision: number;
+  brief: unknown;
+  players: { min: number; max: number } | null;
+  commands: string[];
+  files: { path: string; size: number }[];
+}
+
 // One expectation as checked: `atMs` null is the end; `actual` undefined when nothing was there.
 export interface ExpectationOutcome {
   index: number;
@@ -378,6 +433,8 @@ export interface PublishBlocker {
 export type GamesFailure =
   // The game does not exist or is someone else's (the backend never tells them apart).
   | { kind: 'not-found' }
+  // No published game allowed as a template has that uuid.
+  | { kind: 'template-not-found' }
   // The game has no version being built.
   | { kind: 'not-editable' }
   // The draft changed since `base_revision`: read it again and redo the change.
@@ -418,7 +475,27 @@ export type GamesFailure =
 export interface GamesClient {
   // The caller's own games, newest first.
   listGames(): Promise<Result<MyGame[], GamesFailure>>;
-  createGame(name: string, idempotencyKey: string): Promise<Result<CreatedGame, GamesFailure>>;
+  // Starts from the template `templateGameUUID` when given, from the starter project otherwise.
+  createGame(
+    name: string,
+    idempotencyKey: string,
+    templateGameUUID?: string,
+  ): Promise<Result<CreatedGame, GamesFailure>>;
+  // Templates: the featured ones and the categories; a search; one inspected; files of one.
+  browseTemplates(): Promise<Result<TemplateBrowse, GamesFailure>>;
+  searchTemplates(query: TemplateQuery): Promise<Result<TemplatePage, GamesFailure>>;
+  inspectTemplate(templateGameUUID: string): Promise<Result<TemplateDetails, GamesFailure>>;
+  readTemplateFiles(
+    templateGameUUID: string,
+    paths: string[],
+  ): Promise<Result<{ path: string; content: string | null }[], GamesFailure>>;
+  // Starts the draft over from a template as a new revision on `baseRevision`.
+  useTemplate(
+    gameUUID: string,
+    templateGameUUID: string,
+    baseRevision: number,
+    idempotencyKey: string,
+  ): Promise<Result<DraftChangeResult, GamesFailure>>;
   readCard(gameUUID: string): Promise<Result<GameCard, GamesFailure>>;
   // Changes the card's name and/or description; allowed published or not.
   updateCard(
@@ -543,8 +620,12 @@ export function createGamesClient(http: HttpClient): GamesClient {
       );
     },
 
-    async createGame(name, idempotencyKey) {
-      const body: CreateGameRequest = { name, idempotency_key: idempotencyKey };
+    async createGame(name, idempotencyKey, templateGameUUID) {
+      const body: CreateGameRequest = {
+        name,
+        idempotency_key: idempotencyKey,
+        ...(templateGameUUID === undefined ? {} : { template_game_uuid: templateGameUUID }),
+      };
       const result = await http.request({
         method: 'POST',
         path: createGamePath,
@@ -557,6 +638,93 @@ export function createGamesClient(http: HttpClient): GamesClient {
         versionUUID: result.value.version_uuid,
         revision: result.value.revision,
       });
+    },
+
+    async browseTemplates() {
+      const result = await http.request({
+        method: 'GET',
+        path: templatesPath,
+        response: browseTemplatesSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({
+        featured: (result.value.featured ?? []).map(templateEntryOf),
+        categories: result.value.categories ?? [],
+      });
+    },
+
+    async searchTemplates(query) {
+      const search = new URLSearchParams();
+      if (query.text) search.set('q', query.text);
+      if (query.category) search.set('category', query.category);
+      if (query.players !== undefined) search.set('players', String(query.players));
+      if (query.page !== undefined) search.set('page', String(query.page));
+      const suffix = search.size > 0 ? `?${search.toString()}` : '';
+      const result = await http.request({
+        method: 'GET',
+        path: `${templatesSearchPath}${suffix}`,
+        response: searchTemplatesSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok({
+        page: result.value.page,
+        templates: (result.value.templates ?? []).map(templateEntryOf),
+        more: result.value.more,
+      });
+    },
+
+    async inspectTemplate(templateGameUUID) {
+      const result = await http.request({
+        method: 'GET',
+        path: templatePath(templateGameUUID),
+        response: templateSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      const body = result.value;
+      return ok({
+        gameUUID: body.game_uuid,
+        name: body.name,
+        description: body.description,
+        featured: body.featured,
+        revision: body.revision,
+        brief: body.brief ?? null,
+        players: body.manifest?.players ?? null,
+        commands: Object.keys(body.manifest?.commands ?? {}),
+        files: (body.files ?? []).map((file) => ({ path: file.path, size: file.size })),
+      });
+    },
+
+    async readTemplateFiles(templateGameUUID, paths) {
+      const search = new URLSearchParams();
+      for (const path of paths) search.append('path', path);
+      const result = await http.request({
+        method: 'GET',
+        path: `${templateFilesPath(templateGameUUID)}?${search.toString()}`,
+        response: templateFilesSchema,
+      });
+      if (!result.ok) return err(gamesFailure(result.error));
+      return ok(
+        (result.value.files ?? []).map((file) => ({
+          path: file.path,
+          content: file.content ?? null,
+        })),
+      );
+    },
+
+    async useTemplate(gameUUID, templateGameUUID, baseRevision, idempotencyKey) {
+      const body: UseTemplateRequest = {
+        template_game_uuid: templateGameUUID,
+        base_revision: baseRevision,
+        idempotency_key: idempotencyKey,
+      };
+      return changeResult(
+        await http.request({
+          method: 'POST',
+          path: draftTemplatePath(gameUUID),
+          body,
+          response: draftChangeResponseSchema,
+        }),
+      );
     },
 
     async readCard(gameUUID) {
@@ -1073,6 +1241,8 @@ export function gamesFailure(failure: HttpFailure): GamesFailure {
   switch (failure.code) {
     case gamesErrorCodes.notEditable:
       return { kind: 'not-editable' };
+    case gamesErrorCodes.templateNotFound:
+      return { kind: 'template-not-found' };
     case gamesErrorCodes.revisionConflict:
       return { kind: 'conflict', currentRevision: details.current_revision ?? null };
     case gamesErrorCodes.invalidChange:
@@ -1214,5 +1384,18 @@ function diagnosticOf(diagnostic: {
     code: diagnostic.code,
     ...(diagnostic.edit === undefined ? {} : { edit: diagnostic.edit }),
     message: diagnostic.message,
+  };
+}
+
+function templateEntryOf(entry: TemplateEntryResponse): TemplateEntry {
+  return {
+    gameUUID: entry.game_uuid,
+    name: entry.name,
+    description: entry.description,
+    categories: entry.categories ?? [],
+    playersMin: entry.players_min,
+    playersMax: entry.players_max,
+    languages: entry.languages ?? [],
+    featured: entry.featured,
   };
 }

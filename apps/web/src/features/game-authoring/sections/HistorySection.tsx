@@ -7,6 +7,7 @@ import { useStore } from 'zustand';
 import { Button, Card } from '../../../ui';
 import { ActionResultNotice } from '../ActionResultNotice';
 import styles from '../GameWorkspace.module.css';
+import { TemplatePicker } from '../TemplatePicker';
 
 // "Historial": every revision, newest first, with where it came from; what each one changed or
 // how it differs from the current one; restoring one makes a new revision with its files and
@@ -112,6 +113,23 @@ export function HistorySection({ authoring }: { authoring: GameAuthoring }) {
             <FormattedMessage id="history.older" />
           </Button>
         )}
+      </Card>
+      <Card className={styles.panel} data-testid="use-template">
+        <h2 className={styles.sectionTitle}>
+          <FormattedMessage id="templates.useTitle" />
+        </h2>
+        <p className={styles.muted}>
+          <FormattedMessage id="templates.useHint" />
+        </p>
+        {result && result.action === 'template' && (
+          <ActionResultNotice result={result} authoring={authoring} />
+        )}
+        <TemplatePicker
+          chosen={null}
+          onChoose={(template) => void authoring.useTemplate(template.gameUUID)}
+          chooseLabel="templates.use"
+          busy={busy !== null}
+        />
       </Card>
       {comparison && (
         <ComparisonCard

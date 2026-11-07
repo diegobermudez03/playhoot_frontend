@@ -13,7 +13,7 @@ import { buildStatuses, draftRevisionsPageSize } from '@playhoot/protocol';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 // What can be done to a draft from the workspace, one at a time.
-export type AuthoringAction = 'change' | 'edit' | 'restore' | 'upload' | 'remove';
+export type AuthoringAction = 'change' | 'edit' | 'restore' | 'upload' | 'remove' | 'template';
 
 // How the last action ended, as kinds and values: presentation writes the text.
 export type ActionResult =
@@ -26,6 +26,8 @@ export type ActionResult =
   | { action: AuthoringAction; kind: 'too-large'; diagnostics: DraftDiagnostic[] }
   | { action: AuthoringAction; kind: 'not-declared' }
   | { action: AuthoringAction; kind: 'not-editable' }
+  // The template asked for is not one anyone may start from (any more).
+  | { action: AuthoringAction; kind: 'template-not-found' }
   | { action: AuthoringAction; kind: 'busy'; retryAfterSeconds: number | undefined }
   // Anything else (no answer, a server failure, an answer this client does not know): try again.
   | { action: AuthoringAction; kind: 'failed' };
@@ -82,6 +84,8 @@ export interface GameAuthoring {
   // One file written directly, on the current revision.
   editFile(path: string, content: string): Promise<ActionResult>;
   restore(revision: number): Promise<ActionResult>;
+  // Starts the draft over from a template as a new revision on the current one.
+  useTemplate(templateGameUUID: string): Promise<ActionResult>;
   uploadAsset(key: string, file: File): Promise<ActionResult>;
   removeAsset(key: string): Promise<ActionResult>;
   dismissResult(): void;
@@ -263,6 +267,12 @@ export function createGameAuthoring(deps: GameAuthoringDeps): GameAuthoring {
       };
       return run('edit', JSON.stringify(change), (key) => games.applyChange(gameUUID, change, key));
     },
+    useTemplate: (templateGameUUID) => {
+      const base = currentRevision();
+      return run('template', `${templateGameUUID}@${base}`, (key) =>
+        games.useTemplate(gameUUID, templateGameUUID, base, key),
+      );
+    },
     restore: (revision) => {
       const base = currentRevision();
       return run('restore', `${revision}@${base}`, (key) =>
@@ -311,6 +321,8 @@ function actionResult(
       return { action, kind: 'not-declared' };
     case 'not-editable':
       return { action, kind: 'not-editable' };
+    case 'template-not-found':
+      return { action, kind: 'template-not-found' };
     case 'busy':
       return { action, kind: 'busy', retryAfterSeconds: failure.retryAfterSeconds };
     default:

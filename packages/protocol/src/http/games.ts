@@ -11,6 +11,7 @@ export const draftPath = (gameUUID: string) => `/v1/games/${encodeURIComponent(g
 export const draftChangesPath = (gameUUID: string) => `${draftPath(gameUUID)}/changes`;
 export const draftRevisionsPath = (gameUUID: string) => `${draftPath(gameUUID)}/revisions`;
 export const draftDiffPath = (gameUUID: string) => `${draftPath(gameUUID)}/diff`;
+export const draftTemplatePath = (gameUUID: string) => `${draftPath(gameUUID)}/template`;
 // The most revisions one page of the history holds (the backend's page).
 export const draftRevisionsPageSize = 100;
 export const draftRestorePath = (gameUUID: string) => `${draftPath(gameUUID)}/restore`;
@@ -95,6 +96,7 @@ export const gamesErrorCodes = {
   buildNotReady: 'build_not_ready',
   invalidScenario: 'invalid_scenario',
   scenarioNotFound: 'scenario_not_found',
+  templateNotFound: 'template_not_found',
   simulationNotFound: 'simulation_not_found',
   notObserved: 'not_observed',
   pathNotFound: 'path_not_found',
@@ -146,6 +148,72 @@ export const assetTypes = ['image', 'audio', 'video'] as const;
 export interface CreateGameRequest {
   // The game's preliminary name (1..80 characters), confirmed or replaced when it is published.
   name: string;
+  idempotency_key: string;
+  // Starts the game from this template instead of the starter project.
+  template_game_uuid?: string;
+}
+
+// Templates: published games their owners let others start from.
+export const templatesPath = '/v1/templates';
+export const templatesSearchPath = `${templatesPath}/search`;
+export const templatePath = (templateGameUUID: string) =>
+  `${templatesPath}/${encodeURIComponent(templateGameUUID)}`;
+export const templateFilesPath = (templateGameUUID: string) =>
+  `${templatePath(templateGameUUID)}/files`;
+
+export const templateEntrySchema = z.object({
+  game_uuid: z.string(),
+  name: z.string(),
+  description: z.string().optional().default(''),
+  categories: z.array(z.string()).nullish(),
+  players_min: z.number().optional().default(0),
+  players_max: z.number().optional().default(0),
+  languages: z.array(z.string()).nullish(),
+  aspect_ratio: z.string().optional(),
+  featured: z.boolean().optional().default(false),
+});
+
+export const browseTemplatesSchema = z.object({
+  featured: z.array(templateEntrySchema).nullish(),
+  categories: z.array(z.object({ name: z.string(), templates: z.number() })).nullish(),
+});
+
+export const searchTemplatesSchema = z.object({
+  page: z.number(),
+  templates: z.array(templateEntrySchema).nullish(),
+  more: z.boolean().optional().default(false),
+});
+
+// A template as inspected: its card, brief and build manifest as written, and its files without
+// contents.
+export const templateSchema = z.object({
+  game_uuid: z.string(),
+  name: z.string(),
+  description: z.string().optional().default(''),
+  featured: z.boolean().optional().default(false),
+  revision: z.number(),
+  brief: z.unknown().optional(),
+  manifest: z
+    .object({
+      players: z.object({ min: z.number(), max: z.number() }).optional(),
+      commands: z.record(z.string(), z.unknown()).optional(),
+    })
+    .passthrough()
+    .optional(),
+  files: z.array(z.object({ path: z.string(), size: z.number() }).passthrough()).nullish(),
+});
+
+export const templateFilesSchema = z.object({
+  revision: z.number(),
+  files: z
+    .array(z.object({ path: z.string(), size: z.number(), content: z.string().optional() }))
+    .nullish(),
+  missing: z.array(z.string()).nullish(),
+});
+
+export interface UseTemplateRequest {
+  template_game_uuid: string;
+  base_revision: number;
   idempotency_key: string;
 }
 
@@ -438,6 +506,7 @@ export type DraftRevisionsResponse = z.infer<typeof draftRevisionsResponseSchema
 export type SimulationResultResponse = z.infer<typeof simulationResultSchema>;
 export type SimulationStateResponse = z.infer<typeof simulationStateSchema>;
 export type ExpectationResultResponse = z.infer<typeof expectationResultSchema>;
+export type TemplateEntryResponse = z.infer<typeof templateEntrySchema>;
 
 const cardImageSchema = z.object({
   uuid: z.string(),

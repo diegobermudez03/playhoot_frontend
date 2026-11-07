@@ -1,3 +1,4 @@
+import type { TemplateEntry } from '@playhoot/communication';
 import { cardLimits, operations } from '@playhoot/protocol';
 import { useState, type FormEvent } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
@@ -8,6 +9,7 @@ import { AppShell, Button, Card, Owl, Stage, TextField } from '../../ui';
 import { RequireOperation } from '../access';
 import { gameWorkspacePath } from '../paths';
 import styles from './GameWorkspace.module.css';
+import { TemplatePicker } from './TemplatePicker';
 
 // `/games/new`: asks the game's name (its preliminary card name, confirmed when it is published),
 // creates the game (an account's operation) and moves to its workspace, replacing this URL so
@@ -20,15 +22,22 @@ export function CreateGameRoute() {
   );
 }
 
-type Failure = 'invalid-name' | 'other';
+type Failure = 'invalid-name' | 'template' | 'other';
 
 function CreateGame() {
   const services = useServices();
   const intl = useIntl();
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  // One key per name: a retry of the same name creates one game; another name is another request.
-  const [request, setRequest] = useState(() => ({ name: '', key: crypto.randomUUID() }));
+  // The template the game starts from; null is the starter project.
+  const [template, setTemplate] = useState<TemplateEntry | null>(null);
+  // One key per name and template: a retry of the same request creates one game; another name or
+  // template is another request.
+  const [request, setRequest] = useState(() => ({
+    name: '',
+    template: null as string | null,
+    key: crypto.randomUUID(),
+  }));
   const [creating, setCreating] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
 
@@ -40,18 +49,31 @@ function CreateGame() {
       setFailure('invalid-name');
       return;
     }
+    const chosen = template?.gameUUID ?? null;
     const current =
-      request.name === trimmed ? request : { name: trimmed, key: crypto.randomUUID() };
+      request.name === trimmed && request.template === chosen
+        ? request
+        : { name: trimmed, template: chosen, key: crypto.randomUUID() };
     setRequest(current);
     setCreating(true);
     setFailure(null);
-    const result = await services.gamesApi.createGame(current.name, current.key);
+    const result = await services.gamesApi.createGame(
+      current.name,
+      current.key,
+      current.template ?? undefined,
+    );
     if (result.ok) {
       navigate(gameWorkspacePath(result.value.gameUUID), { replace: true });
       return;
     }
     setCreating(false);
-    setFailure(result.error.kind === 'invalid-card' ? 'invalid-name' : 'other');
+    setFailure(
+      result.error.kind === 'invalid-card'
+        ? 'invalid-name'
+        : result.error.kind === 'template-not-found'
+          ? 'template'
+          : 'other',
+    );
   };
 
   return (
@@ -85,6 +107,30 @@ function CreateGame() {
               }
               hint={intl.formatMessage({ id: 'createGame.nameHint' })}
             />
+            <div className={styles.summary}>
+              <p className={styles.summaryTitle}>
+                <FormattedMessage id="createGame.startTitle" />
+              </p>
+              <p className={styles.muted} data-testid="create-start">
+                {template ? (
+                  <FormattedMessage id="createGame.fromTemplate" values={{ name: template.name }} />
+                ) : (
+                  <FormattedMessage id="createGame.fromStarter" />
+                )}
+              </p>
+              {template && (
+                <div className={styles.rowActions}>
+                  <Button variant="ghost" onClick={() => setTemplate(null)}>
+                    <FormattedMessage id="createGame.useStarter" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            {failure === 'template' && (
+              <p className={styles.warningText} role="alert">
+                <FormattedMessage id="createGame.templateGone" />
+              </p>
+            )}
             {failure === 'other' && (
               <p className={styles.warningText} role="alert">
                 <FormattedMessage id="createGame.error" />
@@ -94,6 +140,14 @@ function CreateGame() {
               <FormattedMessage id="createGame.submit" />
             </Button>
           </form>
+        </Card>
+        {/* Outside the form: the picker has its own search form. */}
+        <Card>
+          <TemplatePicker
+            chosen={template?.gameUUID ?? null}
+            onChoose={setTemplate}
+            chooseLabel="templates.choose"
+          />
         </Card>
       </Stage>
     </AppShell>

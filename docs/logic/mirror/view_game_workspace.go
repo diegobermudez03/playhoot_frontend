@@ -45,6 +45,8 @@ func GameWorkspaceView(gameUUID string, section string) {
 	authoring.Compare(1, nil, nil)
 	// WHEN **Cerrar** / Close is pressed on the comparison
 	authoring.CloseComparison()
+	// WHEN **Usar esta plantilla** / Use this template is pressed in "Empezar de nuevo con una plantilla"
+	authoring.UseTemplate("template game uuid")
 	// WHEN **Recargar el juego** / Reload the game is pressed after a conflict
 	authoring.Reload()
 

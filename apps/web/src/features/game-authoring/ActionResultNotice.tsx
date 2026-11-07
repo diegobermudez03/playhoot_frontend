@@ -80,6 +80,8 @@ function message(result: ActionResult) {
       return <FormattedMessage id="result.notDeclared" />;
     case 'not-editable':
       return <FormattedMessage id="result.notEditable" />;
+    case 'template-not-found':
+      return <FormattedMessage id="result.templateNotFound" />;
     case 'busy':
       return (
         <FormattedMessage id="result.busy" values={{ seconds: result.retryAfterSeconds ?? 0 }} />

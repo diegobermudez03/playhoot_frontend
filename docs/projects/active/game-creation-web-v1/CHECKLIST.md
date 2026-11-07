@@ -72,10 +72,10 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 
 ### R. Templates, step 1 (E1, E2, AI)
 
-- [ ] `GamesClient` template calls (browse, search, inspect, read file, create from template, use on a draft).
-- [ ] "Crear un juego" offers starting from a template (featured, categories, search; inspect before choosing) or from the minimal project; "Usar una plantilla" on a draft applies one as a new revision. Works with an empty catalog (shows only the minimal start).
-- [ ] Guide `templates.md`: browse first, inspect few candidates, read only needed files, decide "none fits", what is kept when switching templates.
-- [ ] `quiz` and `know-me` reworked as templates: generic, content in configuration (S), strong scenarios; seeded in the backend as published, allowed and featured, for acceptance case 2.
+- [x] `GamesClient` template calls (2026-11-06): `browseTemplates`, `searchTemplates`, `inspectTemplate`, `readTemplateFiles`, `createGame(name, key, templateGameUUID?)`, `useTemplate(gameUUID, templateGameUUID, base, key)`; failure `template-not-found`.
+- [x] "Crear un juego" offers a template or the starter project (2026-11-06): a `TemplatePicker` (featured first, a search, "Ver detalle" inspects one: goal, actions, files) outside the creation form; the chosen start shows above the button; with an empty catalog it says the game starts from the starter project. Historial has "Empezar de nuevo con una plantilla" (`useTemplate` as an authoring action, its result shown like a restore's). `createTemplateBrowser` in the feature. Texts in es, en, pt-BR.
+- [x] Guide `templates.md` (2026-11-06): browse first, inspect few, read only needed files, say "none fits", never an example, what switching keeps; `policies.md`, `index.md` and `capabilities.md` point to it.
+- [ ] `quiz` and `know-me` reworked as templates: waits for S (their content as configuration) and the backend's step 2 (published, allowed and featured through the catalog).
 
 ### S. Template configuration (F)
 
