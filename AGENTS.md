@@ -1,111 +1,63 @@
-# AI Agent Bootstrap
+# Playhoot frontend — technical entry for agents
 
-This file is the entry point for AI agents working on the Playhoot FRONTEND.
+Method, plan, product spec and current task live in the workspace one level up:
+`../AGENTS.md`, `../docs/agente/METODO.md`, `../docs/agente/ESTADO.md`. Read those
+first. This file only holds what is specific to this repository.
 
-Before performing non-trivial work:
+## What this repository is
 
-1. Determine your execution surface: CONVERSATIONAL AI, CODEBASE AGENT, or
-   INDEPENDENT REVIEWER. If you have effective access to this repository
-   checkout and can inspect/modify files, run commands, and persist workflow
-   artifacts, you are acting as a Codebase Agent (or, when reviewing
-   read-only, an Independent Reviewer). Role definitions and authority live in
-   `docs/ai/OPERATING_MODEL.md` — do not redefine them here.
-2. Read `docs/ai/OPERATING_MODEL.md`.
-3. Use `docs/ai/KNOWLEDGE_MAP.md` to identify and load only the context
-   relevant to the task.
-4. For a normal natural-language request, use
-   `docs/ai/protocols/CONVERSATIONAL_ORCHESTRATOR.md` before forcing the
-   human to choose a process: search for a matching open Project, initiative
-   or WORK first, then select the internal process that owns the concern.
-   Skip straight to the matching process/protocol only when clearly resuming
-   a known persisted process.
-5. If a process runbook exists for that type of work, use
-   `docs/ai/processes/*` as the human-facing guide and follow the matching
-   `docs/ai/protocols/*` execution protocol.
-6. Inspect actual code and tests whenever current implementation behavior
-   matters.
-7. Do not silently resolve contradictions between canonical documentation and
-   implementation. Report them as drift.
-8. Do not treat ideas, proposals, examples, TODOs, or future-looking
-   documentation as accepted decisions.
-9. Understand the product/business reason for material changes before
-   implementing them.
-10. Escalate material product, architecture, security, contract, dependency,
-    or engineering-standard decisions instead of inventing them during
-    implementation.
-11. Do not scan every Markdown document by default. Load context through the
-    Knowledge Map.
+npm workspaces monorepo (Node >= 22.12): the web host, the GameHost that runs
+untrusted games, the Game SDK and the Game <-> Host bridge. The backend
+(`../playhoot`) is the business authority and owns every contract.
 
-## Two Repositories
+- `apps/web` — React host: router, presentation, platform adapters, design system, i18n.
+- `packages/protocol` — HTTP paths, schemas, realtime messages, bridge contract.
+- `packages/communication` — the only place that talks to the backend.
+- `packages/app-core`, `packages/device` — global state and device capabilities.
+- `packages/features/*` — feature state and logic, no React, no router.
+- `packages/game-host`, `game-sdk`, `game-core`, `game-server`, `game-react`, `game-tools` — game runtime and SDK. The backend builds games with `game-tools` from this checkout.
+- `apps/web/public/docs/sdk/v1/` — SDK guide served to creator AIs; a test keeps it aligned with the SDK.
 
-The backend lives in the sibling checkout `../playhoot`
-(`https://github.com/diegobermudez03/playhoot`) and has its own `AGENTS.md`
-and workflow. The backend is the business authority and owns every
-client-facing contract. This repository owns the web/mobile hosts, the
-GameHost, the Game SDK and the Game <-> Host bridge.
+## Architecture rules
 
-- To know what the backend actually exposes, start from
-  `docs/architecture/BACKEND_CONTRACT.md`, then verify in backend code.
-- When frontend work needs a backend change, follow "Cross-Repository
-  Concerns" in `docs/ai/protocols/CONVERSATIONAL_ORCHESTRATOR.md`. Never
-  change the backend without the human directing it; when you do, follow the
-  backend's own `AGENTS.md`.
+- Three layers. Presentation renders state and forwards UI events, holding only UI
+  state. Feature state is the single logic layer. `communication` makes external
+  calls. Presentation never calls a client directly.
+- Business logic belongs to the backend; the frontend does not re-implement it.
+- Each screen has two presentation implementations, horizontal and vertical,
+  chosen at the route edge and sharing components; each is also responsive.
+- The URL fully determines the screen and its input. Leaving a route discards its state.
+- The game is untrusted: sandboxed iframe, no network, no tokens, no socket;
+  everything goes through the versioned, validated bridge.
+- Frontend visibility never replaces backend authorization.
+- Package boundaries are enforced by lint; do not weaken them.
+- Backend values are never treated as closed lists.
 
-## Project Status
+## Standards
 
-The repository was scaffolded on 2026-10-19 from the architecture plan
-`docs/Playhoot_Frontend_Architecture_Plan.docx` (the "plan"; `§N` references
-point to its sections). Its first vertical slice (open a join link, join,
-play a Session) was completed 2026-11-01 (`docs/projects/completed/session-play-v1/`);
-the next work is the game creation flow. `CURRENT_STATE.md` says what
-actually exists.
-
-The plan is a `.docx`. To read it, extract `word/document.xml` from the zip
-(e.g. with Python `zipfile`) and strip tags; tables and diagrams are inside
-`w:tbl` elements.
-
-## Engineering Standards
-
-Canonical reusable engineering standards live under
-`docs/engineering/standards/` (index: `INDEX.md`). Do not infer new
-standards from recurring implementation patterns; use the Engineering
-Standard process.
-
-## Logic Mirror
-
-`docs/logic/` explains the frontend's behavior for the human, who does not read
-this TypeScript: `FLOWS.md` (flows, external calls, state, navigation) and
-`mirror/*.go` (the same as Go-syntax pseudocode). Any change to an external
-call, a state shape, a transition or navigation updates them in the same
-change (`docs/logic/README.md`).
-
-## Assets
-
-Build as if every asset (image, sprite, sound, music) already exists: register it in
-`apps/web/src/assets/assets.json`, use it by id, give it a placeholder behavior
-while missing, and document it in `docs/design/ASSETS.md` with its spec and a
-generation prompt. The human sources the files. `npm run check` fails if a
-registered asset is not documented.
+- `docs/engineering/standards/` (backend contract values, user-facing text).
+- i18n: no literal text in JSX or props (lint); `es`, `en`, `pt-BR` catalogs kept in
+  parity (test); complete ICU sentences; feature state exposes kinds, never text;
+  never show a backend `message`.
+- Styles: CSS Modules and tokens only; no raw colors, durations or shadows in components.
+- Assets: register in `apps/web/src/assets/assets.json`, use by id, give a
+  placeholder while missing, document in `docs/design/ASSETS.md`. The creator
+  sources the files.
+- Accessibility target: WCAG 2.2 AA for navigation and management screens.
+- The current visual identity (dark "game night", owl mascot) is being replaced
+  in milestone H2. Do not extend it.
 
 ## Commands
 
-From the repository root (npm workspaces): `npm install`, `npm run dev`,
-`npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and
-`npm run check` (typecheck + lint + format check + tests). Run `npm run check`
-before reporting implementation work as done.
+From the repository root: `npm install`, `npm run dev`, `npm run typecheck`,
+`npm run lint`, `npm test`, `npm run build`. Run **`npm run check`** (typecheck,
+lint, format check, tests, asset registry) before every commit.
 
-## Human Review And Temporary Context
+## Retired
 
-For non-trivial AI process checkpoints, `HUMAN_REVIEW.md` is the normal human
-review surface.
-
-`AI_CONTEXT.md` is temporary resumable agent context only. It is not canonical
-truth, not implementation authority, and must not contain hidden material
-decisions.
-
-When acting as CODEBASE AGENT or INDEPENDENT REVIEWER, respect existing active
-workspaces under `docs/ai/workspaces/active/` and active Projects under
-`docs/projects/active/`: do not overwrite their design authority, and keep
-their `AI_CONTEXT.md` resume state current at meaningful repository-side
-checkpoints so an interrupted execution can be resumed. See
-`docs/ai/workspaces/README.md`.
+`docs/ai/`, `docs/work/`, `docs/projects/`, `docs/logic/` (Logic Mirror),
+`CURRENT_STATE.md`, `HUMAN_REVIEW.md`, `AI_CONTEXT.md`, `ENGINEERING_RADAR.md`
+and `apps/mobile/` belong to the previous process or to deferred scope. Do not
+follow or update them; task T-003 removes them. The system documentation site
+(`../docs/sistema/index.html`; this repo's data in `docs/sistema/`) replaces the
+Logic Mirror.
