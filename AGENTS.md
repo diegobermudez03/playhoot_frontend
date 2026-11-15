@@ -1,7 +1,7 @@
 # Playhoot frontend — technical entry for agents
 
 Method, plan, product spec and current task live in the workspace one level up:
-`../AGENTS.md`, `../docs/agente/METODO.md`, `../docs/agente/ESTADO.md`. Read those
+`../AGENTS.md`, `../docs/agent/METHOD.md`, `../docs/agent/STATE.md`. Read those
 first. This file only holds what is specific to this repository.
 
 ## What this repository is
@@ -59,5 +59,5 @@ lint, format check, tests, asset registry) before every commit.
 `CURRENT_STATE.md`, `HUMAN_REVIEW.md`, `AI_CONTEXT.md`, `ENGINEERING_RADAR.md`
 and `apps/mobile/` belong to the previous process or to deferred scope. Do not
 follow or update them; task T-003 removes them. The system documentation site
-(`../docs/sistema/index.html`; this repo's data in `docs/sistema/`) replaces the
+(`../docs/system/index.html`; this repo's data in `docs/system/`) replaces the
 Logic Mirror.
