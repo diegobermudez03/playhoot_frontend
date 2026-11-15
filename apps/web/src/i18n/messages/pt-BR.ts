@@ -401,6 +401,8 @@ export const ptBR: Messages = {
   'assets.declarationError': 'Não dá para ler game.project.json, então nenhum recurso é listado:',
   'assets.status':
     '{status, select, missing {Falta} ready {Pronto} undeclared {Não declarado mais} other {Desconhecido}}',
+  'assets.dimensions': '{width} × {height} px',
+  'assets.duration': '{seconds, number} s',
   'assets.type': '{type, select, image {Imagem} audio {Áudio} video {Vídeo} other {Arquivo}}',
   'assets.optional': 'Opcional',
   'assets.upload': 'Enviar',

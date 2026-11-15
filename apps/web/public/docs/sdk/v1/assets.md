@@ -25,12 +25,13 @@ An invalid declaration makes the change `invalid` with a diagnostic on `game.pro
 ## Uploading
 
 - The person uploads files in the section **Recursos** (id `assets`).
-- An agent with HTTP PUTs the raw file to the link's `/assets/<key>` URL with an `Idempotency-Key` header (a new random string per file). The answer is `attached` (a new revision) or `unchanged` (that content was already bound).
+- **Required:** an agent never passes a file through its own context (no base64 of an image or a sound in a message). It asks for a single-use upload URL (MCP `request_asset_upload`, or `POST <link>/assets/<key>/upload-url`) and sends the raw file with one `PUT` to that `upload_url` before its `expires_at` (`curl -T <file> <upload_url>`). The answer is `attached` (a new revision) or `unchanged` (that content was already bound). A refused or broken upload leaves the URL usable until it expires; a used one answers `410 upload_url_used`.
+- An agent with HTTP may also PUT the raw file to the link's `/assets/<key>` URL with an `Idempotency-Key` header (a new random string per file). MCP `upload_asset` takes base64 only for small files (at most 256 KiB, such as an SVG).
 - The real type is read from the bytes, never the file name. Limits: image 5 MiB, audio 10 MiB, video 50 MiB, 100 MiB for all assets together.
 - `POST <link>/assets/<key>/remove` with `{"idempotency_key": "..."}` unbinds a key.
 - Uploading never conflicts with source changes; it makes a new revision on top of the current one.
 
-Reading the link lists every declared asset as `missing` or `ready`, and content bound to a key no longer declared as `undeclared`.
+Reading the link lists every declared asset as `missing` or `ready`, and content bound to a key no longer declared as `undeclared`. An uploaded file comes with its size, type and, when known, an image's `width` and `height` in pixels or an audio or video's `duration_ms`: enough to place and time it without reading it. Never its bytes.
 
 ## Using them in the client
 

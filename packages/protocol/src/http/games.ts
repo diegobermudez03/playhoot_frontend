@@ -283,6 +283,10 @@ export const draftAssetSchema = z.object({
   sha256: z.string().nullish(),
   size: z.number().nullish(),
   mime_type: z.string().nullish(),
+  // What the file measures: an image's pixels, an audio or video's duration.
+  width: z.number().nullish(),
+  height: z.number().nullish(),
+  duration_ms: z.number().nullish(),
   url: z.string().nullish(),
   url_expires_at: z.string().nullish(),
 });

@@ -312,6 +312,9 @@ func DiffRevisions(gameUUID string, from int, to *int, path *string) (RevisionDi
 	return RevisionDiff{}, nil
 }
 
+// Assets read carry width/height (pixels) and durationMs when the backend measured them; the
+// workspace's Recursos shows them next to the status.
+//
 // UploadAsset sends a declared asset's file as the raw body.
 // endpoint: PUT /v1/games/{id}/draft/assets/{key} (header Idempotency-Key)
 // answer: 200 {outcome attached|unchanged, revision, asset}; 413 asset_too_large; 422 invalid_asset

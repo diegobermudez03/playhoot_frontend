@@ -394,6 +394,8 @@ export const en = {
   'assets.declarationError': "game.project.json can't be read, so no assets are listed:",
   'assets.status':
     '{status, select, missing {Missing} ready {Ready} undeclared {No longer declared} other {Unknown}}',
+  'assets.dimensions': '{width} × {height} px',
+  'assets.duration': '{seconds, number} s',
   'assets.type': '{type, select, image {Image} audio {Audio} video {Video} other {File}}',
   'assets.optional': 'Optional',
   'assets.upload': 'Upload',

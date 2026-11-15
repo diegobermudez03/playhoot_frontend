@@ -81,6 +81,22 @@ function AssetRow({ asset, authoring }: { asset: DraftAsset; authoring: GameAuth
         <span className={`${styles.badge} ${tone}`}>
           <FormattedMessage id="assets.status" values={{ status: asset.status }} />
         </span>
+        {asset.width !== null && asset.height !== null && (
+          <span className={styles.muted} data-testid={`asset-size-${asset.key}`}>
+            <FormattedMessage
+              id="assets.dimensions"
+              values={{ width: asset.width, height: asset.height }}
+            />
+          </span>
+        )}
+        {asset.durationMs !== null && (
+          <span className={styles.muted} data-testid={`asset-duration-${asset.key}`}>
+            <FormattedMessage
+              id="assets.duration"
+              values={{ seconds: Math.round(asset.durationMs / 100) / 10 }}
+            />
+          </span>
+        )}
       </div>
       {asset.description && <p className={styles.muted}>{asset.description}</p>}
       {ready && asset.url && <AssetPreview asset={asset} />}

@@ -82,6 +82,11 @@ Letters match the backend's `game-creation-v1` CHECKLIST, which holds each item'
 - [x] `game.project.json` `config` (2026-11-07, `packages/game-tools/src/config.ts`): values of type `number` (`min`, `max`, `integer`), `boolean`, `choice` (`options`), `text` (`maxLength`, `translated`: one text per game language), `list` (`items`, `minItems`, `maxItems`) and `object` (`fields`), each with a `description`, an optional top-level `default` and `private`. `config.json` (`{"format": "playhoot.config.v1", "values"}`) sets them; a value without default must be set. The build checks declaration and values (diagnostics on `game.project.json` / `config.json` with the value's path) and generates two typed modules: `@playhoot/config` (no private values; shared, server, client) and `@playhoot/config/server` (everything; server only). Top-level constants may read properties of other constants (`config.rounds`, also inside `defineGame`), in `check.ts` and in the backend's `sdk-v1`.
 - [x] Guide page and fixtures using it (2026-11-07): `config.md` (declaring, setting, reading, when to use it), referenced from `index.md`, `capabilities.md`, `policies.md`, `templates.md`, `project.md`, `server.md`, `client.md`, `phases.md`. The quiz keeps its questions (translated text and options, private `correct`) and durations as configuration (`shared/questions.ts` removed). `inspect_template` returns the configuration and the template details in Playhoot list what can change without code.
 
+### S2. Asset measures and agent uploads (backend S, 2026-11-07)
+
+- [x] `DraftAsset` `width`, `height`, `durationMs` (protocol `width`, `height`, `duration_ms`); **Recursos** shows "W × H px" or the seconds next to the status. Texts in es, en, pt-BR.
+- [x] Guide `assets.md`: an agent never passes a file through its context; it asks for a single-use upload URL (`request_asset_upload`, `POST <link>/assets/<key>/upload-url`) and PUTs the raw file; `upload_asset` base64 only for files up to 256 KiB; reads give measures, never bytes.
+
 ### T. Build diagnostics with codes (Q)
 
 - [ ] Every game-tools diagnostic has a stable `code`; the build's full output is written as a bounded log the backend keeps (backend T).

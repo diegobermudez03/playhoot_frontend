@@ -139,6 +139,11 @@ export interface DraftAsset {
   sha256: string | null;
   size: number | null;
   mimeType: string | null;
+  // What the file measures, when known: an image's width and height in pixels, an audio or
+  // video's duration.
+  width: number | null;
+  height: number | null;
+  durationMs: number | null;
   // A short-lived link to the content, when there is some.
   url: string | null;
 }
@@ -1375,6 +1380,9 @@ function assetOf(asset: AssetBody): DraftAsset {
     sha256: asset.sha256 ?? null,
     size: asset.size ?? null,
     mimeType: asset.mime_type ?? null,
+    width: asset.width ?? null,
+    height: asset.height ?? null,
+    durationMs: asset.duration_ms ?? null,
     url: asset.url ?? null,
   };
 }

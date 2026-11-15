@@ -305,7 +305,14 @@ describe('createGamesClient', () => {
       json(200, {
         outcome: 'attached',
         revision: 4,
-        asset: { key: 'cardBack', type: 'image', status: 'ready', mime_type: 'image/png' },
+        asset: {
+          key: 'cardBack',
+          type: 'image',
+          status: 'ready',
+          mime_type: 'image/png',
+          width: 512,
+          height: 768,
+        },
       }),
     );
     const file = new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' });
@@ -318,6 +325,9 @@ describe('createGamesClient', () => {
     expect(result.ok && result.value.asset).toMatchObject({
       status: 'ready',
       mimeType: 'image/png',
+      width: 512,
+      height: 768,
+      durationMs: null,
     });
   });
 

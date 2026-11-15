@@ -404,6 +404,8 @@ export const es: Messages = {
     'No se puede leer game.project.json, así que no hay recursos listados:',
   'assets.status':
     '{status, select, missing {Falta} ready {Listo} undeclared {Ya no declarado} other {Desconocido}}',
+  'assets.dimensions': '{width} × {height} px',
+  'assets.duration': '{seconds, number} s',
   'assets.type': '{type, select, image {Imagen} audio {Audio} video {Video} other {Archivo}}',
   'assets.optional': 'Opcional',
   'assets.upload': 'Subir',
