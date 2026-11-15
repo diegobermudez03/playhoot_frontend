@@ -2,7 +2,7 @@
 
 GameHost abstraction and shared bridge logic.
 
-Status: MINIMAL HOST (plan step 4, ADR-0005): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings; a new connection (`open` event) resets the ack translation and sends the game's last inputs again with the first FULL view (plan §13.7). Bridge limits and fault reports (step 9, 2026-10-20, ADR-0006): `createBridgeGuard` rates game messages before decoding and caps pending requests; a game abusing the bridge is stopped, and every failure is reported to the backend through the Session port's `reportGameFault`. Used by Session Play. Fixed-aspect viewport (step 7, 2026-10-20): the GameVersion's logical viewport is a Host option passed to every container, with the fit math (`fitGameViewport`: whole, centered, one scale, bars) shared by every platform. Game assets (2026-10-25, ADR-0008): `createAssetLoader` serves only the keys the backend listed for the version, downloads without credentials, checks size and SHA-256, caches by hash (`AssetCache`, whose reads hand out a fresh buffer) and the Host transfers the bytes to the game. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: MINIMAL HOST (plan step 4, ADR-0005): artifact loading with hash verification and cache, READY handshake with version negotiation, validation of every game message, projection/events/ack forwarding, SAMPLE/COMMAND/asset translation, typed failures, timings; a new connection (`open` event) resets the ack translation and sends the game's last inputs again with the first FULL view (plan §13.7). Bridge limits and fault reports (step 9, 2026-10-20, ADR-0006): `createBridgeGuard` rates game messages before decoding and caps pending requests; a game abusing the bridge is stopped, and every failure is reported to the backend through the Session port's `reportGameFault`. Used by Session Play. Fixed-aspect viewport (step 7, 2026-10-20): the GameVersion's logical viewport is a Host option passed to every container, with the fit math (`fitGameViewport`: whole, centered, one scale, bars) shared by every platform. Game assets (2026-10-25, ADR-0008): `createAssetLoader` serves only the keys the backend listed for the version, downloads without credentials, checks size and SHA-256, caches by hash (`AssetCache`, whose reads hand out a fresh buffer) and the Host transfers the bytes to the game.
 
 ## Owns
 
@@ -35,4 +35,4 @@ The same artifact runs unchanged in a React Native WebView (CHECKLIST M); its co
 - `@playhoot/communication` (types, `Result`)
 - `@playhoot/game-sdk` only in tests (the real SDK is wired to the Host in `gameHost.test.ts`)
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.

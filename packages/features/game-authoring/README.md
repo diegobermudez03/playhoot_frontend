@@ -2,7 +2,7 @@
 
 Game Authoring feature (logical state and ports): the workspace where a creator, alone or with an AI, changes the draft of a game.
 
-Status: IMPLEMENTED (game-creation-web-v1 CHECKLIST B): `createGameAuthoring` (read the current revision with its files, apply a change, edit one file, restore a revision, upload and remove assets, follow the current revision's build with the backend's long poll, the revisions list) and `parsePastedChange` (a pasted envelope read strictly as data, with its summary). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createGameAuthoring` (read the current revision with its files, apply a change, edit one file, restore a revision, upload and remove assets, follow the current revision's build with the backend's long poll, the revisions list) and `parsePastedChange` (a pasted envelope read strictly as data, with its summary).
 
 ## Owns
 

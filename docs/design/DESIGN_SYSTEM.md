@@ -1,3 +1,5 @@
+> Previous identity, redefined in H2.
+
 # Playhoot Design System
 
 Status: ACCEPTED DIRECTION (the human approved the agent's proposal on 2026-10-20 and asked for it to stay token-driven, lively and with sound). Details keep evolving with the human's feedback.

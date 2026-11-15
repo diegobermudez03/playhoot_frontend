@@ -4,7 +4,7 @@ Status: CANONICAL
 
 ## Scope
 
-This document owns the accepted architecture rules and boundaries of the Playhoot frontend. It is the durable, Markdown owner of the decisions in the architecture plan (`docs/Playhoot_Frontend_Architecture_Plan.docx`, referenced as §N), which remains the full rationale and skeleton. It does not own implementation progress (`CURRENT_STATE.md`), project planning (`docs/projects/`), backend contracts (`docs/architecture/BACKEND_CONTRACT.md` mirrors them; the backend owns them), or package-local detail (package READMEs).
+This document owns the accepted architecture rules and boundaries of the Playhoot frontend. It does not own implementation progress (the system documentation site), project planning (`../docs/agent/`), backend contracts (`docs/architecture/BACKEND_CONTRACT.md` mirrors them; the backend owns them), or package-local detail (package READMEs).
 
 ## System Shape (§3)
 
@@ -29,7 +29,7 @@ This document owns the accepted architecture rules and boundaries of the Playhoo
 
 1. The backend is the authority for business rules and Session state.
 2. The Playhoot Host is trusted; the generated Game frontend is untrusted.
-3. The GameVersion frontend artifact is the same on web and mobile.
+3. The GameVersion frontend artifact is host-agnostic: the same artifact runs in any Host.
 4. The Game depends on the Playhoot Game SDK and web standards, never on Host React DOM/React Native internals.
 5. The Game never receives tokens, the real WebSocket, or direct backend access.
 6. All Game <-> Host communication crosses a versioned, validated bridge. The Host validates every message, even from the official SDK; the SDK is not a trust boundary.
@@ -50,7 +50,6 @@ Organized by application and by feature/capability, not by a global `screens` fo
 ```text
 apps/
   web/                      # React web shell, routing, web presentation + platform adapters
-  mobile/                   # React Native/Expo shell (not started; plan step 11)
 packages/
   app-core/                 # app-global contracts/state/bootstrap
   protocol/                 # shared API / realtime / bridge message contracts + runtime validation
@@ -69,7 +68,7 @@ fixtures/
 
 Placement rules (interpretation of §3.3 and §4, recorded so it is applied consistently):
 
-- A feature package (`packages/features/<feature>`) holds the feature's logical state/controller and the ports it calls. It is platform-agnostic and may be reused by the mobile app.
+- A feature package (`packages/features/<feature>`) holds the feature's logical state/controller and the ports it calls. It is platform-agnostic.
 - A feature's presentation lives in each app (`apps/web/src/features/<feature>/`), because presentation is platform-specific (React DOM vs React Native).
 - Packages never import an app, a platform renderer (`react-dom`, `react-native`) or a router. Lint-enforced.
 - `game-sdk` imports only `@playhoot/protocol/bridge` and no UI framework. Lint-enforced.
@@ -125,8 +124,8 @@ Errors are distinguished by origin: presentation, bridge/contract, transport, ba
 
 ## Tooling
 
-`docs/decisions/architecture/ADR-0001-workspace-tooling-for-the-frontend-foundation.md` (ACCEPTED): npm workspaces with source-consumed TypeScript packages, Vite, TypeScript strict, React Router, Vitest, ESLint + Prettier; Zustand and a runtime validator (zod proposed) when first needed.
+`docs/technical-decisions/ADR-0001-workspace-tooling-for-the-frontend-foundation.md` (ACCEPTED): npm workspaces with source-consumed TypeScript packages, Vite, TypeScript strict, React Router, Vitest, ESLint + Prettier; Zustand and a runtime validator (zod proposed) when first needed.
 
 ## Deliberately Open (§19)
 
-Bundler/pipeline of game artifacts; Host styling/design system; exact aspect-ratio list; safe asset handle shape; final Game SDK schema and names; bootstrap/me endpoint; per-platform credential persistence (web: `localStorage`, decided 2026-10-20); interpolation/prediction helpers; how much presentation is shared between web and mobile. Decide them when implementation gives real information, through the owning process.
+Bundler/pipeline of game artifacts; Host styling/design system; exact aspect-ratio list; safe asset handle shape; final Game SDK schema and names; bootstrap/me endpoint; per-platform credential persistence (web: `localStorage`, decided 2026-10-20); interpolation/prediction helpers; how much presentation a future mobile host would share with web. Decide them when implementation gives real information, recording each in `../docs/agent/DECISIONS.md`.

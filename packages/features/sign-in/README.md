@@ -2,7 +2,7 @@
 
 Sign In feature (logical state and ports).
 
-Status: IMPLEMENTED: `createGuestSignIn` (name, local validation, guest creation with one idempotency key per name, typed errors) and `createAccountSignIn` (a provider sign-in: S256 verifier kept in a `PendingLoginStore` port while the page visits the provider, completion with the one-time code, the guest in use handed over so its session ends). Only the backend's local provider exists until Google (backend `identity-v1` WORK-0060). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createGuestSignIn` (name, local validation, guest creation with one idempotency key per name, typed errors) and `createAccountSignIn` (a provider sign-in: S256 verifier kept in a `PendingLoginStore` port while the page visits the provider, completion with the one-time code, the guest in use handed over so its session ends). Only the backend's local provider exists until Google.
 
 ## Owns
 
@@ -10,7 +10,7 @@ How a person becomes someone the backend accepts: playing as a guest (a name, ke
 
 ## Does not own
 
-- Presentation (apps/web, apps/mobile).
+- Presentation (apps/web).
 - Deciding which operation needs which level (the backend's catalog does).
 - Where to go after signing in (the route's `next`).
 
@@ -24,4 +24,4 @@ How a person becomes someone the backend accepts: playing as a guest (a name, ke
 - `@playhoot/communication`
 - `@playhoot/protocol`
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.

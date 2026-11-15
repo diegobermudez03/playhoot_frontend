@@ -2,7 +2,7 @@
 
 Device capabilities and display abstraction.
 
-Status: FOUNDATION: `DeviceCapabilities`, `classifyDisplay`, `classifyDevice` (desktop or mobile, sent to the backend on every join, 2026-10-25), capabilities store. Platform detection lives in each app. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: FOUNDATION: `DeviceCapabilities`, `classifyDisplay`, `classifyDevice` (desktop or mobile, sent to the backend on every join, 2026-10-25), capabilities store. Platform detection lives in each app.
 
 ## Owns
 
@@ -21,4 +21,4 @@ The shared `DeviceCapabilities` abstraction (plan §7): touch, keyboard, pointer
 
 - zustand (vanilla store only)
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.

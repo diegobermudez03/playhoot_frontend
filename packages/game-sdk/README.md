@@ -2,7 +2,7 @@
 
 API exposed to the generated game frontend.
 
-Status: MINIMAL SDK (plan step 5, bridge v1, ADR-0005). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: MINIMAL SDK (plan step 5, bridge v1, ADR-0005).
 
 ## Owns
 
@@ -39,4 +39,4 @@ await playhoot.preload([assets.ship, assets.thrust]);            // optional, be
 
 - `@playhoot/protocol/bridge` only (types and constants, no runtime dependencies).
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.

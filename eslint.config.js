@@ -87,7 +87,7 @@ export default tseslint.config(
   },
   {
     // The game logic packages are bundled into the backend sandbox script: no UI, no browser, no
-    // Host code (docs/projects/active/game-creation-web-v1).
+    // Host code.
     files: ['packages/game-core/**/*.{ts,tsx}', 'packages/game-server/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [

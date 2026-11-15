@@ -2,7 +2,7 @@
 
 Session Host feature (logical state and ports).
 
-Status: IMPLEMENTED: `createHostSession` (connecting, lobby with the game's player limits, start, cancel, watching a participant, play too, reconnection, typed outcomes) and `canStart`. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createHostSession` (connecting, lobby with the game's player limits, start, cancel, watching a participant, play too, reconnection, typed outcomes) and `canStart`.
 
 ## Owns
 
@@ -10,7 +10,7 @@ The creator's side of a Session (session-play-v1 CHECKLIST P): the admin connect
 
 ## Does not own
 
-- Presentation (apps/web, apps/mobile).
+- Presentation (apps/web).
 - The creator's player connection when they play (Join Session owns it; the app embeds it).
 - Deciding whether a start is valid (the backend decides; `canStart` only enables the button).
 - Surviving route exit: state is discarded and rebuilt from URL + backend.
@@ -25,4 +25,4 @@ The creator's side of a Session (session-play-v1 CHECKLIST P): the admin connect
 - `@playhoot/communication`
 - `@playhoot/protocol`
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.

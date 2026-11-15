@@ -53,11 +53,10 @@ From the repository root: `npm install`, `npm run dev`, `npm run typecheck`,
 `npm run lint`, `npm test`, `npm run build`. Run **`npm run check`** (typecheck,
 lint, format check, tests, asset registry) before every commit.
 
-## Retired
+## Historical decisions
 
-`docs/ai/`, `docs/work/`, `docs/projects/`, `docs/logic/` (Logic Mirror),
-`CURRENT_STATE.md`, `HUMAN_REVIEW.md`, `AI_CONTEXT.md`, `ENGINEERING_RADAR.md`
-and `apps/mobile/` belong to the previous process or to deferred scope. Do not
-follow or update them; task T-003 removes them. The system documentation site
-(`../docs/system/index.html`; this repo's data in `docs/system/`) replaces the
-Logic Mirror.
+`docs/technical-decisions/` keeps the accepted ADRs as a record of why the
+frontend is the way it is. They are history, not current truth; new decisions go
+to `../docs/agent/DECISIONS.md`. The system documentation site
+(`../docs/system/index.html`; this repo's data in `docs/system/`) describes what
+exists.

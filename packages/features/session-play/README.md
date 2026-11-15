@@ -2,7 +2,7 @@
 
 Session Play feature (logical state and ports).
 
-Status: IMPLEMENTED (plan step 6): `createSessionPlay` runs the started game through the GameHost on the player's live connection; verified end to end against the real backend. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED (plan step 6): `createSessionPlay` runs the started game through the GameHost on the player's live connection; verified end to end against the real backend.
 
 ## Owns
 
@@ -19,7 +19,7 @@ The plan's `SessionPlayState` is split on purpose between two features, because 
 
 ## Does not own
 
-- Presentation (apps/web, apps/mobile) and the platform container (iframe / WebView).
+- Presentation (apps/web) and the platform container (iframe / WebView).
 - The connection, reconnection and endings (Join Session), or the game's own visual state.
 - Socket/iframe specifics: it depends on the `GameHost` abstraction and a `GameSessionPort`.
 
@@ -28,4 +28,4 @@ The plan's `SessionPlayState` is split on purpose between two features, because 
 - `@playhoot/game-host`
 - zustand (vanilla store only)
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.

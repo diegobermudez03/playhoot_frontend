@@ -2,7 +2,7 @@
 
 App-global contracts, state and bootstrap.
 
-Status: FOUNDATION: credential ports, auth snapshot, app-global store (`createAppState`), access levels and the backend's operation catalog (`operationAccess`). Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: FOUNDATION: credential ports, auth snapshot, app-global store (`createAppState`), access levels and the backend's operation catalog (`operationAccess`).
 
 ## Owns
 
@@ -26,4 +26,4 @@ Credential renewal (ADR-0009): `credentials.refresh()` renews a refused credenti
 
 - zustand (vanilla store only; React bindings live in the apps)
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.

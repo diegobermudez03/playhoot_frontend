@@ -1,13 +1,12 @@
 # Playhoot Frontend
 
-Web host (and, later, mobile host), GameHost, Game SDK and shared packages for Playhoot. The backend lives in a separate repository: [playhoot](https://github.com/diegobermudez03/playhoot).
+Web host, GameHost, Game SDK and shared packages for Playhoot. The backend lives in a separate repository: [playhoot](https://github.com/diegobermudez03/playhoot).
 
-- Architecture: [ARCHITECTURE.md](ARCHITECTURE.md) (from the plan in [docs/Playhoot_Frontend_Architecture_Plan.docx](docs/Playhoot_Frontend_Architecture_Plan.docx))
-- What exists today: [CURRENT_STATE.md](CURRENT_STATE.md)
-- How it behaves (flows, calls, state, navigation, without code): [docs/logic/](docs/logic/)
-- Active work: [docs/projects/active/](docs/projects/active/)
+- Architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
+- What exists, screens and their calls: the system documentation site (`../docs/system/index.html`; this repo's data in `docs/system/`)
+- Past technical decisions: [docs/technical-decisions/](docs/technical-decisions/)
 - What the backend exposes: [docs/architecture/BACKEND_CONTRACT.md](docs/architecture/BACKEND_CONTRACT.md)
-- Working with AI agents: [AGENTS.md](AGENTS.md) and [docs/ai/README.md](docs/ai/README.md)
+- Working with AI agents: [AGENTS.md](AGENTS.md)
 
 ## Requirements
 
@@ -29,7 +28,6 @@ Design proposal: [docs/design/DESIGN_SYSTEM.md](docs/design/DESIGN_SYSTEM.md); l
 
 ```text
 apps/web            React web shell
-apps/mobile         React Native/Expo shell (not started)
 packages/*          app-core, protocol, communication, device, game-host, game-sdk
 packages/features/* feature logical state (session-join, session-play, ...)
 fixtures/games      small game artifacts for end-to-end work

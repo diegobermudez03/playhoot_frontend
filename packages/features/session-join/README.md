@@ -2,7 +2,7 @@
 
 Join Session feature (logical state and ports).
 
-Status: IMPLEMENTED: `createJoinSession` (connecting, lobby, started, typed outcomes, reconnection by Session UUID). During a game a lost connection keeps the phase `started` with `connection: 'reconnecting'`, so Session Play keeps the game on screen; `live` is a link to whatever connection is current (sample, command, current view, and the `open` / `view` / `sample-sent` events), which Session Play's GameHost uses. Repository-wide implementation state: `CURRENT_STATE.md` at the root.
+Status: IMPLEMENTED: `createJoinSession` (connecting, lobby, started, typed outcomes, reconnection by Session UUID). During a game a lost connection keeps the phase `started` with `connection: 'reconnecting'`, so Session Play keeps the game on screen; `live` is a link to whatever connection is current (sample, command, current view, and the `open` / `view` / `sample-sent` events), which Session Play's GameHost uses.
 
 ## Owns
 
@@ -10,7 +10,7 @@ Feature state and communication ports for opening `/join/{joinCode}` directly (p
 
 ## Does not own
 
-- Presentation (apps/web, apps/mobile).
+- Presentation (apps/web).
 - Deciding whether joining is allowed (the backend decides).
 - Surviving route exit: state is discarded and rebuilt from URL + backend.
 
@@ -25,4 +25,4 @@ Feature state and communication ports for opening `/join/{joinCode}` directly (p
 - `@playhoot/device`
 - `@playhoot/protocol`
 
-Architecture rules: `ARCHITECTURE.md`. Plan section references (§N) point to `docs/Playhoot_Frontend_Architecture_Plan.docx`.
+Architecture rules: `ARCHITECTURE.md`.
