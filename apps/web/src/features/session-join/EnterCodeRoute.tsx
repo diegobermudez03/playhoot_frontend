@@ -6,7 +6,7 @@ import { operations } from '@playhoot/protocol';
 
 import { useShellMode } from '../../app/shell/ShellContext';
 import { useNavigateToOperation } from '../access';
-import { useLayout } from '../layout';
+import { useMediaLayout } from '../layout';
 import { joinPath, myGamesPath, newGamePath, newSessionPath } from '../paths';
 import { Button, Card, CodeInput, Logo, SplitStage, Stage } from '../../ui';
 import styles from './EnterCodeRoute.module.css';
@@ -18,8 +18,11 @@ export function EnterCodeRoute() {
   const navigate = useNavigate();
   // Shown to everyone; without an account, choosing it goes through signing in first.
   const goTo = useNavigateToOperation();
-  const layout = useLayout();
-  // The page shows its own big logo, so the bar does not repeat it.
+  // The server renders this page and knows nothing about the display, so the skeleton is chosen
+  // from a media query after hydration (D-019).
+  const layout = useMediaLayout();
+  // The page shows its own big logo, so the bar does not repeat it. `AppShell` already reads that
+  // from the address, so the first render is right too; this keeps the screen's own statement.
   useShellMode('bare');
   const [code, setCode] = useState('');
   const complete = code.length === joinCodeLength;

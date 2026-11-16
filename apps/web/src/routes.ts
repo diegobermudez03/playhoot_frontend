@@ -12,8 +12,13 @@ const segments = Object.values(localeSegments);
 const publicPages = segments.flatMap((segment) =>
   prefix(segment, [
     index('routes/home.tsx', { id: `home.${segment}` }),
+    // Offered to crawlers, so the server must answer it with the page itself and not with an
+    // empty document the browser fills in (D-019, verified by `scripts/verify/seo.mjs`).
+    route('join', 'routes/join-entry.tsx', { id: `join-entry.${segment}` }),
     layout('app/ClientLayout.tsx', { id: `public.${segment}` }, [
-      route('join', 'routes/join-entry.tsx', { id: `join-entry.${segment}` }),
+      // The authentication screen needs the browser to know who is already signed in and which
+      // providers the backend offers, so it is taken over at hydration. It is `noindex` and is
+      // only ever reached from another page: nothing reads it without running the app.
       route('sign-in', 'routes/sign-in.tsx', { id: `sign-in.${segment}` }),
     ]),
   ]),

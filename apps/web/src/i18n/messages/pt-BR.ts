@@ -114,6 +114,14 @@ export const ptBR: Messages = {
     'Prepare as suas atividades com dados fictícios e teste tudo antes de qualquer estudante entrar.',
   'home.teacher.cta': 'Ver o que inclui para professores',
 
+  'seo.app.title': 'Playhoot',
+  'seo.admin.signIn.title': 'Acesso de administração | Playhoot',
+  'seo.admin.secondFactor.title': 'Segundo fator | Playhoot',
+  'seo.admin.overview.title': 'Visão geral da administração | Playhoot',
+  'seo.admin.queues.title': 'Filas | Playhoot',
+  'seo.admin.budget.title': 'Orçamento | Playhoot',
+  'seo.admin.email.title': 'E-mail | Playhoot',
+
   'seo.home.title': 'Playhoot: joguem juntos, em qualquer lugar',
   'seo.home.description':
     'Entre em uma partida com um código de qualquer dispositivo e jogue com seus amigos, sua turma ou sua equipe. Você também pode criar seus próprios jogos.',

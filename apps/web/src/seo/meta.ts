@@ -62,6 +62,18 @@ export function publicRouteMeta(options: PublicRouteMeta): MetaDescriptor[] {
   return descriptors;
 }
 
+// A screen that is not public still needs a document title: it is the first thing a screen reader
+// announces and what a browser writes in a tab, a bookmark and the window list (WCAG 2.2 2.4.2).
+// Nothing else belongs here — an app route is `noindex` by construction (it is not in the sitemap
+// and `robots.txt` disallows it), carries no language in its address and is never shared.
+export function appMeta(args: MetaArgs, titleId: MessageId): MetaDescriptor[] {
+  const root = args.matches.find((match) => match?.id === 'root');
+  // An app address names no language, so the page is in the one the root resolved: the remembered
+  // choice, else what the browser asked for (D-024).
+  const locale = (root?.data as RootData | undefined)?.locale ?? fallbackLocale;
+  return [{ title: text(locale, titleId) }];
+}
+
 // Open Graph wants an underscore and a region: the language alone is ambiguous there.
 const openGraphLocales: Record<Locale, string> = {
   es: 'es_ES',

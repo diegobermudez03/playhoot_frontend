@@ -4,7 +4,7 @@ import { useLocation } from 'react-router';
 
 import { ShellBar } from '../app/shell/ShellBar';
 import { useShell } from '../app/shell/ShellContext';
-import { isAdminPath } from '../features/paths';
+import { isAdminPath, isBarePublicPath } from '../features/paths';
 import styles from './AppShell.module.css';
 
 // The frame every non-admin screen renders inside: the fixed top bar and the page under it. It is
@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { mode: asked } = useShell();
   // The admin area frames itself (D-023), and it is known from the address alone, so its pages
   // never show this bar even for the render before they could ask not to.
-  const mode = isAdminPath(pathname) ? 'plain' : asked;
+  const mode = isAdminPath(pathname) ? 'plain' : isBarePublicPath(pathname) ? 'bare' : asked;
   if (mode === 'plain') return <>{children}</>;
   if (mode === 'immersive') {
     return (

@@ -6,7 +6,7 @@
 PH.screen({
   id: 'admin-sign-in',
   path: '/admin/sign-in?next={path}',
-  status: 'implemented',
+  status: 'verified',
   name: 'Admin sign-in',
   summary:
     'Signs the administrator in: the account through the one contextual sign-in screen, then a TOTP code that issues the 15-minute admin-mode token.',
@@ -33,7 +33,7 @@ PH.screen({
 PH.screen({
   id: 'admin-second-factor',
   path: '/admin/second-factor?next={path}',
-  status: 'implemented',
+  status: 'verified',
   name: 'Admin second factor',
   summary: 'Enrolls or replaces the administrator TOTP credential.',
   mode: 'admin',
@@ -54,7 +54,7 @@ PH.screen({
 PH.screen({
   id: 'admin-home',
   path: '/admin',
-  status: 'implemented',
+  status: 'verified',
   name: 'Admin overview',
   summary: 'The admin shell and landing: navigation plus the health signals of the H1 panels.',
   mode: 'admin',
@@ -72,7 +72,7 @@ PH.screen({
 PH.screen({
   id: 'admin-queues',
   path: '/admin/queues',
-  status: 'implemented',
+  status: 'verified',
   name: 'Queues and dead letters',
   summary: 'Every domain queue’s dead tasks, with retry and cancel.',
   mode: 'admin',
@@ -98,7 +98,7 @@ PH.screen({
 PH.screen({
   id: 'admin-budget',
   path: '/admin/budget',
-  status: 'implemented',
+  status: 'verified',
   name: 'Budget status',
   summary:
     'The restriction ladder and every cap’s window consumption; cost controls, emergency cutoff and gradual reopening behind inline step-up codes.',
@@ -119,7 +119,7 @@ PH.screen({
 PH.screen({
   id: 'admin-email',
   path: '/admin/email',
-  status: 'implemented',
+  status: 'verified',
   name: 'Email mode and deliveries',
   summary: 'Outbound email: mode, per-provider consumption and delivery states.',
   mode: 'admin',

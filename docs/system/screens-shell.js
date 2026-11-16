@@ -8,7 +8,7 @@
 PH.screen({
   id: 'app-shell',
   path: '(layout around every user screen)',
-  status: 'implemented',
+  status: 'verified',
   name: 'App shell',
   summary:
     'The fixed top bar and frame every non-admin screen renders inside: identity, mode switch, language, notifications, join and create.',
@@ -16,7 +16,7 @@ PH.screen({
   access: 'anonymous',
   variants: 'horizontal+vertical',
   shows:
-    "Fixed top bar (P14, B: search): logo/home, join, create, notifications with the unread count and a plain entry panel, the account corner (sign in, or the person's menu), the 3-mode switch (normal / teacher / student \u2014 the two that do not exist yet explain what they will be and leave the person where they are, H8) and the language selector (es / en / pt; the browser suggests, the person decides, the choice is remembered). Also the global toast layer, the skip-to-content link, and the bar's menu, which holds the offer to install the app and, on a narrow display, the entries the bar has no room for (the mode switch below 420 px; join, create, language and sound below 760 px). It is rendered once above the router, so navigating replaces the page inside it and never rebuilds the bar; a screen only says how it wants to be framed (the whole bar, the bar without the logo, no bar while a game takes the display, or none of it in the admin area). Identity and the unread count are known only in the browser: the server renders the bar without them.",
+    "Fixed top bar (P14, B: search): logo/home, join, create, notifications with the unread count and a plain entry panel, the account corner (sign in, or the person's menu), the 3-mode switch (normal / teacher / student \u2014 the two that do not exist yet explain what they will be and leave the person where they are, H8) and the language selector (es / en / pt; the browser suggests, the person decides, the choice is remembered). Also the global toast layer, the skip-to-content link, and the bar's menu, which holds the offer to install the app and, on a narrow display, the entries the bar has no room for (the mode switch below 420 px; join, create, language and sound below 760 px). It is rendered once above the router, so navigating replaces the page inside it and never rebuilds the bar; a screen only says how it wants to be framed (the whole bar, the bar without the logo, no bar while a game takes the display, or none of it in the admin area). Two of those are read from the address rather than asked for — the admin area and the join entry — so a server-rendered page is framed right on its first render instead of one frame later. Identity and the unread count are known only in the browser: the server renders the bar without them.",
   actions: [
     {
       name: 'Resolve who the person is (the credential the backend issued, kept by the app and renewed against it)',
@@ -49,7 +49,7 @@ PH.screen({
 PH.screen({
   id: 'home',
   path: '/{language}  (and /, which redirects to it)',
-  status: 'implemented',
+  status: 'verified',
   name: 'Home / public entry',
   summary:
     'The public entry: brief product explanation, join code, visible accesses to create and to teach, and a curated catalog section until Discovery arrives.',
@@ -77,7 +77,7 @@ PH.screen({
 PH.screen({
   id: 'auth-contextual',
   path: '/{language}/sign-in?reason={reason}&level={guest|account}&use=account&next={path}',
-  status: 'implemented',
+  status: 'verified',
   name: 'Contextual sign-in',
   summary:
     'One authentication screen that receives from its caller the reason, the minimum account type that works, and the destination to return to with its data kept.',
@@ -113,7 +113,7 @@ PH.screen({
 PH.screen({
   id: 'offline',
   path: '/offline.html',
-  status: 'implemented',
+  status: 'verified',
   name: 'Offline page',
   summary:
     'What the installed app shows when a page cannot reach the network: a plain explanation and a way to try again.',

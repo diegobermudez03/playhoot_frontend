@@ -15,6 +15,8 @@ import {
   useRouteLoaderData,
   type LinksFunction,
   type LoaderFunctionArgs,
+  type MetaArgs,
+  type MetaDescriptor,
   type ShouldRevalidateFunction,
 } from 'react-router';
 
@@ -31,6 +33,7 @@ import {
 } from './i18n/localePaths';
 import { ClientOnly } from './app/ClientOnly';
 import { PwaNotices, PwaProvider } from './pwa';
+import { appMeta } from './seo/meta';
 import { siteOrigin } from './seo/siteOrigin';
 
 export interface RootData {
@@ -57,6 +60,14 @@ export function loader({ request }: LoaderFunctionArgs): RootData {
 // the server again.
 export const shouldRevalidate: ShouldRevalidateFunction = ({ currentUrl, nextUrl }) =>
   localeOfPathname(currentUrl.pathname) !== localeOfPathname(nextUrl.pathname);
+
+// The title every page falls back to when its route does not name itself. React Router renders
+// the metadata of the deepest route that declares any, so a public page still carries its own
+// title, description and alternates; this only makes sure no page is ever untitled, which a
+// screen reader announces as the raw address (WCAG 2.2 2.4.2).
+export function meta(args: MetaArgs): MetaDescriptor[] {
+  return appMeta(args, 'seo.app.title');
+}
 
 export const links: LinksFunction = () => [
   { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },

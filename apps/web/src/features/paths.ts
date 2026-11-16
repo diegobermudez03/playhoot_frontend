@@ -158,3 +158,11 @@ export function adminSignInPath(next?: string | null): string {
 export function isAdminPath(pathname: string): boolean {
   return pathname === adminPaths.home || pathname.startsWith(`${adminPaths.home}/`);
 }
+
+// Public pages that show their own big logo, so the bar must not repeat it. They are
+// server-rendered, and the bar is drawn before a screen could ask: reading the address is how it
+// is right the first time rather than one frame later (the same reason as `isAdminPath`).
+export function isBarePublicPath(pathname: string): boolean {
+  const rest = pathname.replace(/^\/(es|en|pt)(?=\/|$)/, '');
+  return rest === enterCodePath;
+}

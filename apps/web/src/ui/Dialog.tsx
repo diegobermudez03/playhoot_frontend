@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 import styles from './Dialog.module.css';
 
@@ -21,6 +21,10 @@ interface DialogProps {
  */
 export function Dialog({ open, title, onClose, closeLabel, children, actions }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  // The heading's id has to be unique in the document and stable across both renders. It used to
+  // be built from the title itself, which made every untitled dialog `-title` and every pair of
+  // dialogs sharing a title point at each other's heading (found by the T-207 audit).
+  const titleId = `${useId()}-title`;
 
   useEffect(() => {
     const element = ref.current;
@@ -33,7 +37,7 @@ export function Dialog({ open, title, onClose, closeLabel, children, actions }: 
     <dialog
       ref={ref}
       className={styles.dialog}
-      aria-labelledby={`${title}-title`}
+      aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
@@ -44,7 +48,7 @@ export function Dialog({ open, title, onClose, closeLabel, children, actions }: 
       }}
     >
       <div className={styles.head}>
-        <h2 id={`${title}-title`} className={styles.title}>
+        <h2 id={titleId} className={styles.title}>
           {title}
         </h2>
         <button type="button" className={styles.close} onClick={onClose} aria-label={closeLabel}>

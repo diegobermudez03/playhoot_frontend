@@ -2,7 +2,7 @@ import { operationAccess } from '@playhoot/app-core';
 import type { ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 
-import { useOperationAccess, useServices } from '../app/ServicesContext';
+import { useOperationAccess, useOptionalServices } from '../app/ServicesContext';
 import { useLocalePaths } from '../i18n/useLocalePaths';
 import type { AuthReason } from './paths';
 
@@ -38,11 +38,18 @@ export function useNavigateToOperation(): (
   path: string,
   reason: AuthReason,
 ) => void {
-  const { app } = useServices();
+  // A server-rendered public page may offer these before the app is interactive (the join entry
+  // does). Until then nothing is known about the person, so the person is simply sent to the
+  // destination, which gates itself with `RequireOperation` once it has an answer.
+  const services = useOptionalServices();
   const navigate = useNavigate();
   const paths = useLocalePaths();
   return (operation, path, reason) => {
-    const { auth, operations } = app.store.getState();
+    if (!services) {
+      void navigate(path);
+      return;
+    }
+    const { auth, operations } = services.app.store.getState();
     const access = operationAccess(auth, operations, operation);
     void navigate(
       access.status === 'needs' ? paths.auth({ reason, level: access.level, next: path }) : path,

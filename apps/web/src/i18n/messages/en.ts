@@ -111,6 +111,14 @@ export const en = {
     'Prepare your activities with made-up data and try everything out before any student joins.',
   'home.teacher.cta': 'See what teachers get',
 
+  'seo.app.title': 'Playhoot',
+  'seo.admin.signIn.title': 'Admin sign-in | Playhoot',
+  'seo.admin.secondFactor.title': 'Second factor | Playhoot',
+  'seo.admin.overview.title': 'Admin overview | Playhoot',
+  'seo.admin.queues.title': 'Queues | Playhoot',
+  'seo.admin.budget.title': 'Budget | Playhoot',
+  'seo.admin.email.title': 'Email | Playhoot',
+
   'seo.home.title': 'Playhoot — play games together, anywhere',
   'seo.home.description':
     'Join a game with a code from any device and play with friends, your class or your team. Create your own games too.',

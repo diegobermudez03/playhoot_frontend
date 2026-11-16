@@ -113,6 +113,14 @@ export const es: Messages = {
     'Prepara tus actividades con datos ficticios y pruébalo todo antes de que entre ningún estudiante.',
   'home.teacher.cta': 'Ver qué incluye para docentes',
 
+  'seo.app.title': 'Playhoot',
+  'seo.admin.signIn.title': 'Acceso de administración | Playhoot',
+  'seo.admin.secondFactor.title': 'Segundo factor | Playhoot',
+  'seo.admin.overview.title': 'Resumen de administración | Playhoot',
+  'seo.admin.queues.title': 'Colas | Playhoot',
+  'seo.admin.budget.title': 'Presupuesto | Playhoot',
+  'seo.admin.email.title': 'Correo | Playhoot',
+
   'seo.home.title': 'Playhoot: juega en grupo, donde sea',
   'seo.home.description':
     'Únete a una partida con un código desde cualquier dispositivo y juega con tus amigos, tu clase o tu equipo. También puedes crear tus propios juegos.',

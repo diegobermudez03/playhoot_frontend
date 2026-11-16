@@ -80,6 +80,27 @@ From the repository root: `npm install`, `npm run dev`, `npm run typecheck`,
 `npm run lint`, `npm test`, `npm run build`. Run **`npm run check`** (typecheck,
 lint, format check, tests, style rules, asset registry) before every commit.
 
+Three checks are about the running app, so they are not in `npm run check`; they take the address
+of a host that is already up (`scripts/verify/`, added by T-207):
+
+- `npm run verify:seo -- --base http://localhost:3000 --origin https://playhoot.com` — every
+  public page in every language, fetched with no JavaScript: content, title, description,
+  canonical, hreflang, Open Graph, JSON-LD, robots.txt, the sitemap, the redirects and the 404.
+  Needs a production build served by `apps/web/server.js`.
+- `npm run verify:a11y -- --base http://localhost:5173` — axe-core over the H2 screens at
+  WCAG 2.2 A/AA. Add `--totp-secret <base32>` to audit the admin panels too. axe is fetched into
+  `node_modules/.cache` on the first run; it is not a dependency.
+- `npm run verify:pwa -- --base http://localhost:3000` — the worker, the precache, the manifest,
+  the absence of push, and the offline page with the network really cut (production build only;
+  there is no worker in development).
+
+They drive Chrome over the DevTools protocol (`scripts/verify/chrome.mjs`, no automation library).
+Set `CHROME_PATH` if Chrome is not where it usually is.
+
+**A changed route table needs a clean build**: after editing `apps/web/src/routes.ts`, remove
+`apps/web/.react-router` and `apps/web/build` before `npm run build`, or the server bundle can keep
+the previous route tree and render an empty page for a route that moved (seen in T-207).
+
 ## Historical decisions
 
 `docs/technical-decisions/` keeps the accepted ADRs as a record of why the
