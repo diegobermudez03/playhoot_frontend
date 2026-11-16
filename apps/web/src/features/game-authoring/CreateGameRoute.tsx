@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Mascot, Stage, TextField } from '../../ui';
+import { Button, Card, Mascot, Stage, TextField } from '../../ui';
 import { RequireOperation } from '../access';
 import { gameWorkspacePath } from '../paths';
 import styles from './GameWorkspace.module.css';
@@ -77,7 +77,7 @@ function CreateGame() {
   };
 
   return (
-    <AppShell>
+    <>
       <Stage>
         <div className={styles.hero}>
           <Mascot
@@ -154,6 +154,6 @@ function CreateGame() {
           />
         </Card>
       </Stage>
-    </AppShell>
+    </>
   );
 }

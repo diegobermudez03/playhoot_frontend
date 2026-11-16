@@ -130,20 +130,48 @@ horizontal and vertical implementations of every screen.
 | `Button` | primary / secondary / accent / ghost / danger, sm / md / lg, `block`, `loading`, `icon`. Presses into its own shadow. Disabled is a blank piece, not a faded action; it keeps its outline. |
 | `Field` | The shared frame: label, control, one line of hint **or** error. Wires `id`, `aria-describedby` and `aria-invalid` for whatever control it holds. |
 | `TextField` · `Select` | `Field` plus the shared control skin (`Control.module.css`). The select keeps the native list and draws its own arrow. |
-| `CodeInput` · `CodeTiles` | A join code or a second factor as letter tiles, with a real transparent input over them: typing, paste, mobile keyboards and screen readers behave as in a normal field. |
+| `CodeInput` · `CodeTiles` | A join code or a second factor as letter tiles, with a real transparent input over them: typing, paste, mobile keyboards and screen readers behave as in a normal field. `labelVisible` draws the label above the tiles, for a screen where the code is one task among several (the home page). |
 | `Card` | default / flat / accent / highlight, optionally `tilted`. The main container on every screen. |
 | `Dialog` | The native `<dialog>`: the browser traps focus, restores it on close and handles Escape. Nothing re-implements that. |
 | `Status` · `StatusArea` · `ToastStack` | What just happened. `StatusArea` is an always-mounted live region that holds its space, so announcing something never shifts the layout. Toasts stack at the bottom above everything, clear of the PWA notices. |
 | `Tag` · `Pill` | The outlined lozenge at two weights: a tag labels content (and can be removable), a pill states a status. |
 | `Avatar` | Seat-coloured disc with an initial, sm / md / lg, `highlighted`. |
-| `ModeSwitch` | The segmented control (the 3-mode switch, an orientation, a filter). A radio group, not tabs: it reveals nothing. |
+| `ModeSwitch` | The segmented control (the 3-mode switch, an orientation, a filter). A radio group, not tabs: it reveals nothing. `sm` is the tighter size, for a control that shares a line with others (the top bar). |
 | `Skeleton` | text / block / circle. `aria-hidden`: loading is announced once by the live region, not by a row of empty boxes. |
 | `EmptyState` | Mascot, one sentence and the way out. Never an error. |
 | `PageHeading` | kicker, title, lead and the screen's actions, so headings keep one shape (WCAG 2.4.6). |
 | `Mascot` | The mascot slot (below). |
 | `Logo` | The mark (a tilted marigold sticker with the play triangle) plus "play**hoot**", the brand name, never translated. |
 | `Confetti` | A one-off burst of ink-outlined paper scraps in the player colours. Removed entirely under reduced motion. |
-| `AppShell` · `Stage` · `SplitStage` | The top bar, cut from the board by one ink rule, and the two centred skeletons (480 px / 960 px). |
+| `AppShell` · `Stage` · `SplitStage` | The frame (below) and the two centred skeletons (480 px / 960 px). |
+
+## The shell
+
+`AppShell` is rendered **once, above the router** (`root.tsx`), not by each
+screen: a navigation replaces what is inside `main` and never rebuilds the bar,
+so the unread count, an open menu and the bar's own state survive it. A screen
+says only how it wants to be framed, with `useShellMode`:
+
+- `normal` — the whole bar. The default; a screen that says nothing gets it.
+- `bare` — the bar without the logo, for a page that shows its own big one.
+- `immersive` — no bar and a thin margin, while a game takes a landscape display.
+- `plain` — no frame of ours. The admin area (D-023), which is recognised from
+  the address so its pages never flash this bar first.
+
+The bar itself (`app/shell/`) is `ShellBar` plus `NotificationsBell`,
+`ModeChoice` and `ShellMenu`. What it shows at a given width is decided in
+**CSS, not in JavaScript**: it is server-rendered before anything is known about
+the display, and a bar that rearranged itself after hydration would move under
+the reader's pointer. Entries the width cannot hold live in the menu instead:
+the mode switch below 360 px, and join, create, the language and the sound below
+760 px. The menu also holds the offer to install the app at every width, and
+disappears entirely when that offer is the only thing it would hold and the
+browser cannot install.
+
+The first thing the keyboard reaches on any page is the skip link to `main`.
+The pieces that need the browser (who the person is, the bell, the sound, the
+install offer) render nothing until the page is interactive, so a public page
+the server rendered is the same page with the same bar.
 
 ## The mascot slot
 
@@ -212,8 +240,17 @@ scattered checks:
   and the game immersive: no top bar, a rail beside it, so the game gets the
   whole height.
 
+A page the **server** renders has no device to ask about and no services behind
+it, so it picks its skeleton with `useMediaLayout` instead: `compact` on the
+server and on the first client render, the real answer right after. Same two
+implementations, same breakpoint.
+
 Inside each skeleton, sizes still follow the responsive tokens. `/design` has a
 compact / wide switch and shows the core components in both orientations.
+
+A component that is drawn on a server-rendered page must draw the same thing
+twice: nothing random, no clock. `Mascot` gives each instance its own blink
+rhythm from its React id, not from `Math.random()`, for exactly this reason.
 
 ## What T-203 did not decide
 

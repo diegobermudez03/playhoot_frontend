@@ -1,0 +1,229 @@
+/* The public entry, in its two implementations: `compact` stacks everything in
+   one column, `wide` puts the explanation beside the join card and lays the
+   sections out in rows. Both are responsive inside themselves. */
+
+.compact,
+.wide {
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.compact {
+  max-width: 560px;
+}
+
+.wide {
+  max-width: 1040px;
+}
+
+/* --- Hero --- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.wide .hero {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.wide .intro {
+  flex: 1 1 0;
+}
+
+.title {
+  font-size: var(--text-display);
+}
+
+.lead {
+  max-width: 44ch;
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+}
+
+.introActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* The two visible ways out of the entry besides joining (P14§1). The first is
+   a link, because it navigates; the second opens an explanation in place. */
+.create,
+.teach {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height-lg);
+  padding: 0 var(--space-5);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-instant) var(--ease-standard),
+    box-shadow var(--duration-instant) var(--ease-standard);
+}
+
+.create {
+  background: var(--color-primary);
+}
+
+.teach {
+  background: var(--color-surface-raised);
+}
+
+.create:hover,
+.teach:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+.create:active,
+.teach:active {
+  transform: translate(var(--offset-sm), var(--offset-sm));
+  box-shadow: var(--shadow-none);
+}
+
+.heroAside {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.wide .heroAside {
+  flex: 0 1 420px;
+}
+
+.joinCard {
+  width: 100%;
+}
+
+.joinForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.joinTitle {
+  font-size: var(--text-xl);
+}
+
+.joinNote {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.joinLink {
+  align-self: flex-start;
+  min-height: var(--target-min);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+/* --- Sections --- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--text-xl);
+}
+
+.sectionLead {
+  max-width: 70ch;
+  color: var(--color-text-muted);
+}
+
+.points,
+.kinds {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.wide .points {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.wide .kinds {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.point,
+.kind {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pointTitle,
+.kindName {
+  font-size: var(--text-lg);
+}
+
+.pointBody,
+.kindBody {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* --- The teacher band --- */
+
+.teacherBand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.wide .teacherBand {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.teacherTexts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.bandTitle {
+  font-size: var(--text-xl);
+}
+
+.bandBody {
+  max-width: 60ch;
+}

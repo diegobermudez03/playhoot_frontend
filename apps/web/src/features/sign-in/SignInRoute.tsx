@@ -4,7 +4,7 @@ import { Navigate, useLocation } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Mascot, SplitStage, Stage } from '../../ui';
+import { Button, Card, Mascot, SplitStage, Stage } from '../../ui';
 import { useLayout } from '../layout';
 import { safeNext } from '../paths';
 import { accountSignInErrorText } from './accountSignInErrors';
@@ -103,7 +103,7 @@ export function SignInRoute() {
   );
 
   return (
-    <AppShell>
+    <>
       {layout === 'wide' ? (
         <SplitStage aside={hero}>{options}</SplitStage>
       ) : (
@@ -112,6 +112,6 @@ export function SignInRoute() {
           {options}
         </Stage>
       )}
-    </AppShell>
+    </>
   );
 }

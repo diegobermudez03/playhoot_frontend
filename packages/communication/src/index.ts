@@ -4,6 +4,7 @@ export * from './aiAccessClient';
 export * from './gamesClient';
 export * from './http';
 export * from './identityClient';
+export * from './notificationsClient';
 export * from './previewConnection';
 export * from './result';
 export * from './sessionConnection';

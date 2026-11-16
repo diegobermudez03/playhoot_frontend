@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import styles from './CodeInput.module.css';
 import { useSound } from '../sound';
@@ -11,13 +11,25 @@ interface CodeInputProps {
   // Characters accepted; anything else is dropped as the person types or pastes.
   alphabet: string;
   label: string;
+  // Draws the label above the tiles instead of only naming the field for a screen reader. A
+  // screen whose code field is one task among several shows it (WCAG 2.2 3.3.2).
+  labelVisible?: boolean;
   autoFocus?: boolean;
 }
 
 // Typing goes to a real, transparent input laid over the tiles, so keyboards, paste,
 // autofill and screen readers all work as with any text field.
-export function CodeInput({ value, onChange, length, alphabet, label, autoFocus }: CodeInputProps) {
+export function CodeInput({
+  value,
+  onChange,
+  length,
+  alphabet,
+  label,
+  labelVisible = false,
+  autoFocus,
+}: CodeInputProps) {
   const [focused, setFocused] = useState(false);
+  const labelId = useId();
   const sound = useSound();
   const clean = (raw: string) =>
     [...raw.toUpperCase()]
@@ -27,33 +39,40 @@ export function CodeInput({ value, onChange, length, alphabet, label, autoFocus 
 
   return (
     <div className={styles.wrap}>
-      <CodeTiles
-        code={value}
-        length={length}
-        size="lg"
-        activeIndex={focused && value.length < length ? value.length : null}
-      />
-      <input
-        className={styles.input}
-        aria-label={label}
-        value={value}
-        onChange={(event) => {
-          const next = clean(event.target.value);
-          if (next.length > value.length) sound.play('key');
-          else if (next.length < value.length) sound.play('erase');
-          onChange(next);
-        }}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        maxLength={length}
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="characters"
-        spellCheck={false}
-        inputMode="text"
-        enterKeyHint="go"
-        autoFocus={autoFocus}
-      />
+      {labelVisible && (
+        <span className={styles.label} id={labelId}>
+          {label}
+        </span>
+      )}
+      <div className={styles.field}>
+        <CodeTiles
+          code={value}
+          length={length}
+          size="lg"
+          activeIndex={focused && value.length < length ? value.length : null}
+        />
+        <input
+          className={styles.input}
+          {...(labelVisible ? { 'aria-labelledby': labelId } : { 'aria-label': label })}
+          value={value}
+          onChange={(event) => {
+            const next = clean(event.target.value);
+            if (next.length > value.length) sound.play('key');
+            else if (next.length < value.length) sound.play('erase');
+            onChange(next);
+          }}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          maxLength={length}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          inputMode="text"
+          enterKeyHint="go"
+          autoFocus={autoFocus}
+        />
+      </div>
     </div>
   );
 }

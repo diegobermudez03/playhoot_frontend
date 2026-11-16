@@ -1,4 +1,20 @@
 .wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+/* The label, when the screen shows it: the tiles alone do not say what to type. */
+.label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+/* The tiles and the input that lies over them. */
+.field {
   position: relative;
   display: flex;
   width: 100%;

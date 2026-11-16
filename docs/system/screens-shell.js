@@ -1,13 +1,14 @@
 /* global PH */
-// H2 design (T-200): the app shell, the public entry and contextual authentication.
-// All `planned`. When implemented, `home` replaces `root-redirect`, and
-// `auth-contextual` replaces `sign-in` + `sign-in-guest` (the provider callback
-// screen `sign-in-complete` stays). Email-code sign-in is listed in the shell of
-// the screen but its endpoint arrives with H3.
+// The app shell, the public entry and contextual authentication (H2 design, T-200).
+// T-204 built `app-shell` and `home`, and with them `home` replaced `root-redirect`,
+// whose entry is gone. `auth-contextual` is still planned and replaces `sign-in` +
+// `sign-in-guest` when it is built (the provider callback screen `sign-in-complete`
+// stays). Email-code sign-in is listed in the shell of that screen but its endpoint
+// arrives with H3.
 PH.screen({
   id: 'app-shell',
   path: '(layout around every user screen)',
-  status: 'planned',
+  status: 'implemented',
   name: 'App shell',
   summary:
     'The fixed top bar and frame every non-admin screen renders inside: identity, mode switch, language, notifications, join and create.',
@@ -15,52 +16,61 @@ PH.screen({
   access: 'anonymous',
   variants: 'horizontal+vertical',
   shows:
-    'Fixed top bar (P14, B: search): logo/home, join, create, notifications with unread count, plan/profile or sign-up calls to action, the 3-mode switch (normal / teacher / student — teacher without a plan sees a presentation + invitation, H8) and the language selector (es / en / pt; the browser suggests, the person decides, the choice is remembered). Also the global toast/feedback layer and the non-intrusive PWA install offer for returning visitors (P01§5). T-202 built the install offer and the update notice and placed them in the bar; T-204 builds the rest of the bar and moves the install entry into its menu.',
+    "Fixed top bar (P14, B: search): logo/home, join, create, notifications with the unread count and a plain entry panel, the account corner (sign in, or the person's menu), the 3-mode switch (normal / teacher / student \u2014 the two that do not exist yet explain what they will be and leave the person where they are, H8) and the language selector (es / en / pt; the browser suggests, the person decides, the choice is remembered). Also the global toast layer, the skip-to-content link, and the bar's menu, which holds the offer to install the app and, on a narrow display, the entries the bar has no room for (the mode switch below 420 px; join, create, language and sound below 760 px). It is rendered once above the router, so navigating replaces the page inside it and never rebuilds the bar; a screen only says how it wants to be framed (the whole bar, the bar without the logo, no bar while a game takes the display, or none of it in the admin area). Identity and the unread count are known only in the browser: the server renders the bar without them.",
   actions: [
-    { name: 'Resolve identity, role and mode', calls: 'GET:/v1/identity/me', navigatesTo: null },
     {
-      name: 'Unread notifications badge and plain entry panel',
+      name: 'Resolve who the person is (the credential the backend issued, kept by the app and renewed against it)',
+      calls: null,
+      navigatesTo: null,
+    },
+    {
+      name: 'Unread notifications badge and plain entry panel (read again on every navigation)',
       calls: 'GET:/v1/notifications',
       navigatesTo: null,
     },
     {
-      name: 'Mark a notification read (on opening its content or explicitly; opening the panel marks nothing, P14§4)',
+      name: 'Mark a notification read (explicitly; opening the panel marks nothing, P14\u00a74)',
       calls: 'POST:/v1/notifications/{entryUUID}/read',
       navigatesTo: null,
     },
     { name: 'Go home', calls: null, navigatesTo: 'home' },
-    { name: 'Join a session', calls: null, navigatesTo: 'home' },
+    { name: 'Join a session', calls: null, navigatesTo: 'enter-code' },
     { name: 'Create a game', calls: null, navigatesTo: 'create-game' },
-    { name: 'Sign in or see profile', calls: null, navigatesTo: 'auth-contextual' },
+    { name: 'Sign in or see the account menu', calls: null, navigatesTo: 'sign-in' },
     {
-      name: 'Change language (kept locally; on the account from H3)',
+      name: 'Change language (kept locally and in a cookie; on the account from H3)',
       calls: null,
       navigatesTo: null,
     },
+    { name: 'Install Playhoot (from the menu)', calls: null, navigatesTo: null },
   ],
 });
 
 PH.screen({
   id: 'home',
-  path: '/{language}',
-  status: 'planned',
+  path: '/{language}  (and /, which redirects to it)',
+  status: 'implemented',
   name: 'Home / public entry',
   summary:
-    'The public entry: brief product explanation, join code, visible accesses to create and to teach, and the Discovery section (approved catalog arrives in H4).',
+    'The public entry: brief product explanation, join code, visible accesses to create and to teach, and a curated catalog section until Discovery arrives.',
   mode: 'normal',
   access: 'anonymous',
   variants: 'horizontal+vertical',
   shows:
-    'Hero with a one-paragraph explanation and the join-code input; visible accesses to join, create a game and use Playhoot as a teacher (P14§1); a Discovery section that H2 ships as a curated placeholder and H4 replaces with the approved catalog, search and filters; a teacher band with the trial call to action. Server-rendered with per-route metadata and JSON-LD for SEO (D-019); fully usable without an account. T-201 built the rendering base of this address (server rendering, metadata, hreflang, the page written out at build time) with placeholder content; T-204 builds the content described here.',
+    'Hero with the one-sentence explanation of what Playhoot is, the mascot and the join-code field with its visible label; visible accesses to create a game and to teach with Playhoot, the second of which explains that teacher mode arrives later (P14\u00a71). Then three points on what Playhoot is, a catalog section that says plainly it is our own selection of the kinds of game it is made for \u2014 no games and no activity figures are invented while Discovery is not here (P14\u00a72) \u2014 and a teacher band. Server-rendered with its metadata, hreflang alternates and JSON-LD, written out at build time, and usable without an account. A public address without a language (/, /join, /sign-in) redirects to the same page in the language the person chose, else the one the browser asks for, else English (D-022).',
   actions: [
     { name: 'Join with a code', calls: null, navigatesTo: 'join-by-code' },
+    { name: 'Open the join page', calls: null, navigatesTo: 'enter-code' },
     {
-      name: 'Create a game (through contextual sign-in when needed)',
+      name: 'Create a game (through sign-in when the account level is missing)',
       calls: null,
       navigatesTo: 'create-game',
     },
-    { name: 'Teach with Playhoot (teacher presentation, H8)', calls: null, navigatesTo: null },
-    { name: 'Browse games (Discovery, H4)', calls: null, navigatesTo: null },
+    {
+      name: 'Teach with Playhoot (explains that teacher mode arrives with H8)',
+      calls: null,
+      navigatesTo: null,
+    },
   ],
 });
 

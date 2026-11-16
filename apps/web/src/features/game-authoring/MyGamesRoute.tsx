@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Stage } from '../../ui';
+import { Button, Card, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { gameWorkspacePath, newGamePath } from '../paths';
 import styles from './GameWorkspace.module.css';
@@ -31,7 +31,7 @@ function MyGames() {
     return () => next.dispose();
   }, [services]);
   return (
-    <AppShell>
+    <>
       <Stage>
         <div className={styles.hero}>
           <h1 className={styles.heroTitle}>
@@ -40,7 +40,7 @@ function MyGames() {
         </div>
         <Card>{list && <GamesList list={list} />}</Card>
       </Stage>
-    </AppShell>
+    </>
   );
 }
 

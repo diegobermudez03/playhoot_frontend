@@ -17,7 +17,7 @@ import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
 import type { MessageId } from '../../i18n/catalogs';
-import { AppShell, Avatar, Button, Card, CodeTiles, Mascot, Stage } from '../../ui';
+import { Avatar, Button, Card, CodeTiles, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout, type Layout } from '../layout';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
@@ -41,7 +41,7 @@ function HostSessionRoute() {
   const { sessionUUID = '' } = useParams();
   const [search] = useSearchParams();
   const host = useHostSession(sessionUUID, search.get('code'));
-  if (!host) return <AppShell>{null}</AppShell>;
+  if (!host) return null;
   return <HostScreen host={host} />;
 }
 
@@ -103,7 +103,7 @@ function HostScreen({ host }: { host: HostSession }) {
   }
 
   return (
-    <AppShell>
+    <>
       {view.phase === 'connecting' && <Waiting reconnecting={view.reconnectAttempt > 0} />}
       {view.phase === 'lobby' && (
         <LobbyStep
@@ -117,7 +117,7 @@ function HostScreen({ host }: { host: HostSession }) {
       )}
       {view.phase === 'started' && <StartedStep host={host} state={state} view={view} />}
       {view.phase === 'closed' && <ClosedStep host={host} outcome={view.outcome} />}
-    </AppShell>
+    </>
   );
 }
 

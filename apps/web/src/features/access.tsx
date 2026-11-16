@@ -4,7 +4,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 
 import { useOperationAccess, useServices } from '../app/ServicesContext';
 import { useLocalePaths, type LocalePaths } from '../i18n/useLocalePaths';
-import { AppShell } from '../ui';
 
 // Renders `children` only once the person may perform `operation` (backend operation catalog);
 // otherwise sends them to the most flexible authentication it allows and back here afterwards.
@@ -19,7 +18,7 @@ export function RequireOperation({
   const access = useOperationAccess(operation);
   const location = useLocation();
   const paths = useLocalePaths();
-  if (access.status === 'pending') return <AppShell>{null}</AppShell>;
+  if (access.status === 'pending') return null;
   if (access.status === 'allowed') return <>{children}</>;
   const next = location.pathname + location.search;
   return <Navigate to={authenticatePath(paths, access.level, next)} replace />;

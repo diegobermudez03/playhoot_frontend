@@ -1,36 +1,19 @@
-import { useEffect } from 'react';
 import { Outlet } from 'react-router';
 
 import { DisplayNameScreen } from '../features/sign-in/DisplayNameScreen';
-import { SoundProvider } from '../sound';
 import { ClientOnly } from './ClientOnly';
-import { clientServices } from './clientServices';
 import { identityKey } from './identityKey';
-import { ServicesProvider, useAuth } from './ServicesContext';
-import { startServices } from './services';
+import { useAuth } from './ServicesContext';
 
 // Everything under this layout is the app as it has always been: it needs the browser (storage,
 // the credential, the device, live connections), so the server renders nothing for it and the
-// client takes over at hydration (D-019). Public routes that are server-rendered sit outside it.
+// client takes over at hydration (D-019). Public routes that are server-rendered sit outside it
+// and share the same services and the same shell, which root.tsx puts above both.
 export default function ClientLayout() {
   return (
     <ClientOnly>
-      <ClientApp />
+      <IdentityGate />
     </ClientOnly>
-  );
-}
-
-function ClientApp() {
-  const services = clientServices();
-
-  useEffect(() => startServices(services), [services]);
-
-  return (
-    <ServicesProvider services={services}>
-      <SoundProvider player={services.sound}>
-        <IdentityGate />
-      </SoundProvider>
-    </ServicesProvider>
   );
 }
 

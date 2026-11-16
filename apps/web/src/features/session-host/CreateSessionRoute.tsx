@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { useNavigate, useSearchParams } from 'react-router';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Mascot, Stage } from '../../ui';
+import { Button, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { sessionHostPath } from '../paths';
 import { hostedGameUUID } from './hostedGame';
@@ -59,7 +59,7 @@ function CreateSession() {
   }, [create]);
 
   return (
-    <AppShell>
+    <>
       <Stage>
         <div className={styles.hero}>
           <Mascot size={112} animated={creation.status === 'creating'} />
@@ -91,6 +91,6 @@ function CreateSession() {
           </Button>
         )}
       </Stage>
-    </AppShell>
+    </>
   );
 }

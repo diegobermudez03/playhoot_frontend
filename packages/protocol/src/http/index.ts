@@ -1,6 +1,7 @@
 export * from './clientTelemetry';
 export * from './errorBody';
 export * from './guests';
+export * from './notifications';
 export * from './operations';
 export * from './sessions';
 export * from './games';

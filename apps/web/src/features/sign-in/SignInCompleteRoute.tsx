@@ -5,7 +5,7 @@ import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
 import { capturedSignInCompletion } from '../../platform/signInCompletion';
-import { AppShell, Button, Card, Mascot, Stage } from '../../ui';
+import { Button, Card, Mascot, Stage } from '../../ui';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
 import { accountSignInErrorText } from './accountSignInErrors';
 import styles from './SignIn.module.css';
@@ -36,7 +36,7 @@ export function SignInCompleteRoute() {
 
   const failed = state.status === 'failed' && state.error;
   return (
-    <AppShell>
+    <>
       <Stage>
         <div className={styles.hero}>
           <Mascot size={88} />
@@ -59,6 +59,6 @@ export function SignInCompleteRoute() {
           </Card>
         )}
       </Stage>
-    </AppShell>
+    </>
   );
 }

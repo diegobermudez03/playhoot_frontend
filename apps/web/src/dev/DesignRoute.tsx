@@ -3,12 +3,13 @@ import type { GameHostStatus } from '@playhoot/game-host';
 import { joinCodeAlphabet } from '@playhoot/protocol';
 import { useState, type ReactNode } from 'react';
 
+import { ModeChoice } from '../app/shell/ModeChoice';
+import { HomeScreen } from '../features/home/HomeScreen';
 import { useLayout, type Layout } from '../features/layout';
 import { SessionScreen } from '../features/session-join/SessionScreen';
 import { PlayScreen, type RosterPlayer } from '../features/session-play/PlayScreen';
 import { silentSoundPlayer, SoundProvider, useSound, type SoundId } from '../sound';
 import {
-  AppShell,
   Avatar,
   Button,
   Card,
@@ -43,292 +44,317 @@ export function DesignRoute() {
   const detected = useLayout();
   const [layout, setLayout] = useState<Layout>(detected);
   return (
-    <AppShell>
-      <div className={styles.page}>
-        <header className={styles.intro}>
-          <PageHeading
-            kicker="Development only"
-            title="Playhoot design system"
-            lead="Ink & Sticker (C-03): warm paper, near-black ink, flat accent fills, 2 px outlines and hard offset shadows. Tokens in src/ui/tokens/, rationale in docs/design/DESIGN_SYSTEM.md."
+    <div className={styles.page}>
+      <header className={styles.intro}>
+        <PageHeading
+          kicker="Development only"
+          title="Playhoot design system"
+          lead="Ink & Sticker (C-03): warm paper, near-black ink, flat accent fills, 2 px outlines and hard offset shadows. Tokens in src/ui/tokens/, rationale in docs/design/DESIGN_SYSTEM.md."
+        />
+        <div className={styles.row}>
+          <ModeSwitch
+            label="Screens layout"
+            value={layout}
+            onChange={setLayout}
+            options={[
+              { value: 'compact', label: 'compact' },
+              { value: 'wide', label: 'wide' },
+            ]}
           />
-          <div className={styles.row}>
-            <ModeSwitch
-              label="Screens layout"
-              value={layout}
-              onChange={setLayout}
-              options={[
-                { value: 'compact', label: 'compact' },
-                { value: 'wide', label: 'wide' },
-              ]}
+          <span className={styles.caption}>this display: {detected}</span>
+        </div>
+      </header>
+
+      <Section title="Identity">
+        <div className={styles.row}>
+          <Logo size="lg" />
+          <Mascot size={120} />
+          <Mascot size={120} mood="surprised" />
+          <Mascot size={120} mood="sleepy" />
+          <Mascot size={120} animated />
+        </div>
+        <p className={styles.note}>
+          The mascot is a slot, not a picture (P24§3): head, eyes, tail and bounce are separate
+          parts driven by the motion tokens. The cat inside it is the placeholder of the direction
+          render, registered as the pending asset mascot.primary; the final character replaces what
+          the slot draws, and no screen changes.
+        </p>
+      </Section>
+
+      <Section title="Colour">
+        <p className={styles.caption}>Surfaces and ink</p>
+        <Swatches
+          names={[
+            'color-page',
+            'color-surface',
+            'color-surface-sunken',
+            'color-surface-raised',
+            'color-surface-muted',
+            'color-text',
+            'color-text-muted',
+            'color-text-subtle',
+          ]}
+        />
+        <p className={styles.caption}>Roles</p>
+        <Swatches
+          names={[
+            'color-primary',
+            'color-accent',
+            'color-highlight',
+            'color-info',
+            'color-success',
+            'color-success-text',
+            'color-danger-text',
+            'color-outline',
+          ]}
+        />
+        <p className={styles.caption}>Player colours, in seat order</p>
+        <div className={styles.row}>
+          {Array.from({ length: 8 }, (_, i) => (
+            <Avatar key={i} seat={i + 1} label={'ABCDEFGH'[i]!} size="lg" />
+          ))}
+        </div>
+        <p className={styles.note}>
+          Every control is bound by the ink outline, so a component boundary never depends on its
+          fill: ink is at least 4.85:1 against any fill and 12.6:1 against any surface. The measured
+          pairs are recorded in the T-203 result.
+        </p>
+      </Section>
+
+      <Section title="Type">
+        <p className={styles.caption}>Display · Fredoka · headings and numbers</p>
+        <h2>Make the whole room play.</h2>
+        <p className={styles.caption}>Body · Nunito · everything else</p>
+        <p>Body text at the default weight. Quick, friendly and very readable on small screens.</p>
+        <p className={styles.muted}>Muted body text for secondary information.</p>
+        <p className={styles.subtle}>Subtle text for hints and captions.</p>
+      </Section>
+
+      <Section title="Buttons">
+        <Orientations>
+          <div className={styles.stack}>
+            <div className={styles.row}>
+              <Button>Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="accent">Accent</Button>
+              <Button variant="ghost">Ghost</Button>
+            </div>
+            <div className={styles.row}>
+              <Button size="sm">Small</Button>
+              <Button size="lg">Large</Button>
+            </div>
+            <div className={styles.row}>
+              <Button loading>Working</Button>
+              <Button disabled>Disabled</Button>
+            </div>
+            <Button block size="lg">
+              Block
+            </Button>
+          </div>
+        </Orientations>
+        <p className={styles.note}>
+          Press and hold one: the sticker slides into its own shadow. Tab to it: the ink ring with a
+          paper gap is the single focus indicator of the whole system.
+        </p>
+      </Section>
+
+      <Section title="Form controls">
+        <Orientations>
+          <div className={styles.fields}>
+            <TextField
+              label="Your name"
+              placeholder="e.g. Paper Cat"
+              hint="Shown to other players."
             />
-            <span className={styles.caption}>this display: {detected}</span>
+            <TextField label="With an error" defaultValue="" error="Use 1 to 64 characters." />
+            <TextField label="Not available" defaultValue="Fixed" disabled />
+            <Select label="Language" defaultValue="en">
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="pt">Português</option>
+            </Select>
           </div>
-        </header>
+        </Orientations>
+        <p className={styles.caption}>Code input (join code, second factor)</p>
+        <CodeInputDemo />
+        <p className={styles.caption}>Code input with its label drawn (the home page)</p>
+        <CodeInputDemo labelVisible />
+        <div className={styles.row}>
+          <CodeTiles code="HOOT42" size="md" />
+        </div>
+      </Section>
 
-        <Section title="Identity">
-          <div className={styles.row}>
-            <Logo size="lg" />
-            <Mascot size={120} />
-            <Mascot size={120} mood="surprised" />
-            <Mascot size={120} mood="sleepy" />
-            <Mascot size={120} animated />
+      <Section title="Containers">
+        <Orientations>
+          <div className={styles.stack}>
+            <Card>A card: white paper, ink outline, hard shadow.</Card>
+            <Card tone="flat">Flat: lying on the board, for a card inside a card.</Card>
+            <Card tone="accent">Accent: the one card on a screen that carries the message.</Card>
+            <Card tone="highlight" tilted>
+              Highlight, stuck down slightly askew.
+            </Card>
           </div>
-          <p className={styles.note}>
-            The mascot is a slot, not a picture (P24§3): head, eyes, tail and bounce are separate
-            parts driven by the motion tokens. The cat inside it is the placeholder of the direction
-            render, registered as the pending asset mascot.primary; the final character replaces
-            what the slot draws, and no screen changes.
-          </p>
-        </Section>
+        </Orientations>
+      </Section>
 
-        <Section title="Colour">
-          <p className={styles.caption}>Surfaces and ink</p>
-          <Swatches
-            names={[
-              'color-page',
-              'color-surface',
-              'color-surface-sunken',
-              'color-surface-raised',
-              'color-surface-muted',
-              'color-text',
-              'color-text-muted',
-              'color-text-subtle',
-            ]}
-          />
-          <p className={styles.caption}>Roles</p>
-          <Swatches
-            names={[
-              'color-primary',
-              'color-accent',
-              'color-highlight',
-              'color-info',
-              'color-success',
-              'color-success-text',
-              'color-danger-text',
-              'color-outline',
-            ]}
-          />
-          <p className={styles.caption}>Player colours, in seat order</p>
-          <div className={styles.row}>
-            {Array.from({ length: 8 }, (_, i) => (
-              <Avatar key={i} seat={i + 1} label={'ABCDEFGH'[i]!} size="lg" />
-            ))}
-          </div>
-          <p className={styles.note}>
-            Every control is bound by the ink outline, so a component boundary never depends on its
-            fill: ink is at least 4.85:1 against any fill and 12.6:1 against any surface. The
-            measured pairs are recorded in the T-203 result.
-          </p>
-        </Section>
-
-        <Section title="Type">
-          <p className={styles.caption}>Display · Fredoka · headings and numbers</p>
-          <h2>Make the whole room play.</h2>
-          <p className={styles.caption}>Body · Nunito · everything else</p>
-          <p>
-            Body text at the default weight. Quick, friendly and very readable on small screens.
-          </p>
-          <p className={styles.muted}>Muted body text for secondary information.</p>
-          <p className={styles.subtle}>Subtle text for hints and captions.</p>
-        </Section>
-
-        <Section title="Buttons">
-          <Orientations>
-            <div className={styles.stack}>
-              <div className={styles.row}>
-                <Button>Primary</Button>
-                <Button variant="secondary">Secondary</Button>
-                <Button variant="accent">Accent</Button>
-                <Button variant="ghost">Ghost</Button>
-              </div>
-              <div className={styles.row}>
-                <Button size="sm">Small</Button>
-                <Button size="lg">Large</Button>
-              </div>
-              <div className={styles.row}>
-                <Button loading>Working</Button>
-                <Button disabled>Disabled</Button>
-              </div>
-              <Button block size="lg">
-                Block
-              </Button>
+      <Section title="Status, tags and pills">
+        <Orientations>
+          <div className={styles.stack}>
+            <Status>Nothing special happened.</Status>
+            <Status tone="info">The invitation link was copied.</Status>
+            <Status tone="success">Everyone is in.</Status>
+            <Status tone="warning">Two players have not answered.</Status>
+            <Status tone="danger">The session could not be reached.</Status>
+            <div className={styles.row}>
+              <Tag>Geography</Tag>
+              <Tag tone="info">2–50 players</Tag>
+              <Tag tone="accent">Grades</Tag>
+              <Tag tone="highlight" onRemove={() => undefined} removeLabel="Remove Math">
+                Math
+              </Tag>
             </div>
-          </Orientations>
-          <p className={styles.note}>
-            Press and hold one: the sticker slides into its own shadow. Tab to it: the ink ring with
-            a paper gap is the single focus indicator of the whole system.
-          </p>
-        </Section>
+            <div className={styles.row}>
+              <Pill>Waiting</Pill>
+              <Pill tone="success">Live</Pill>
+              <Pill tone="danger">Blocked</Pill>
+              <Pill tone="info">Draft</Pill>
+            </div>
+            <StatusArea>
+              <Status tone="success">A live region: it holds its space when empty.</Status>
+            </StatusArea>
+          </div>
+        </Orientations>
+        <p className={styles.note}>
+          Every tone carries a mark as well as a fill, so none of them depends on colour alone.
+        </p>
+      </Section>
 
-        <Section title="Form controls">
-          <Orientations>
-            <div className={styles.fields}>
-              <TextField
-                label="Your name"
-                placeholder="e.g. Paper Cat"
-                hint="Shown to other players."
+      <Section title="Loading and emptiness">
+        <Orientations>
+          <div className={styles.stack}>
+            <Skeleton shape="text" width="12rem" />
+            <Skeleton shape="text" width="18rem" />
+            <Skeleton shape="block" />
+            <div className={styles.row}>
+              <Skeleton shape="circle" width="44px" />
+              <Skeleton shape="circle" width="44px" />
+              <Skeleton shape="circle" width="44px" />
+            </div>
+            <EmptyState
+              title="No games yet"
+              body="The games you create appear here. Make the first one and it is ready to play in a couple of minutes."
+              actions={<Button>Create a game</Button>}
+            />
+          </div>
+        </Orientations>
+      </Section>
+
+      <Section title="Dialog">
+        <DialogDemo />
+        <p className={styles.note}>
+          Built on the native dialog element: the browser traps focus inside it, closes it on Escape
+          and returns focus to the button that opened it.
+        </p>
+      </Section>
+
+      <Section title="Avatars and headings">
+        <div className={styles.row}>
+          <Avatar seat={1} label="Ana" size="sm" />
+          <Avatar seat={2} label="Bruno" />
+          <Avatar seat={3} label="Carla" size="lg" />
+          <Avatar seat={4} label="Dani" highlighted />
+        </div>
+        <PageHeading
+          level={2}
+          kicker="For teachers"
+          title="Your classes"
+          lead="Create a class, invite your students and give them an activity."
+          actions={
+            <>
+              <Button variant="secondary">Import</Button>
+              <Button>New class</Button>
+            </>
+          }
+        />
+      </Section>
+
+      <Section title="Sounds">
+        <p className={styles.caption}>
+          Missing files play placeholder tones · docs/design/ASSETS.md
+        </p>
+        <SoundBoard />
+      </Section>
+
+      <Section title="The shell">
+        <p className={styles.note}>
+          The top bar of this very page is the shell: it is rendered once above the router
+          (root.tsx), so moving between screens never rebuilds it. A screen only says how it wants
+          to be framed (useShellMode): the whole bar, the bar without the logo, or none at all while
+          a game takes the display. Below 760 px the join and create entries, the language and the
+          sound move into the bar's menu, and below 420 px so does the mode switch.
+        </p>
+        <div className={styles.row}>
+          <ModeChoice />
+        </div>
+        <p className={styles.caption}>
+          The three modes of the specification. Only the normal one exists; the other two explain
+          what they will be and leave the person where they are.
+        </p>
+      </Section>
+
+      <Section title="Home">
+        <p className={styles.caption}>
+          The public entry, in both implementations. Server-rendered: no account, no services.
+        </p>
+        <Frame label="vertical">
+          <HomeScreen layout="compact" />
+        </Frame>
+        <Frame label="horizontal">
+          <HomeScreen layout="wide" />
+        </Frame>
+      </Section>
+
+      <Section title="Join Session screens">
+        <p className={styles.caption}>Silent here; each screen plays its sounds in the app</p>
+        <SoundProvider player={silentSoundPlayer}>
+          {screens.map(([label, view, joinCode]) => (
+            <Frame key={label} label={label}>
+              <SessionScreen
+                layout={layout}
+                state={fakeState(view)}
+                joinCode={joinCode}
+                displayName="Paper Cat"
+                actions={noActions}
               />
-              <TextField label="With an error" defaultValue="" error="Use 1 to 64 characters." />
-              <TextField label="Not available" defaultValue="Fixed" disabled />
-              <Select label="Language" defaultValue="en">
-                <option value="es">Español</option>
-                <option value="en">English</option>
-                <option value="pt">Português</option>
-              </Select>
-            </div>
-          </Orientations>
-          <p className={styles.caption}>Code input (join code, second factor)</p>
-          <CodeInputDemo />
-          <div className={styles.row}>
-            <CodeTiles code="HOOT42" size="md" />
-          </div>
-        </Section>
-
-        <Section title="Containers">
-          <Orientations>
-            <div className={styles.stack}>
-              <Card>A card: white paper, ink outline, hard shadow.</Card>
-              <Card tone="flat">Flat: lying on the board, for a card inside a card.</Card>
-              <Card tone="accent">Accent: the one card on a screen that carries the message.</Card>
-              <Card tone="highlight" tilted>
-                Highlight, stuck down slightly askew.
-              </Card>
-            </div>
-          </Orientations>
-        </Section>
-
-        <Section title="Status, tags and pills">
-          <Orientations>
-            <div className={styles.stack}>
-              <Status>Nothing special happened.</Status>
-              <Status tone="info">The invitation link was copied.</Status>
-              <Status tone="success">Everyone is in.</Status>
-              <Status tone="warning">Two players have not answered.</Status>
-              <Status tone="danger">The session could not be reached.</Status>
-              <div className={styles.row}>
-                <Tag>Geography</Tag>
-                <Tag tone="info">2–50 players</Tag>
-                <Tag tone="accent">Grades</Tag>
-                <Tag tone="highlight" onRemove={() => undefined} removeLabel="Remove Math">
-                  Math
-                </Tag>
-              </div>
-              <div className={styles.row}>
-                <Pill>Waiting</Pill>
-                <Pill tone="success">Live</Pill>
-                <Pill tone="danger">Blocked</Pill>
-                <Pill tone="info">Draft</Pill>
-              </div>
-              <StatusArea>
-                <Status tone="success">A live region: it holds its space when empty.</Status>
-              </StatusArea>
-            </div>
-          </Orientations>
-          <p className={styles.note}>
-            Every tone carries a mark as well as a fill, so none of them depends on colour alone.
-          </p>
-        </Section>
-
-        <Section title="Loading and emptiness">
-          <Orientations>
-            <div className={styles.stack}>
-              <Skeleton shape="text" width="12rem" />
-              <Skeleton shape="text" width="18rem" />
-              <Skeleton shape="block" />
-              <div className={styles.row}>
-                <Skeleton shape="circle" width="44px" />
-                <Skeleton shape="circle" width="44px" />
-                <Skeleton shape="circle" width="44px" />
-              </div>
-              <EmptyState
-                title="No games yet"
-                body="The games you create appear here. Make the first one and it is ready to play in a couple of minutes."
-                actions={<Button>Create a game</Button>}
-              />
-            </div>
-          </Orientations>
-        </Section>
-
-        <Section title="Dialog">
-          <DialogDemo />
-          <p className={styles.note}>
-            Built on the native dialog element: the browser traps focus inside it, closes it on
-            Escape and returns focus to the button that opened it.
-          </p>
-        </Section>
-
-        <Section title="Avatars and headings">
-          <div className={styles.row}>
-            <Avatar seat={1} label="Ana" size="sm" />
-            <Avatar seat={2} label="Bruno" />
-            <Avatar seat={3} label="Carla" size="lg" />
-            <Avatar seat={4} label="Dani" highlighted />
-          </div>
-          <PageHeading
-            level={2}
-            kicker="For teachers"
-            title="Your classes"
-            lead="Create a class, invite your students and give them an activity."
-            actions={
-              <>
-                <Button variant="secondary">Import</Button>
-                <Button>New class</Button>
-              </>
-            }
-          />
-        </Section>
-
-        <Section title="Sounds">
-          <p className={styles.caption}>
-            Missing files play placeholder tones · docs/design/ASSETS.md
-          </p>
-          <SoundBoard />
-        </Section>
-
-        <Section title="Join Session screens">
-          <p className={styles.caption}>Silent here; each screen plays its sounds in the app</p>
-          <SoundProvider player={silentSoundPlayer}>
-            {screens.map(([label, view, joinCode]) => (
-              <Frame key={label} label={label}>
-                <SessionScreen
+            </Frame>
+          ))}
+        </SoundProvider>
+      </Section>
+      <Section title="Session Play screens">
+        <p className={styles.caption}>The game itself runs in the dark area (see /dev/game-host)</p>
+        <SoundProvider player={silentSoundPlayer}>
+          {playScreens.map(([label, game, reconnecting, rosterOpen, suggestRotation]) => (
+            <Frame key={label} label={label}>
+              <div className={styles.playFrame}>
+                <PlayScreen
                   layout={layout}
-                  state={fakeState(view)}
-                  joinCode={joinCode}
+                  seat={2}
+                  total={4}
                   displayName="Paper Cat"
-                  actions={noActions}
+                  players={fakeRoster}
+                  initialRosterOpen={rosterOpen}
+                  game={game}
+                  reconnecting={reconnecting}
+                  suggestRotation={suggestRotation ?? false}
+                  onRetry={() => undefined}
+                  onLeave={() => undefined}
                 />
-              </Frame>
-            ))}
-          </SoundProvider>
-        </Section>
-        <Section title="Session Play screens">
-          <p className={styles.caption}>
-            The game itself runs in the dark area (see /dev/game-host)
-          </p>
-          <SoundProvider player={silentSoundPlayer}>
-            {playScreens.map(([label, game, reconnecting, rosterOpen, suggestRotation]) => (
-              <Frame key={label} label={label}>
-                <div className={styles.playFrame}>
-                  <PlayScreen
-                    layout={layout}
-                    seat={2}
-                    total={4}
-                    displayName="Paper Cat"
-                    players={fakeRoster}
-                    initialRosterOpen={rosterOpen}
-                    game={game}
-                    reconnecting={reconnecting}
-                    suggestRotation={suggestRotation ?? false}
-                    onRetry={() => undefined}
-                    onLeave={() => undefined}
-                  />
-                </div>
-              </Frame>
-            ))}
-          </SoundProvider>
-        </Section>
-      </div>
-    </AppShell>
+              </div>
+            </Frame>
+          ))}
+        </SoundProvider>
+      </Section>
+    </div>
   );
 }
 
@@ -441,7 +467,7 @@ function SoundBoard() {
   );
 }
 
-function CodeInputDemo() {
+function CodeInputDemo({ labelVisible = false }: { labelVisible?: boolean }) {
   const [code, setCode] = useState('HO');
   return (
     <CodeInput
@@ -450,6 +476,7 @@ function CodeInputDemo() {
       length={6}
       alphabet={joinCodeAlphabet}
       label="Demo code"
+      labelVisible={labelVisible}
     />
   );
 }

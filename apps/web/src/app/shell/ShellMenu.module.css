@@ -1,0 +1,83 @@
+/* The bar's overflow: one 44 px control that opens a panel of entries. */
+.menu {
+  position: relative;
+}
+
+.summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-height);
+  height: var(--control-height);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary:active {
+  box-shadow: var(--shadow-none);
+  transform: translate(var(--offset-sm), var(--offset-sm));
+}
+
+.icon {
+  fill: none;
+  stroke: var(--color-text);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 220px;
+  padding: var(--space-4);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
+}
+
+.narrowOnly,
+.tinyOnly {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.panel .modes {
+  max-width: 100%;
+}
+
+/* Each block disappears from the panel at the width where the bar takes it
+   back, so no control is ever offered twice at once. */
+@media (min-width: 360px) {
+  .tinyOnly {
+    display: none;
+  }
+}
+
+@media (min-width: 760px) {
+  .narrowOnly {
+    display: none;
+  }
+}
+
+/* Nothing but the entries the bar takes back: the menu itself goes with them. */
+@media (min-width: 760px) {
+  .narrowOnlyMenu {
+    display: none;
+  }
+}

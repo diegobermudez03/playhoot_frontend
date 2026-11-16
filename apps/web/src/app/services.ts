@@ -5,6 +5,7 @@ import {
   createGamesClient,
   createHttpClient,
   createIdentityClient,
+  createNotificationsClient,
   createPreviewConnector,
   createSessionConnector,
   createSessionsClient,
@@ -14,6 +15,7 @@ import {
   type GamesClient,
   type HttpClient,
   type IdentityClient,
+  type NotificationsClient,
   type PreviewConnector,
   type SessionConnector,
   type SessionsClient,
@@ -26,6 +28,7 @@ import {
   type AssetLoader,
 } from '@playhoot/game-host';
 
+import { createNotifications, type Notifications } from '@playhoot/feature-notifications';
 import { createAccountSignIn, type AccountSignIn } from '@playhoot/feature-sign-in';
 import { refreshInvalidCode } from '@playhoot/protocol';
 
@@ -74,6 +77,10 @@ export interface Services {
   gameAssets: AssetLoader;
   http: HttpClient;
   identity: IdentityClient;
+  // The shell's notifications: the unread count and the panel's entries. App-global, because the
+  // bar outlives every route.
+  notifications: Notifications;
+  notificationsApi: NotificationsClient;
   // The creator's live connections to previews of their drafts.
   previews: PreviewConnector;
   sessions: SessionConnector;
@@ -110,6 +117,7 @@ export function createServices(): Services {
     onCredentialRejected: app.signOut,
   });
   identityClient = createIdentityClient(http);
+  const notificationsApi = createNotificationsClient(http);
   const sessions = createSessionConnector({
     realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
     credentials: app.credentials,
@@ -153,6 +161,8 @@ export function createServices(): Services {
     gamesApi: createGamesClient(http),
     http,
     identity: identityClient,
+    notifications: createNotifications({ app, client: notificationsApi }),
+    notificationsApi,
     previews: createPreviewConnector({
       realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
       credentials: app.credentials,
@@ -181,6 +191,7 @@ function realtimeBaseUrl(apiBaseUrl: string): string {
 export function startServices(services: Services): () => void {
   services.app.bootstrap();
   const stopLoadingOperations = loadOperations(services);
+  const stopFollowingIdentity = followIdentity(services);
   const stopWatching = watchBrowserCapabilities(services.device);
   // The last chance to send queued telemetry: the tab is hidden (often for good on phones) or the
   // page is going away. Coming back, the access token is renewed if it expired while timers slept.
@@ -197,11 +208,26 @@ export function startServices(services: Services): () => void {
   window.addEventListener('pagehide', sendBeforeLeaving);
   return () => {
     stopLoadingOperations();
+    stopFollowingIdentity();
     stopWatching();
     document.removeEventListener('visibilitychange', sendBeforeLeaving);
     window.removeEventListener('storage', followOtherTabs);
     window.removeEventListener('pagehide', sendBeforeLeaving);
   };
+}
+
+// The bell belongs to whoever is signed in: their list is read when they arrive and forgotten
+// when they leave, so a notification of theirs never shows to the next person on this browser.
+function followIdentity(services: Services): () => void {
+  let previous: string | null = null;
+  const apply = (status: string) => {
+    if (status === previous) return;
+    previous = status;
+    if (status === 'guest' || status === 'authenticated') void services.notifications.refresh();
+    else if (status === 'none') services.notifications.clear();
+  };
+  apply(services.app.store.getState().auth.status);
+  return services.app.store.subscribe((state) => apply(state.auth.status));
 }
 
 // Reads the backend's operation catalog (which level each operation requires). Routes that need it

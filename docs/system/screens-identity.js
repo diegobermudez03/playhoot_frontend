@@ -1,26 +1,14 @@
 /* global PH */
-// Screens of entry, sign-in and the no-match fallback.
-PH.screen({
-  id: 'root-redirect',
-  path: '/, /join, /sign-in, /sign-in/guest',
-  status: 'implemented',
-  name: 'Public path without a language',
-  summary:
-    'A public address that names no language: sends the person to the same page in theirs (D-022).',
-  mode: 'normal',
-  access: 'anonymous',
-  variants: 'single',
-  shows:
-    'Nothing; redirects at once to `/{language}{path}`, keeping the query. The language is the remembered choice (cookie), else what the browser asks for, else English.',
-  actions: [{ name: 'Redirect', calls: null, navigatesTo: 'home' }],
-});
-
+// Screens of entry, sign-in and the no-match fallback. The public entry itself is
+// `home` (screens-shell.js); the redirect from a public address that names no
+// language is described there, since that is where it lands.
 PH.screen({
   id: 'enter-code',
   path: '/{language}/join',
   status: 'implemented',
   name: 'Enter code',
-  summary: 'Logo, tagline and a 6-character join code input, with shortcuts to create or manage.',
+  summary:
+    'Logo, tagline and a 6-character join code input, with shortcuts to create or manage. Reached from home and from the top bar.',
   mode: 'normal',
   access: 'anonymous',
   variants: 'horizontal+vertical',
@@ -107,5 +95,5 @@ PH.screen({
   access: 'anonymous',
   variants: 'single',
   shows: 'A 404 notice with a "Go home" button.',
-  actions: [{ name: 'Go home', calls: null, navigatesTo: 'root-redirect' }],
+  actions: [{ name: 'Go home', calls: null, navigatesTo: 'home' }],
 });

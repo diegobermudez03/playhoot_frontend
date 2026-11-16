@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useServices } from '../app/ServicesContext';
 import { createIframeGameContainer } from '../platform/iframeGameContainer';
-import { AppShell, Button, Card } from '../ui';
+import { Button, Card } from '../ui';
 import { createFakeSpaceDriftSession, type FakeSession } from './fakeSpaceDriftSession';
 import styles from './GameHostLabRoute.module.css';
 
@@ -82,7 +82,7 @@ export function GameHostLabRoute() {
   }, [sha256, run, services.gameArtifacts]);
 
   return (
-    <AppShell>
+    <>
       <div className={styles.page}>
         <header>
           <h1>GameHost lab</h1>
@@ -148,6 +148,6 @@ export function GameHostLabRoute() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

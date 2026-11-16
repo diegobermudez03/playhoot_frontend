@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Mascot, Stage } from '../../ui';
+import { Button, Card, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import styles from './GameWorkspace.module.css';
 
@@ -35,7 +35,7 @@ function ConnectAi() {
     return () => next.dispose();
   }, [requestID, services]);
   return (
-    <AppShell>
+    <>
       <Stage>
         <div className={styles.hero}>
           <Mascot size={96} />
@@ -45,7 +45,7 @@ function ConnectAi() {
         </div>
         <Card>{requestID === '' ? <Gone /> : consent && <Consent consent={consent} />}</Card>
       </Stage>
-    </AppShell>
+    </>
   );
 }
 

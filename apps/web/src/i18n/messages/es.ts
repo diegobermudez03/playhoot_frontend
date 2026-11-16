@@ -26,11 +26,92 @@ export const es: Messages = {
     'Playhoot necesita conexión para jugar. Revisa tu conexión y vuelve a intentarlo.',
   'offline.retry': 'Reintentar',
 
-  'home.title': 'Jueguen juntos, donde sea',
+  'shell.skipToContent': 'Saltar al contenido',
+  'shell.nav': 'Playhoot',
+  'shell.menu': 'Más',
+  'shell.join': 'Entrar',
+  'shell.create': 'Crear',
+
+  'mode.label': 'Cómo estás usando Playhoot',
+  'mode.normal': 'Jugar',
+  'mode.teacher': 'Enseñar',
+  'mode.student': 'Clase',
+  'mode.teacher.title': 'El modo docente está en camino',
+  'mode.teacher.body':
+    'Las clases, tus estudiantes, las actividades y las calificaciones se están construyendo. Ya puedes crear juegos y organizar partidas con la cuenta que tienes; nada de lo que hagas ahora se pierde cuando llegue la parte docente.',
+  'mode.student.title': 'El modo estudiante está en camino',
+  'mode.student.body':
+    'Un estudiante entra con la identidad que le da su docente, separada de una cuenta normal y limitada a su clase. Se está construyendo junto con las clases. Para jugar una partida ahora mismo, entra con el código que te dieron.',
+
+  'notifications.open':
+    '{unread, plural, =0 {Notificaciones} one {Notificaciones, # sin leer} other {Notificaciones, # sin leer}}',
+  'notifications.badgeMax': '{max, number}+',
+  'notifications.title': 'Notificaciones',
+  'notifications.empty': 'Todavía no hay nada aquí.',
+  'notifications.unreadMark': 'Sin leer',
+  'notifications.markRead': 'Marcar como leída',
+  'notifications.busy': 'Demasiadas peticiones por ahora. Vuelve a abrir esto en un momento.',
+  'notifications.unavailable': 'Ahora mismo no se pueden leer tus notificaciones.',
+  'notifications.type.welcome': 'Te damos la bienvenida a Playhoot',
+  'notifications.type.purchaseConfirmed': 'Tu compra se completó',
+  'notifications.type.planChanged': 'Tu plan cambió',
+  'notifications.type.paymentFailed': 'Un pago no se completó',
+  'notifications.type.trialUpdate': 'Novedades sobre tu prueba',
+  'notifications.type.accountSecurity': 'Algo cambió en tu cuenta',
+  'notifications.type.guardianAuthorization': 'Novedades sobre una autorización',
+  'notifications.type.aiWorkFinished': 'Terminó el trabajo sobre tu juego',
+  'notifications.type.capacityWarning': 'Estás cerca de uno de tus límites',
+  'notifications.type.discoveryReview': 'Novedades sobre una revisión',
+  'notifications.type.discoveryRestriction': 'Hay una restricción sobre algo tuyo',
+  'notifications.type.classActivity': 'Novedades de una clase',
+  'notifications.type.budgetLevelChanged': 'Algunas funciones están limitadas ahora mismo',
+  'notifications.type.marketing': 'Novedades de Playhoot',
+  'notifications.type.unknown': 'Novedades de Playhoot',
+
+  'common.close': 'Cerrar',
+  'common.gotIt': 'Entendido',
+
+  'home.title': 'Jueguen juntos, <mark>donde sea</mark>',
   'home.intro':
-    'Playhoot es un lugar para jugar con la gente que te rodea. Únete con un código desde cualquier dispositivo, o crea tu propio juego.',
-  'home.join': 'Únete con un código',
+    'Playhoot es un lugar para jugar con la gente que te rodea: en casa, en clase o en el trabajo. Únete con un código desde cualquier dispositivo, o crea tu propio juego y organiza la partida.',
   'home.create': 'Crea un juego',
+  'home.teach': 'Enseña con Playhoot',
+
+  'home.join.title': 'Únete a una partida',
+  'home.join.label': 'Código de la partida',
+  'home.join.submit': 'Entrar',
+  'home.join.note': 'No necesitas cuenta: quien organiza te da el código.',
+  'home.join.page': 'Abrir la página para unirse',
+
+  'home.what.title': 'Qué es Playhoot',
+  'home.what.play.title': 'Jueguen en la misma sala o a distancia',
+  'home.what.play.body':
+    'Cada quien entra desde su dispositivo con un solo código. No hay nada que instalar, y si se te cae la conexión vuelves a tu lugar.',
+  'home.what.create.title': 'Crea tus propios juegos',
+  'home.what.create.body':
+    'Describe el juego que quieres y trabájalo hasta que funcione como lo imaginaste. Lo que creas es tuyo.',
+  'home.what.teach.title': 'Úsalo con un grupo de clase',
+  'home.what.teach.body':
+    'Las clases, las identidades de estudiante y las calificaciones están pensadas para docentes, con los permisos que exige enseñar a menores.',
+
+  'home.catalog.title': 'Juegos para jugar',
+  'home.catalog.curated': 'Selección nuestra por ahora',
+  'home.catalog.lead':
+    'Estos son los tipos de juego para los que está hecho Playhoot, elegidos por nosotros. El catálogo con su búsqueda, sus categorías y sus etiquetas llega con Discovery; hasta entonces esta página no muestra cifras de actividad, porque no hay ninguna que mostrar.',
+  'home.catalog.quiz.name': 'Preguntas',
+  'home.catalog.quiz.body':
+    'Las preguntas en una pantalla, las respuestas en cada teléfono, los puntos sobre la marcha.',
+  'home.catalog.words.name': 'Juegos de palabras',
+  'home.catalog.words.body': 'Adivinar, deletrear y escribir contra el reloj.',
+  'home.catalog.board.name': 'Juegos de tablero',
+  'home.catalog.board.body': 'Turnos, un tablero compartido y fichas que todos ven moverse.',
+  'home.catalog.party.name': 'Juegos para grupo',
+  'home.catalog.party.body': 'Rondas cortas para una sala llena de gente que acaba de llegar.',
+
+  'home.teacher.title': 'Enseñar con Playhoot',
+  'home.teacher.body':
+    'Prepara tus actividades con datos ficticios y pruébalo todo antes de que entre ningún estudiante.',
+  'home.teacher.cta': 'Ver qué incluye para docentes',
 
   'seo.home.title': 'Playhoot: juega en grupo, donde sea',
   'seo.home.description':

@@ -14,6 +14,7 @@
 .option {
   min-height: var(--control-height);
   padding: 0 var(--space-4);
+  /* The tighter size, for a control that shares a line with others. */
   border: 0;
   border-right: var(--outline-width) solid var(--color-outline);
   background: transparent;
@@ -23,6 +24,11 @@
   white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.sm .option {
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
 }
 
 .option:last-child {

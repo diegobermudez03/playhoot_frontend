@@ -15,7 +15,7 @@ import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
 import type { MessageId } from '../../i18n/catalogs';
-import { AppShell, Button, Card, Mascot, Stage } from '../../ui';
+import { Button, Card, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
 import { BriefPhaseChip, BriefSummary } from './BriefSummary';
@@ -127,7 +127,7 @@ function Workspace() {
   const authoring = useGameAuthoring(gameUUID);
   const preview = useGamePreview(gameUUID);
   const publishing = useGamePublishing(gameUUID);
-  if (!authoring || !preview || !publishing) return <AppShell>{null}</AppShell>;
+  if (!authoring || !preview || !publishing) return null;
   return (
     <WorkspaceScreen
       gameUUID={gameUUID}
@@ -166,7 +166,7 @@ function WorkspaceScreen({
   if (!noEdition && (load.status !== 'ready' || !draft)) {
     const failed = load.status === 'failed';
     return (
-      <AppShell>
+      <>
         <Stage>
           <div className={styles.hero}>
             <Mascot size={112} animated={!failed} mood={failed ? 'sleepy' : 'happy'} />
@@ -190,7 +190,7 @@ function WorkspaceScreen({
             </Button>
           )}
         </Stage>
-      </AppShell>
+      </>
     );
   }
 
@@ -224,7 +224,7 @@ function WorkspaceScreen({
   );
 
   return (
-    <AppShell>
+    <>
       <div className={styles.workspace}>
         <header className={styles.header}>
           <h1 className={styles.title}>
@@ -274,7 +274,7 @@ function WorkspaceScreen({
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
 

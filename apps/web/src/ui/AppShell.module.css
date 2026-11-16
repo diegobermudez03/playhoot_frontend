@@ -6,34 +6,31 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* The top bar sits on paper and is cut from the board by one ink rule, the way
-   the direction render separates it. */
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-height: 64px;
-  padding: var(--space-3) max(var(--space-4), env(safe-area-inset-left));
-  background: var(--color-surface);
-  border-bottom: var(--outline-width) solid var(--color-outline);
-}
-
-.home {
-  color: inherit;
+/* Past the bar in one keystroke: off screen until it is focused, then a
+   sticker at the top left like any other control. */
+.skip {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-3);
+  z-index: 50;
+  padding: var(--space-2) var(--space-4);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-weight: 700;
   text-decoration: none;
-  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-200%);
 }
 
-.trailing {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.skip:focus-visible {
+  transform: translateY(0);
 }
 
 .main {
   flex: 1;
+  outline: none;
   display: flex;
   flex-direction: column;
   padding: var(--space-5) max(var(--space-4), env(safe-area-inset-right)) var(--space-7)

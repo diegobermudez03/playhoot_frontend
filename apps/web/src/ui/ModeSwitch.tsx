@@ -6,6 +6,8 @@ interface ModeSwitchProps<T extends string> {
   options: readonly { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  // `sm` is the tighter one, for a control that shares a line with others (the top bar).
+  size?: 'sm' | 'md';
   className?: string | undefined;
 }
 
@@ -23,11 +25,12 @@ export function ModeSwitch<T extends string>({
   options,
   value,
   onChange,
+  size = 'md',
   className,
 }: ModeSwitchProps<T>) {
   return (
     <div
-      className={[styles.switch, className].filter(Boolean).join(' ')}
+      className={[styles.switch, styles[size], className].filter(Boolean).join(' ')}
       role="radiogroup"
       aria-label={label}
     >

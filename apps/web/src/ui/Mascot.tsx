@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react';
+import { useId, type CSSProperties } from 'react';
 
 import styles from './Mascot.module.css';
 
@@ -13,6 +13,14 @@ interface MascotProps {
   // A one-off entrance: a hop (celebrations) or a shake (something went wrong).
   entrance?: 'hop' | 'shake' | 'none';
   className?: string;
+}
+
+// A number in [0, 5) that is always the same for the same id: React gives each instance a
+// different one, so two mascots on a page keep their own rhythm.
+function blinkOffset(id: string): number {
+  let hash = 0;
+  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) % 5000;
+  return hash / 1000;
 }
 
 /*
@@ -40,8 +48,10 @@ export function Mascot({
   entrance = 'none',
   className,
 }: MascotProps) {
-  // Each mascot blinks on its own rhythm; two blinking in unison look mechanical.
-  const [blinkDelay] = useState(() => `${-Math.random() * 5}s`);
+  // Each mascot blinks on its own rhythm; two blinking in unison look mechanical. The rhythm
+  // comes from this instance's own id and not from a random number, so a page the server renders
+  // hands the browser the same value it drew itself.
+  const blinkDelay = `${-blinkOffset(useId())}s`;
   const wrapper = [
     styles.wrap,
     entrance === 'hop' && 'motion-hop',

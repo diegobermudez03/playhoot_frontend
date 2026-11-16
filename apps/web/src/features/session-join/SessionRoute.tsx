@@ -10,7 +10,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
-import { AppShell } from '../../ui';
+import { useShellMode } from '../../app/shell/ShellContext';
 import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
@@ -56,7 +56,7 @@ export function PlayerSession({
   embedded?: EmbeddedPlayer;
 }) {
   const join = useJoinSession(target);
-  if (!join) return <AppShell>{null}</AppShell>;
+  if (!join) return null;
   return <SessionView join={join} embedded={embedded} />;
 }
 
@@ -117,8 +117,10 @@ function SessionView({
     auth.status === 'guest' || auth.status === 'authenticated' ? auth.displayName : null;
 
   // The game takes the whole screen on a landscape display (plan §6, §8).
+  useShellMode(state.view.phase === 'started' && layout === 'wide' ? 'immersive' : 'normal');
+
   return (
-    <AppShell immersive={state.view.phase === 'started' && layout === 'wide'}>
+    <>
       {embedded?.header}
       <SessionScreen
         state={state}
@@ -142,7 +144,7 @@ function SessionView({
           />
         )}
       />
-    </AppShell>
+    </>
   );
 }
 

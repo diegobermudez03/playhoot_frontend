@@ -8,11 +8,12 @@ import type { Services } from './services';
 
 const ServicesContext = createContext<Services | null>(null);
 
+// `services` is null while the server renders, and until the page is interactive.
 export function ServicesProvider({
   services,
   children,
 }: {
-  services: Services;
+  services: Services | null;
   children: ReactNode;
 }) {
   return <ServicesContext.Provider value={services}>{children}</ServicesContext.Provider>;

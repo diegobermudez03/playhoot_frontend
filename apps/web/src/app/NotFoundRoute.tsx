@@ -2,14 +2,14 @@ import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
 
 import { useLocalePaths } from '../i18n/useLocalePaths';
-import { AppShell, Button, Stage } from '../ui';
+import { Button, Stage } from '../ui';
 import { Notice } from './Notice';
 
 export function NotFoundRoute() {
   const navigate = useNavigate();
   const paths = useLocalePaths();
   return (
-    <AppShell>
+    <>
       <Stage>
         <Notice
           title={<FormattedMessage id="notFound.title" />}
@@ -20,6 +20,6 @@ export function NotFoundRoute() {
           </Button>
         </Notice>
       </Stage>
-    </AppShell>
+    </>
   );
 }

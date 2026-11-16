@@ -25,11 +25,91 @@ export const en = {
   'offline.body': 'Playhoot needs a connection to play. Check your connection and try again.',
   'offline.retry': 'Try again',
 
-  'home.title': 'Play together, anywhere',
+  'shell.skipToContent': 'Skip to content',
+  'shell.nav': 'Playhoot',
+  'shell.menu': 'More',
+  'shell.join': 'Join',
+  'shell.create': 'Create',
+
+  'mode.label': 'How you are using Playhoot',
+  'mode.normal': 'Play',
+  'mode.teacher': 'Teach',
+  'mode.student': 'Class',
+  'mode.teacher.title': 'Teacher mode is on its way',
+  'mode.teacher.body':
+    'Classes, your students, activities and grades are being built. You can already create games and host sessions with the account you have; nothing you make now is lost when teaching arrives.',
+  'mode.student.title': 'Student mode is on its way',
+  'mode.student.body':
+    'A student joins with the identity their teacher gives them, which is separate from a normal account and stays inside their class. It is being built along with classes. To play a game right now, join with the code you were given.',
+
+  'notifications.open':
+    '{unread, plural, =0 {Notifications} one {Notifications, # unread} other {Notifications, # unread}}',
+  'notifications.badgeMax': '{max, number}+',
+  'notifications.title': 'Notifications',
+  'notifications.empty': 'Nothing here yet.',
+  'notifications.unreadMark': 'Unread',
+  'notifications.markRead': 'Mark as read',
+  'notifications.busy': 'Too many requests just now. Open this again in a moment.',
+  'notifications.unavailable': 'Your notifications cannot be read right now.',
+  'notifications.type.welcome': 'Welcome to Playhoot',
+  'notifications.type.purchaseConfirmed': 'Your purchase went through',
+  'notifications.type.planChanged': 'Your plan changed',
+  'notifications.type.paymentFailed': 'A payment did not go through',
+  'notifications.type.trialUpdate': 'News about your trial',
+  'notifications.type.accountSecurity': 'Something changed in your account',
+  'notifications.type.guardianAuthorization': 'News about a permission',
+  'notifications.type.aiWorkFinished': 'Work on your game finished',
+  'notifications.type.capacityWarning': 'You are close to one of your limits',
+  'notifications.type.discoveryReview': 'News about a review',
+  'notifications.type.discoveryRestriction': 'A restriction applies to something of yours',
+  'notifications.type.classActivity': 'News from a class',
+  'notifications.type.budgetLevelChanged': 'Some features are limited right now',
+  'notifications.type.marketing': 'News from Playhoot',
+  'notifications.type.unknown': 'News from Playhoot',
+
+  'common.close': 'Close',
+  'common.gotIt': 'Got it',
+
+  'home.title': 'Play together, <mark>anywhere</mark>',
   'home.intro':
-    'Playhoot is a place to play games with the people around you. Join with a code from any device, or create your own game.',
-  'home.join': 'Join with a code',
+    'Playhoot is a place to play games with the people around you: at home, in class or at work. Join with a code from any device, or create your own game and host it.',
   'home.create': 'Create a game',
+  'home.teach': 'Teach with Playhoot',
+
+  'home.join.title': 'Join a game',
+  'home.join.label': 'Game code',
+  'home.join.submit': 'Join',
+  'home.join.note': 'No account needed: your host gives you the code.',
+  'home.join.page': 'Open the join page',
+
+  'home.what.title': 'What Playhoot is',
+  'home.what.play.title': 'Play in the same room or far apart',
+  'home.what.play.body':
+    'Everyone joins from their own device with one code. There is no app to install, and a dropped connection takes you back to your seat.',
+  'home.what.create.title': 'Make your own games',
+  'home.what.create.body':
+    'Describe the game you want and work on it until it plays the way you meant. What you make is yours.',
+  'home.what.teach.title': 'Use it with a class',
+  'home.what.teach.body':
+    'Classes, student identities and grades are built for teachers, with the permissions that teaching minors requires.',
+
+  'home.catalog.title': 'Games to play',
+  'home.catalog.curated': 'Hand-picked for now',
+  'home.catalog.lead':
+    'These are the kinds of game Playhoot is made for, chosen by us. The catalog with its search, categories and tags arrives with Discovery; until then this page shows no activity figures, because there are none to show.',
+  'home.catalog.quiz.name': 'Quizzes',
+  'home.catalog.quiz.body': 'Questions on one screen, answers on every phone, points as you go.',
+  'home.catalog.words.name': 'Word games',
+  'home.catalog.words.body': 'Guessing, spelling and writing against the clock.',
+  'home.catalog.board.name': 'Board games',
+  'home.catalog.board.body': 'Turns, a shared board and pieces everyone can see move.',
+  'home.catalog.party.name': 'Party games',
+  'home.catalog.party.body': 'Short rounds for a room full of people who have just arrived.',
+
+  'home.teacher.title': 'Teaching with Playhoot',
+  'home.teacher.body':
+    'Prepare your activities with made-up data and try everything out before any student joins.',
+  'home.teacher.cta': 'See what teachers get',
 
   'seo.home.title': 'Playhoot — play games together, anywhere',
   'seo.home.description':

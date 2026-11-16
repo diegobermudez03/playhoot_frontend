@@ -1,0 +1,118 @@
+/* The fixed top bar: paper, cut from the board by one ink rule, the way the
+   direction render separates it. It stays at the top while a page scrolls and
+   sits under the PWA notices (z-index 50) and the toasts (60). */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 64px;
+  padding: var(--space-2) max(var(--space-3), env(safe-area-inset-left));
+  background: var(--color-surface);
+  border-bottom: var(--outline-width) solid var(--color-outline);
+}
+
+.home {
+  display: inline-flex;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.entries {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.trailing {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wideOnly {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* An entry of the bar: a sticker, like every other control of the system. */
+.entry,
+.entryStrong {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-instant) var(--ease-standard),
+    box-shadow var(--duration-instant) var(--ease-standard);
+}
+
+.entryStrong {
+  background: var(--color-primary);
+}
+
+.entry:hover,
+.entryStrong:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+.entry:active,
+.entryStrong:active {
+  transform: translate(var(--offset-sm), var(--offset-sm));
+  box-shadow: var(--shadow-none);
+}
+
+/* The three modes: in the bar from 420 px up, in the menu below that — the
+   narrowest displays cannot hold it beside the logo and the corner. The
+   component brings its own `display`, so these rules name the bar as well to
+   win over it whatever order the stylesheets end up in. */
+.bar .modes {
+  display: none;
+  margin-left: auto;
+}
+
+@media (min-width: 360px) {
+  .bar .modes {
+    display: inline-flex;
+  }
+
+  /* With the switch in the bar, the corner is pushed by it, not by itself. */
+  .trailing {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 760px) {
+  .bar {
+    gap: var(--space-3);
+    padding-inline: max(var(--space-4), env(safe-area-inset-left));
+  }
+
+  .entries {
+    display: flex;
+  }
+
+  .wideOnly {
+    display: flex;
+  }
+
+  .bar .modes {
+    margin-left: auto;
+  }
+}

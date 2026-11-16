@@ -25,7 +25,15 @@ untrusted games, the Game SDK and the Game <-> Host bridge. The backend
   calls. Presentation never calls a client directly.
 - Business logic belongs to the backend; the frontend does not re-implement it.
 - Each screen has two presentation implementations, horizontal and vertical,
-  chosen at the route edge and sharing components; each is also responsive.
+  chosen at the route edge and sharing components; each is also responsive. A route the server
+  renders chooses with `useMediaLayout`; one under `ClientLayout` with `useLayout`.
+- The shell (top bar + frame) is rendered once above the router in `root.tsx`, inside a
+  `ServicesBoundary` that gives every page the same services once it is interactive (D-028). A
+  screen never wraps itself in `AppShell`: it calls `useShellMode` when it wants `bare`,
+  `immersive` or `plain` instead of the whole bar. What the bar shows at a given width is CSS, not
+  JavaScript, because it is server-rendered before the display is known.
+- Nothing rendered on a server-rendered page may differ between the two renders: no
+  `Math.random()`, no clock, no storage during render.
 - The URL fully determines the screen and its input. Leaving a route discards its state.
 - React Router runs in framework mode (`apps/web/src/routes.ts`). Public pages are rendered by the
   server and carry their language in the path (`/es`, `/en`, `/pt`); link to them with

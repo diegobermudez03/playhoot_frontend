@@ -4,7 +4,7 @@ import { isRouteErrorResponse, useRouteError } from 'react-router';
 
 import { useLocalePaths } from '../i18n/useLocalePaths';
 import { useOptionalServices } from './ServicesContext';
-import { AppShell, Button, Stage } from '../ui';
+import { Button, Stage } from '../ui';
 import { Notice } from './Notice';
 
 // Presentation error boundary: a render failure in one route never takes the shell down.
@@ -25,7 +25,7 @@ export function RouteError() {
       ? error.message
       : null;
   return (
-    <AppShell>
+    <>
       <Stage>
         <Notice title={<FormattedMessage id="error.title" />} body={detail} mood="surprised">
           <Button size="lg" onClick={() => window.location.assign(paths.home)}>
@@ -33,6 +33,6 @@ export function RouteError() {
           </Button>
         </Notice>
       </Stage>
-    </AppShell>
+    </>
   );
 }

@@ -19,6 +19,9 @@ import {
 } from 'react-router';
 
 import { RouteError } from './app/RouteError';
+import { ServicesBoundary } from './app/ServicesBoundary';
+import { ShellProvider } from './app/shell/ShellContext';
+import { AppShell } from './ui';
 import { I18nProvider } from './i18n/I18nProvider';
 import { LocaleProvider } from './i18n/LocaleContext';
 import {
@@ -97,7 +100,11 @@ export default function App() {
   return (
     <Providers locale={locale}>
       <RouteFocus />
-      <Outlet />
+      {/* The shell is rendered here, above the router, so navigating replaces the page inside it
+          and never rebuilds the bar (P14§1). Each screen says how it wants to be framed. */}
+      <AppShell>
+        <Outlet />
+      </AppShell>
     </Providers>
   );
 }
@@ -107,7 +114,9 @@ export function ErrorBoundary() {
   const { locale } = useRootData();
   return (
     <Providers locale={locale}>
-      <RouteError />
+      <AppShell>
+        <RouteError />
+      </AppShell>
     </Providers>
   );
 }
@@ -119,7 +128,12 @@ function Providers({ locale, children }: { locale: Locale; children: ReactNode }
         {/* Installing and updating are the browser's business and the same on every page,
             public or not, so this sits above the routes (D-020). */}
         <PwaProvider>
-          {children}
+          {/* The app's services exist only in the browser, but the bar of a server-rendered
+              public page is the same bar: it is handed them here as soon as the page is
+              interactive, instead of each branch of the router building its own. */}
+          <ServicesBoundary>
+            <ShellProvider>{children}</ShellProvider>
+          </ServicesBoundary>
           <ClientOnly>
             <PwaNotices />
           </ClientOnly>

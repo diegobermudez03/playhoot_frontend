@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Stage } from '../../ui';
+import { Button, Card, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import styles from './GameWorkspace.module.css';
 
@@ -30,7 +30,7 @@ function AiConnections() {
     return () => next.dispose();
   }, [services]);
   return (
-    <AppShell>
+    <>
       <Stage>
         <div className={styles.hero}>
           <h1 className={styles.heroTitle}>
@@ -42,7 +42,7 @@ function AiConnections() {
         </div>
         <Card>{list && <ConnectionsList list={list} />}</Card>
       </Stage>
-    </AppShell>
+    </>
   );
 }
 

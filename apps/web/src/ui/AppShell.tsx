@@ -1,61 +1,48 @@
 import type { ReactNode } from 'react';
 import { useIntl } from 'react-intl';
-import { Link } from 'react-router';
+import { useLocation } from 'react-router';
 
-import { AccountButton } from '../app/AccountButton';
-import { ClientOnly } from '../app/ClientOnly';
-import { InstallButton } from '../pwa';
-import { useLocalePaths } from '../i18n/useLocalePaths';
-import { LanguagePicker } from '../i18n/LanguagePicker';
-import { SoundToggle } from '../sound/SoundToggle';
+import { ShellBar } from '../app/shell/ShellBar';
+import { useShell } from '../app/shell/ShellContext';
 import styles from './AppShell.module.css';
-import { Logo } from './Logo';
 
-interface AppShellProps {
-  children: ReactNode;
-  // Hides the top bar logo when the page shows its own big one.
-  bare?: boolean;
-  // No top bar and only a thin margin: the page uses the whole screen (a game on a landscape
-  // display) and offers what it needs from the bar itself.
-  immersive?: boolean;
-}
-
-export function AppShell({ children, bare = false, immersive = false }: AppShellProps) {
+// The frame every non-admin screen renders inside: the fixed top bar and the page under it. It is
+// rendered once above the router (root.tsx), so a navigation changes what is inside `main` and
+// never rebuilds the bar — the unread count, an open menu and the scroll position of the bar
+// survive it. A screen says how it wants to be framed with `useShellMode`.
+export function AppShell({ children }: { children: ReactNode }) {
   const intl = useIntl();
-  const paths = useLocalePaths();
-  if (immersive) {
+  const { pathname } = useLocation();
+  const { mode: asked } = useShell();
+  // The admin area frames itself (D-023), and it is known from the address alone, so its pages
+  // never show this bar even for the render before they could ask not to.
+  const mode = pathname === adminArea || pathname.startsWith(`${adminArea}/`) ? 'plain' : asked;
+  if (mode === 'plain') return <>{children}</>;
+  if (mode === 'immersive') {
     return (
       <div className={styles.shell}>
-        <main className={`${styles.main} ${styles.immersive}`}>{children}</main>
+        <main id={mainId} className={`${styles.main} ${styles.immersive}`}>
+          {children}
+        </main>
       </div>
     );
   }
   return (
     <div className={styles.shell}>
-      <header className={styles.bar}>
-        {!bare && (
-          <Link
-            to={paths.home}
-            className={styles.home}
-            aria-label={intl.formatMessage({ id: 'app.homeLink' })}
-          >
-            <Logo />
-          </Link>
-        )}
-        <div className={styles.trailing}>
-          {/* Whether the app can be installed is only known in the browser (D-020). */}
-          <ClientOnly>
-            <InstallButton />
-          </ClientOnly>
-          <SoundToggle />
-          <LanguagePicker />
-          <AccountButton />
-        </div>
-      </header>
-      <main className={styles.main}>{children}</main>
+      {/* WCAG 2.2 2.4.1: the first thing the keyboard reaches is the way past the bar. */}
+      <a className={styles.skip} href={`#${mainId}`}>
+        {intl.formatMessage({ id: 'shell.skipToContent' })}
+      </a>
+      <ShellBar bare={mode === 'bare'} />
+      <main id={mainId} className={styles.main} tabIndex={-1}>
+        {children}
+      </main>
     </div>
   );
 }
+
+const mainId = 'main';
+const adminArea = '/admin';
 
 // A centered column for focused, single-task screens.
 export function Stage({ children, wide = false }: { children: ReactNode; wide?: boolean }) {

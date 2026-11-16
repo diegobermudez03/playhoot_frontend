@@ -4,10 +4,11 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
 import { operations } from '@playhoot/protocol';
 
+import { useShellMode } from '../../app/shell/ShellContext';
 import { useNavigateToOperation } from '../access';
 import { useLayout } from '../layout';
 import { joinPath, myGamesPath, newGamePath, newSessionPath } from '../paths';
-import { AppShell, Button, Card, CodeInput, Logo, SplitStage, Stage } from '../../ui';
+import { Button, Card, CodeInput, Logo, SplitStage, Stage } from '../../ui';
 import styles from './EnterCodeRoute.module.css';
 
 // `/join`: type a join code. The entry to the Join Session feature for someone without a link.
@@ -18,6 +19,8 @@ export function EnterCodeRoute() {
   // Shown to everyone; without an account, choosing it goes through signing in first.
   const goTo = useNavigateToOperation();
   const layout = useLayout();
+  // The page shows its own big logo, so the bar does not repeat it.
+  useShellMode('bare');
   const [code, setCode] = useState('');
   const complete = code.length === joinCodeLength;
 
@@ -74,7 +77,7 @@ export function EnterCodeRoute() {
   // Compact: the logo above the form. Wide: the logo beside it, so a phone held sideways shows the
   // whole form with its keyboard up.
   return (
-    <AppShell bare>
+    <>
       {layout === 'wide' ? (
         <SplitStage aside={hero}>
           {form}
@@ -87,6 +90,6 @@ export function EnterCodeRoute() {
           {footnote}
         </Stage>
       )}
-    </AppShell>
+    </>
   );
 }

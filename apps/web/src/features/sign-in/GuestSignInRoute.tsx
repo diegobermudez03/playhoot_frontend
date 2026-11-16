@@ -6,7 +6,7 @@ import { Link, Navigate, useLocation } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Mascot, SplitStage, Stage, TextField } from '../../ui';
+import { Button, Card, Mascot, SplitStage, Stage, TextField } from '../../ui';
 import { useLayout } from '../layout';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
 import { joinCodeOf, safeNext } from '../paths';
@@ -84,7 +84,7 @@ function GuestSignInScreen({ next }: { next: string | null }) {
 
   // Compact: the owl above the form. Wide: beside it, so the form stays whole above a keyboard.
   return (
-    <AppShell>
+    <>
       {layout === 'wide' ? (
         <SplitStage aside={hero}>
           {form}
@@ -97,7 +97,7 @@ function GuestSignInScreen({ next }: { next: string | null }) {
           {alternative}
         </Stage>
       )}
-    </AppShell>
+    </>
   );
 }
 
