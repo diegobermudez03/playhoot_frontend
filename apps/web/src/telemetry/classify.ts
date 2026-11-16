@@ -84,6 +84,12 @@ function outcomeError(outcome: JoinOutcome): TelemetryError | null {
     case 'protocol-error':
       return { origin: 'transport', kind: 'protocol_error' };
     case 'rejected':
+      // A market gate refusing (D-038) is a decision, not a failure: the person declares where
+      // they live, or the service does not offer this there. The backend keeps its own count of
+      // those, and counting them here would read as errors in the join metrics.
+      if (outcome.reason === 'declaration_required' || outcome.reason === 'market_restricted') {
+        return null;
+      }
       return {
         origin: 'backend_rejection',
         kind: outcome.reason === 'unknown' ? 'rejected_unknown' : outcome.reason,

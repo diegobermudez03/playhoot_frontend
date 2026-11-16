@@ -1,3 +1,5 @@
+import { marketFunctions, type MarketFunction } from '@playhoot/protocol';
+
 // Every shareable URL is composed here from backend identifiers (ADR-0002). Changing a path
 // here is enough: the backend never knows frontend URLs.
 
@@ -26,6 +28,33 @@ export const myGamesPath = '/games';
 
 // Creating a game (an account's operation): the route creates it and moves to its workspace.
 export const newGamePath = '/games/new';
+
+// The same screen with what was already typed in its address, so a trip away from it — to the
+// residence-and-age declaration a gated function asks for — comes back to all of it
+// (WCAG 2.2 3.3.7).
+export function newGamePathWith(name: string, template: { gameUUID: string; name: string } | null) {
+  const query = new URLSearchParams();
+  if (name) query.set('name', name);
+  if (template) {
+    query.set('template', template.gameUUID);
+    query.set('templateName', template.name);
+  }
+  const search = query.toString();
+  return search ? `${newGamePath}?${search}` : newGamePath;
+}
+
+// What that screen was left with, read back from its address.
+export function newGameRequest(search: string): {
+  name: string;
+  template: { gameUUID: string; name: string } | null;
+} {
+  const query = new URLSearchParams(search);
+  const template = query.get('template');
+  return {
+    name: query.get('name') ?? '',
+    template: template ? { gameUUID: template, name: query.get('templateName') ?? '' } : null,
+  };
+}
 
 // A game's workspace, where its draft is changed. `section` picks the open section.
 export const gameWorkspaceRoute = '/games/:gameUUID/edit';
@@ -126,6 +155,48 @@ export function safeNext(search: string, origin: string = window.location.origin
 export function joinCodeOf(next: string | null): string | null {
   const match = next?.match(/^\/join\/([^/?#]+)$/);
   return match ? decodeURIComponent(match[1]!).toUpperCase() : null;
+}
+
+// The person's own corner: who they are, and the doors to methods, legal, notifications and
+// deletion. Personal addresses carry no language and are never offered to crawlers.
+export const profilePaths = {
+  home: '/profile',
+  methods: '/profile/methods',
+  legal: '/profile/legal',
+  delete: '/profile/delete',
+} as const;
+
+// The contextual residence-and-age declaration (D-038): a gated function refuses, and the person
+// is sent here the same way a missing account sends them to the sign-in screen. Its address is
+// its whole input, so a copied link reproduces the screen.
+export const declarationRoute = '/declaration';
+
+// What the declaration screen was asked for, read back from its address.
+export interface DeclarationRequest {
+  // The function that asked, as a kind this screen translates; null when it named one this
+  // build does not know, which changes nothing about what is asked.
+  function: MarketFunction | null;
+  next: string | null;
+}
+
+export function declarationScreenPath(marketFunction: string | null, next?: string | null): string {
+  const query = new URLSearchParams();
+  if (marketFunction) query.set('function', marketFunction);
+  if (next) query.set('next', next);
+  const search = query.toString();
+  return search ? `${declarationRoute}?${search}` : declarationRoute;
+}
+
+export function declarationRequest(search: string, origin?: string): DeclarationRequest {
+  const asked = new URLSearchParams(search).get('function');
+  return {
+    function: isMarketFunction(asked) ? asked : null,
+    next: origin === undefined ? safeNext(search) : safeNext(search, origin),
+  };
+}
+
+function isMarketFunction(value: string | null): value is MarketFunction {
+  return value !== null && (marketFunctions as readonly string[]).includes(value);
 }
 
 // Where an AI app sends the person to approve its connection (OAuth consent). `request` is the

@@ -3,6 +3,11 @@ import {
   createGuestPath,
   credentialsResponseSchema,
   displayNamePath,
+  emailLoginCompletePath,
+  emailLoginStartPath,
+  linkProviderCompletePath,
+  linkProviderStartPath,
+  linkProviderStartResponseSchema,
   listOperationsPath,
   listOperationsResponseSchema,
   loginCompletePath,
@@ -15,6 +20,10 @@ import {
   refreshPath,
   type CreateGuestRequest,
   type CredentialsResponse,
+  type EmailLoginCompleteRequest,
+  type EmailLoginStartRequest,
+  type LinkProviderCompleteRequest,
+  type LinkProviderStartRequest,
   type LoginCompleteRequest,
   type LoginStartRequest,
   type RefreshTokenRequest,
@@ -56,6 +65,22 @@ export interface IdentityClient {
     codeVerifier: string,
     replacesRefreshToken?: string,
   ): Promise<Result<Credential, HttpFailure>>;
+  // Asks for a one-time code to be sent to an address. The answer is the same for every address,
+  // so nothing it says tells whether that address has an account. Sent with the access token in
+  // use: a guest's becomes the account if completing the code creates one.
+  startEmailLogin(email: string, language: string): Promise<Result<void, HttpFailure>>;
+  // Exchanges an address and the code emailed to it for the account's credentials, ending the
+  // session of `replacesRefreshToken` (the guest held until now) if given.
+  completeEmailLogin(
+    email: string,
+    code: string,
+    replacesRefreshToken?: string,
+  ): Promise<Result<Credential, HttpFailure>>;
+  // Starts linking another provider to the account already signed in; answers where to send the
+  // person, exactly as signing in does.
+  startLinkProvider(provider: string, codeChallenge: string): Promise<Result<string, HttpFailure>>;
+  // Finishes that round trip. It opens no session: the account was already signed in.
+  completeLinkProvider(code: string, codeVerifier: string): Promise<Result<void, HttpFailure>>;
 }
 
 // `now` is the client's clock, which a received token's lifetime is measured on.
@@ -144,6 +169,51 @@ export function createIdentityClient(
       });
       return result.ok ? { ok: true, value: toCredential(result.value, now()) } : result;
     },
+    async startEmailLogin(email, language) {
+      const body: EmailLoginStartRequest = { email, language };
+      const result = await http.request({
+        method: 'POST',
+        path: emailLoginStartPath,
+        body,
+        response: anyBody,
+      });
+      return result.ok ? { ok: true, value: undefined } : result;
+    },
+    async completeEmailLogin(email, code, replacesRefreshToken) {
+      const body: EmailLoginCompleteRequest = {
+        email,
+        code,
+        ...(replacesRefreshToken && { replaces_refresh_token: replacesRefreshToken }),
+      };
+      const result = await http.request({
+        method: 'POST',
+        path: emailLoginCompletePath,
+        body,
+        response: credentialsResponseSchema,
+        authenticated: false,
+      });
+      return result.ok ? { ok: true, value: toCredential(result.value, now()) } : result;
+    },
+    async startLinkProvider(provider, codeChallenge) {
+      const body: LinkProviderStartRequest = { provider, code_challenge: codeChallenge };
+      const result = await http.request({
+        method: 'POST',
+        path: linkProviderStartPath,
+        body,
+        response: linkProviderStartResponseSchema,
+      });
+      return result.ok ? { ok: true, value: result.value.authorization_url } : result;
+    },
+    async completeLinkProvider(code, codeVerifier) {
+      const body: LinkProviderCompleteRequest = { code, code_verifier: codeVerifier };
+      const result = await http.request({
+        method: 'POST',
+        path: linkProviderCompletePath,
+        body,
+        response: anyBody,
+      });
+      return result.ok ? { ok: true, value: undefined } : result;
+    },
     async listOperations() {
       const result = await http.request({
         method: 'GET',
@@ -163,8 +233,10 @@ export function createIdentityClient(
   };
 }
 
-// Logout answers 204 without a body.
+// Logout answers 204 without a body; the acknowledgements answer `{}`. Neither carries anything
+// to read.
 const noBody: Decoder<unknown> = { safeParse: (value) => ({ success: true, data: value }) };
+const anyBody = noBody;
 
 // The backend's credentials as the app keeps them. A level this client does not know counts as a
 // guest, the weaker one: the backend still decides what it allows. The expiry is placed on this

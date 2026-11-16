@@ -4,7 +4,7 @@ import {
   type JoinOutcome,
   type JoinSession,
 } from '@playhoot/feature-session-join';
-import { operations } from '@playhoot/protocol';
+import { marketFunctionKinds, operations } from '@playhoot/protocol';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { useStore } from 'zustand';
@@ -14,7 +14,7 @@ import { useShellMode } from '../../app/shell/ShellContext';
 import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
-import { joinPath, sessionPlayPath } from '../paths';
+import { declarationScreenPath, joinPath, sessionPlayPath } from '../paths';
 import { SessionPlayView } from '../session-play/SessionPlayView';
 import { SessionScreen } from './SessionScreen';
 
@@ -131,6 +131,15 @@ function SessionView({
           retry: join.retry,
           leave: join.leave,
           enterAnotherCode: () => navigate(paths.enterCode),
+          // Back to this same address once the declaration is recorded, so the join resumes
+          // with the code it already had (WCAG 2.2 3.3.7).
+          declare: () =>
+            navigate(
+              declarationScreenPath(
+                marketFunctionKinds.interactiveUse,
+                location.pathname + location.search,
+              ),
+            ),
           copyInvite,
         }}
         renderPlay={(view) => (

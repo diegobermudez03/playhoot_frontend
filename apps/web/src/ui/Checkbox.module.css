@@ -1,0 +1,73 @@
+/* A statement the person agrees to: the box in ink on the left, the statement
+   beside it, and one line of hint or error below the pair. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.box {
+  flex: none;
+  /* The target stays at least 24 px on every display (WCAG 2.2 2.5.8). */
+  width: var(--space-6);
+  height: var(--space-6);
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.box[aria-invalid='true'] {
+  outline: var(--outline-width-thick) solid var(--color-danger-text);
+  outline-offset: 2px;
+}
+
+.box:disabled {
+  cursor: not-allowed;
+}
+
+.label {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.hint {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-text-subtle);
+}
+
+.error {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: var(--color-danger-text);
+}
+
+/* The error is also marked, not only coloured (WCAG 1.4.1). */
+.error::before {
+  content: '!';
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.15em;
+  height: 1.15em;
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-fill);
+  font-size: 0.8em;
+  line-height: 1;
+}

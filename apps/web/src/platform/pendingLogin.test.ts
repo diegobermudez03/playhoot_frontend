@@ -26,7 +26,12 @@ describe('createBrowserPendingLoginStore', () => {
     const store = createBrowserPendingLoginStore(memoryStorage());
     store.save({ verifier: 'v', next: '/sessions/new', startedAt: 5 });
 
-    expect(store.take()).toEqual({ verifier: 'v', next: '/sessions/new', startedAt: 5 });
+    expect(store.take()).toEqual({
+      intent: 'sign-in',
+      verifier: 'v',
+      next: '/sessions/new',
+      startedAt: 5,
+    });
     expect(store.take()).toBeNull();
   });
 

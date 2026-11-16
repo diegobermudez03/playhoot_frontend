@@ -2,12 +2,17 @@ import type { TemplateEntry } from '@playhoot/communication';
 import { cardLimits, operations } from '@playhoot/protocol';
 import { useState, type FormEvent } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { useServices } from '../../app/ServicesContext';
 import { Button, Card, Mascot, Stage, TextField } from '../../ui';
 import { RequireOperation } from '../access';
-import { gameWorkspacePath } from '../paths';
+import {
+  declarationScreenPath,
+  gameWorkspacePath,
+  newGamePathWith,
+  newGameRequest,
+} from '../paths';
 import styles from './GameWorkspace.module.css';
 import { TemplatePicker } from './TemplatePicker';
 
@@ -22,15 +27,23 @@ export function CreateGameRoute() {
   );
 }
 
-type Failure = 'invalid-name' | 'template' | 'other';
+type Failure = 'invalid-name' | 'template' | 'restricted' | 'other';
 
 function CreateGame() {
   const services = useServices();
   const intl = useIntl();
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  const location = useLocation();
+  // What this screen was left with when it sent the person to the declaration: its address
+  // carries it, so coming back asks for none of it again (WCAG 2.2 3.3.7).
+  const [left] = useState(() => newGameRequest(location.search));
+  const [name, setName] = useState(left.name);
   // The template the game starts from; null is the starter project.
-  const [template, setTemplate] = useState<TemplateEntry | null>(null);
+  // Only what the request and the summary need: the rest of a template is not worth carrying
+  // through the address.
+  const [template, setTemplate] = useState<Pick<TemplateEntry, 'gameUUID' | 'name'> | null>(
+    left.template,
+  );
   // One key per name and template: a retry of the same request creates one game; another name or
   // template is another request.
   const [request, setRequest] = useState(() => ({
@@ -50,6 +63,7 @@ function CreateGame() {
       return;
     }
     const chosen = template?.gameUUID ?? null;
+
     const current =
       request.name === trimmed && request.template === chosen
         ? request
@@ -66,13 +80,21 @@ function CreateGame() {
       navigate(gameWorkspacePath(result.value.gameUUID), { replace: true });
       return;
     }
+    // Creating games is gated by the market matrix (D-038): the declaration is asked for the way
+    // a missing account is, and this screen is where the person comes back to.
+    if (result.error.kind === 'declaration-required') {
+      navigate(declarationScreenPath(result.error.function, newGamePathWith(trimmed, template)));
+      return;
+    }
     setCreating(false);
     setFailure(
       result.error.kind === 'invalid-card'
         ? 'invalid-name'
         : result.error.kind === 'template-not-found'
           ? 'template'
-          : 'other',
+          : result.error.kind === 'market-restricted'
+            ? 'restricted'
+            : 'other',
     );
   };
 
@@ -133,6 +155,11 @@ function CreateGame() {
             {failure === 'template' && (
               <p className={styles.warningText} role="alert">
                 <FormattedMessage id="createGame.templateGone" />
+              </p>
+            )}
+            {failure === 'restricted' && (
+              <p className={styles.warningText} role="alert">
+                <FormattedMessage id="createGame.restricted" />
               </p>
             )}
             {failure === 'other' && (

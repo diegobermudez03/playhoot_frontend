@@ -159,8 +159,6 @@ export const en = {
   'auth.reason.admin': 'Sign in to administration',
   'auth.lead.guest': 'Just pick a name. No account needed, and you can create one later.',
   'auth.lead.account': 'With an account you can host games and get back in from any device.',
-  'auth.emailCode': 'Get a code by email',
-  'auth.emailCodeSoon': 'Signing in with a code by email is coming soon.',
   'auth.backToGuest': 'In a hurry? <link>Just pick a name</link>',
   'auth.guestSwitch.title': 'About your guest games',
   'auth.guestSwitch.body':
@@ -941,6 +939,102 @@ export const en = {
   'admin.email.deliveriesNote': 'States as the backend records them. Bodies are never stored.',
   'admin.email.deliveryCount': '{state}: {count, number}',
   'admin.email.noDeliveries': 'No deliveries recorded.',
+
+  'auth.or': 'or',
+  'identity.guestExpiry':
+    'A guest that goes 90 days without being used is deleted. Create an account to keep your games.',
+
+  'emailCode.addressLabel': 'Your email',
+  'emailCode.addressPlaceholder': 'you@example.com',
+  'emailCode.addressHint': "We'll email you a 6-digit code. No password to remember.",
+  'emailCode.send': 'Email me a code',
+  'emailCode.sent':
+    'If {address} can receive it, a 6-digit code is on its way. It lasts 10 minutes.',
+  'emailCode.sentAgain': 'A new code is on its way to {address}. The previous one no longer works.',
+  'emailCode.codeLabel': 'The 6-digit code',
+  'emailCode.codeHint': 'Look in your inbox, and in the spam folder.',
+  'emailCode.confirm': 'Continue',
+  'emailCode.resend': 'Send a new code',
+  'emailCode.changeAddress': 'Use another address',
+  'emailCode.error.invalidAddress': "That doesn't look like an email address.",
+  'emailCode.error.wrongCode': "That code isn't the one we sent. Check it and try again.",
+  'emailCode.error.attemptGone': 'That code no longer works. Ask for a new one.',
+  'emailCode.error.rateLimited': 'Too many tries just now. Try again in a few minutes.',
+  'emailCode.error.rateLimitedIn':
+    'Too many tries just now. Try again in {seconds, plural, one {# second} other {# seconds}}.',
+  'emailCode.error.unavailable': "We couldn't reach Playhoot. Try again in a moment.",
+
+  'text.terms': 'Terms of use',
+  'text.ownData': 'How we handle your data',
+  'text.classDataAgreement': 'Class data agreement',
+  'text.marketing': 'Marketing emails',
+  'texts.download': 'Download',
+  'texts.loading': 'Opening…',
+  'texts.notPublished': 'This text is not published yet.',
+
+  'acceptance.working': 'One moment…',
+  'acceptance.title': 'Before you start',
+  'acceptance.lead': 'Read these and tell us you agree. We record what you agreed to and when.',
+  'acceptance.read': 'Read “{text}”',
+  'acceptance.version': 'version {version, number}',
+  'acceptance.agree':
+    '{count, plural, one {I have read it and I accept it.} other {I have read them and I accept them.}}',
+  'acceptance.required': 'Tick this to continue.',
+  'acceptance.failed': "We couldn't record that. Try again.",
+  'acceptance.submit': 'Accept and continue',
+  'acceptance.close': 'Close',
+
+  'declaration.function.create-games': 'To create games, tell us where you live',
+  'declaration.function.subscribe': 'To subscribe, tell us where you live',
+  'declaration.function.teach': 'To teach with Playhoot, tell us where you live',
+  'declaration.function.minor-class-participation': 'To join this class, tell us where you live',
+  'declaration.function.minor-family-participation': 'To join this group, tell us where you live',
+  'declaration.function.interactive-use': 'To play, tell us where you live',
+  'declaration.function.unknown': 'Tell us where you live',
+  'declaration.lead':
+    'We ask once. No date of birth and no documents: you tell us, and we record what you told us.',
+  'declaration.countryLabel': 'Country of residence',
+  'declaration.countryHint': 'Where you live, not where you happen to be today.',
+  'declaration.subdivisionLabel': 'State or province',
+  'declaration.subdivisionHint': 'The rules differ by state or province in this country.',
+  'declaration.choose': 'Choose…',
+  'declaration.meetsAge':
+    'I declare that I have reached the minimum age Playhoot asks for where I live.',
+  'declaration.meetsAgeHint': 'A declaration, not a check: we ask for no documents.',
+  'declaration.correction':
+    'Answer carefully: a wrong answer is corrected through support, not by answering again.',
+  'declaration.submit': 'Continue',
+  'declaration.below': "I haven't reached that age",
+  'declaration.belowTitle': 'Before you answer that',
+  'declaration.belowBody':
+    'We record it, it stays on your account, and what you were about to do stays unavailable. Changing it later goes through support.',
+  'declaration.belowConfirm': 'Yes, record it',
+  'declaration.belowCancel': 'Go back',
+  'declaration.belowClose': 'Close',
+  'declaration.restrictedTitle': 'Not available for you',
+  'declaration.restrictedBody':
+    'You told us you have not reached {age, number}, which this needs where you live.',
+  'declaration.goHome': 'Go home',
+  'declaration.error.countryRequired': 'Choose your country of residence.',
+  'declaration.error.subdivisionRequired': 'Choose your state or province.',
+  'declaration.error.ageRequired': 'Tick this to go on, or say you have not reached that age.',
+  'declaration.error.place':
+    "We can't accept that place. Check the country, and the state or province it needs.",
+  'declaration.error.conflict':
+    'A different declaration is already recorded. Support can correct it.',
+  'declaration.error.rateLimited': 'Too many tries. Try again in a few minutes.',
+  'declaration.error.unavailable': "We couldn't reach Playhoot. Try again in a moment.",
+
+  'createGame.restricted': 'Creating games is not available where you are.',
+
+  'outcome.declarationRequired.title': 'One thing first',
+  'outcome.declarationRequired.body':
+    'Tell us where you live and that you have the age it asks for, and we will bring you back here.',
+  'outcome.marketRestricted.title': 'Not available here',
+  'outcome.marketRestricted.body': 'Playhoot does not offer this where you are.',
+  'outcome.action.declare': 'Tell us where you live',
+
+  'seo.declaration.title': 'Where you live | Playhoot',
 } as const;
 
 export type MessageId = keyof typeof en;

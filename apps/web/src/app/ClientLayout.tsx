@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router';
 
+import { AcceptanceGate } from '../features/compliance/AcceptanceGate';
 import { DisplayNameScreen } from '../features/sign-in/DisplayNameScreen';
 import { ClientOnly } from './ClientOnly';
 import { identityKey } from './identityKey';
@@ -17,11 +18,19 @@ export default function ClientLayout() {
   );
 }
 
-// An account without a display name chooses one before any page shows, however it got there. When
-// the person changes (another tab signed in as someone else), every page is rebuilt for the new
-// one, so nothing of the previous person (a live connection, a lobby) stays open.
+// An account without a display name chooses one before any page shows, however it got there, and
+// then accepts whatever it has not accepted yet (D-037) — both however the sign-in finished, and
+// a guest meets neither (C-01). When the person changes (another tab signed in as someone else),
+// every page is rebuilt for the new one, so nothing of the previous person (a live connection, a
+// lobby) stays open.
 function IdentityGate() {
   const auth = useAuth();
+  const key = identityKey(auth);
   if (auth.status === 'authenticated' && !auth.displayName) return <DisplayNameScreen />;
-  return <Outlet key={identityKey(auth)} />;
+  if (auth.status !== 'authenticated') return <Outlet key={key} />;
+  return (
+    <AcceptanceGate key={key}>
+      <Outlet key={key} />
+    </AcceptanceGate>
+  );
 }

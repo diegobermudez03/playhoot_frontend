@@ -3,6 +3,7 @@ import {
   createAdminClient,
   createAdminConnector,
   createAiAccessClient,
+  createComplianceClient,
   createGamesClient,
   createHttpClient,
   createIdentityClient,
@@ -15,6 +16,7 @@ import {
   type AdminClient,
   type AdminConnector,
   type AiAccessClient,
+  type ComplianceClient,
   type GamesClient,
   type HttpClient,
   type IdentityClient,
@@ -77,6 +79,8 @@ export interface Services {
   // The account's AI apps over MCP: consenting to a connection, listing and revoking them.
   aiAccess: AiAccessClient;
   app: AppState;
+  // The texts people accept and the residence-and-age declaration a gated function asks for.
+  compliance: ComplianceClient;
   device: DeviceCapabilitiesStore;
   // Game authoring (REST): creating games and changing their drafts.
   gamesApi: GamesClient;
@@ -177,6 +181,8 @@ export function createServices(): Services {
     }),
     aiAccess: createAiAccessClient(http),
     app,
+    // The download of a text is a plain link the browser follows, so it needs the whole address.
+    compliance: createComplianceClient(http, config.apiBaseUrl),
     device,
     gameArtifacts,
     gameAssets,

@@ -1,16 +1,25 @@
-import { createGuestSignIn, type GuestSignIn } from '@playhoot/feature-sign-in';
-import { guestDisplayNameMaxLength } from '@playhoot/protocol';
+import {
+  createEmailSignIn,
+  createGuestSignIn,
+  type EmailSignIn,
+  type GuestSignIn,
+} from '@playhoot/feature-sign-in';
+import { guestDisplayNameMaxLength, registrationTextKinds } from '@playhoot/protocol';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Link, Navigate, useLocation } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
+import { useLocale } from '../../i18n/LocaleContext';
+import { segmentOfLocale } from '../../i18n/localePaths';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
 import { Button, Card, Dialog, Mascot, SplitStage, Stage, TextField } from '../../ui';
+import { TextLinks } from '../compliance/TextLinks';
 import { useLayout } from '../layout';
 import { authRequest, joinCodeOf, type AuthRequest } from '../paths';
 import { accountSignInErrorText } from './accountSignInErrors';
+import { EmailCodeForm } from './EmailCodeForm';
 import { GoogleButton } from './GoogleButton';
 import { identityErrorText } from './identityErrors';
 import styles from './SignIn.module.css';
@@ -24,7 +33,8 @@ export function AuthRoute() {
   const location = useLocation();
   const paths = useLocalePaths();
   const request = authRequest(location.search);
-  // Nothing is asked until it is known whether anything has to be.
+  // Nothing is asked until it is known whether anything has to be. What a new account still has
+  // to accept is asked above this screen, by the gate every page meets (D-037).
   if (auth.status === 'unknown') return null;
   // Already someone the operation accepts, and not here to leave a guest behind on purpose.
   const enough =
@@ -71,13 +81,20 @@ function AuthScreen({ request }: { request: AuthRequest }) {
     <GuestPanel request={request} name={name} onName={setName} />
   );
 
+  // The texts are linked for everyone, whether or not anything is being asked (D-037).
+  const footer = <TextLinks kinds={registrationTextKinds} />;
+
   // Compact: the mascot above the panel. Wide: beside it, so the form stays whole above a keyboard.
   return layout === 'wide' ? (
-    <SplitStage aside={hero}>{panel}</SplitStage>
+    <SplitStage aside={hero}>
+      {panel}
+      {footer}
+    </SplitStage>
   ) : (
     <Stage>
       {hero}
       {panel}
+      {footer}
     </Stage>
   );
 }
@@ -121,6 +138,9 @@ function GuestPanel({
           <Button type="submit" size="lg" block loading={state.submitting}>
             <FormattedMessage id="identity.submit" />
           </Button>
+          <p className={styles.expiry}>
+            <FormattedMessage id="identity.guestExpiry" />
+          </p>
         </form>
       </Card>
       <p className={styles.alternative}>
@@ -146,16 +166,24 @@ function GuestPanel({
   );
 }
 
-// An account is required, or the person asked for one: Google is the featured way in, the one-time
-// code by email is shown but arrives with H3 (P03§8), and the backend's fictitious local provider
-// appears only where it is offered.
+// An account is required, or the person asked for one: Google is the featured way in, the
+// one-time code by email is live beside it (P03§8, D-033), and the backend's fictitious local
+// provider appears only where it is offered.
 function AccountPanel({ request, guestName }: { request: AuthRequest; guestName: string | null }) {
   const intl = useIntl();
   const paths = useLocalePaths();
+  const { locale } = useLocale();
+  const language = segmentOfLocale(locale);
   const { accountSignIn } = useServices();
   const state = useStore(accountSignIn.store);
+  const emailSignIn = useEmailSignIn();
+  const emailState = useStore(emailSignIn.store);
+  const [address, setAddress] = useState('');
+  const [code, setCode] = useState('');
   const [starting, setStarting] = useState<string | null>(null);
-  // Which provider the guest is about to leave their guest identity for, while they confirm it.
+  // Which way in the guest is about to leave their guest identity for, while they confirm it.
+  // `email` is one of them: a code sent to an address that already has an account enters that
+  // account instead of keeping this guest (P03§10).
   const [confirming, setConfirming] = useState<string | null>(null);
 
   // Asked again after 1, 2, 4... seconds (at most 30) while the backend cannot be reached.
@@ -180,14 +208,19 @@ function AccountPanel({ request, guestName }: { request: AuthRequest; guestName:
   const busy = state.status === 'starting';
   // Only the providers this backend offers can be used (the local one only in development).
   const offers = (provider: string) => state.providers?.includes(provider) ?? false;
-  const start = (provider: string) => {
+  const emailWay = 'email';
+  const start = (way: string) => {
     setConfirming(null);
-    setStarting(provider);
-    void accountSignIn.start(provider, request.next);
+    if (way === emailWay) {
+      void emailSignIn.start(address, language);
+      return;
+    }
+    setStarting(way);
+    void accountSignIn.start(way, request.next);
   };
-  // A guest is told what this costs them before they leave the app for the provider (P03§10).
-  const choose = (provider: string) =>
-    guestName === null ? start(provider) : setConfirming(provider);
+  // A guest is told what this costs them before they leave the app for the provider, or before a
+  // code is sent (P03§10).
+  const choose = (way: string) => (guestName === null ? start(way) : setConfirming(way));
 
   return (
     <>
@@ -205,14 +238,24 @@ function AccountPanel({ request, guestName }: { request: AuthRequest; guestName:
               <FormattedMessage id="signIn.googleSoon" />
             </p>
           )}
-          <div className={styles.pending}>
-            <Button variant="secondary" block disabled>
-              <FormattedMessage id="auth.emailCode" />
-            </Button>
-            <p className={styles.soon}>
-              <FormattedMessage id="auth.emailCodeSoon" />
-            </p>
-          </div>
+          <p className={styles.separator}>
+            <FormattedMessage id="auth.or" />
+          </p>
+          <EmailCodeForm
+            state={emailState}
+            address={address}
+            onAddress={setAddress}
+            code={code}
+            onCode={setCode}
+            onSend={() => choose(emailWay)}
+            onResend={() => void emailSignIn.resend(language)}
+            onSubmitCode={() => void emailSignIn.complete(code)}
+            onEditAddress={() => {
+              setCode('');
+              emailSignIn.editAddress();
+            }}
+            disabled={busy}
+          />
           {offers('local') && (
             <Button
               variant="secondary"
@@ -273,6 +316,15 @@ function AccountPanel({ request, guestName }: { request: AuthRequest; guestName:
       </Dialog>
     </>
   );
+}
+
+// One instance per visit to the page; the attempt it starts lives on the backend.
+function useEmailSignIn(): EmailSignIn {
+  const services = useServices();
+  const [signIn] = useState(() =>
+    createEmailSignIn({ app: services.app, identity: services.identity }),
+  );
+  return signIn;
 }
 
 // One instance per visit to the page; nothing to release when leaving it.

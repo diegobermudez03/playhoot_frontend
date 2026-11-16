@@ -29,9 +29,15 @@ export function createBrowserPendingLoginStore(
 
 function parsePending(value: unknown): PendingLogin | null {
   if (typeof value !== 'object' || value === null) return null;
-  const { verifier, next, startedAt } = value as Record<string, unknown>;
+  const { verifier, next, startedAt, intent } = value as Record<string, unknown>;
   if (typeof verifier !== 'string' || !verifier || typeof startedAt !== 'number') return null;
-  return { verifier, next: typeof next === 'string' ? next : null, startedAt };
+  return {
+    verifier,
+    next: typeof next === 'string' ? next : null,
+    startedAt,
+    // Anything but the explicit `link` is a sign-in: the weaker reading is the safe one.
+    intent: intent === 'link' ? 'link' : 'sign-in',
+  };
 }
 
 // A random verifier: 32 bytes, base64url (43 characters).

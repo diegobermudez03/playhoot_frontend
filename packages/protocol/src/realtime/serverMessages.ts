@@ -25,6 +25,11 @@ export const rejectReasons = [
   // Joining by Session UUID: no such Session, or one that already ended (`status`, `end_cause`).
   'invalid_session',
   'session_ended',
+  // The market gate refused before the Session was even looked up (`api/play/market_access.go`,
+  // D-038): the person has to declare where they live and that they have the age it asks for,
+  // or the service does not offer interactive use where they are.
+  'declaration_required',
+  'market_restricted',
 ] as const;
 export type RejectReason = (typeof rejectReasons)[number];
 

@@ -5,7 +5,10 @@ import {
   aiLinkStatusSchema,
   browseTemplatesSchema,
   createGamePath,
+  declarationRequiredCode,
   draftTemplatePath,
+  gateRefusalSchema,
+  marketRestrictedCode,
   searchTemplatesSchema,
   templateFilesPath,
   templateFilesSchema,
@@ -476,6 +479,10 @@ export type GamesFailure =
   | { kind: 'not-published' }
   | { kind: 'edition-open' }
   | { kind: 'publishing' }
+  // The market gate refused before anything was created (D-038): the person has to say where
+  // they live and that they have the age it asks for, or the service does not offer it there.
+  | { kind: 'declaration-required'; function: string | null }
+  | { kind: 'market-restricted' }
   // Anything else: no answer, a server failure, an unknown refusal or an unexpected body.
   | { kind: 'unavailable'; failure: HttpFailure };
 
@@ -1251,6 +1258,15 @@ export function gamesFailure(failure: HttpFailure): GamesFailure {
   const details = parsed.success ? parsed.data : {};
   const diagnostics = (details.diagnostics ?? []).map(diagnosticOf);
   switch (failure.code) {
+    case declarationRequiredCode: {
+      const gate = gateRefusalSchema.safeParse(failure.body);
+      return {
+        kind: 'declaration-required',
+        function: gate.success ? (gate.data.function ?? null) : null,
+      };
+    }
+    case marketRestrictedCode:
+      return { kind: 'market-restricted' };
     case gamesErrorCodes.notEditable:
       return { kind: 'not-editable' };
     case gamesErrorCodes.templateNotFound:

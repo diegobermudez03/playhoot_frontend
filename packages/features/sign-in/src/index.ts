@@ -2,3 +2,4 @@
 export * from './guestSignIn';
 export * from './accountSignIn';
 export * from './displayNameSetup';
+export * from './emailSignIn';

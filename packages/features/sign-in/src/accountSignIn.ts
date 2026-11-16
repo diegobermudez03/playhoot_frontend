@@ -2,6 +2,7 @@ import type { AppState } from '@playhoot/app-core';
 import type { HttpFailure, IdentityClient } from '@playhoot/communication';
 import {
   loginCompletionErrors,
+  methodInUseCode,
   providerUnavailableCode,
   rateLimitedCode,
   type LoginCompletionError,
@@ -34,7 +35,12 @@ export interface PendingLogin {
   // Where to go once signed in.
   next: string | null;
   startedAt: number;
+  // What the trip was for: entering an account, or adding this provider as another way into the
+  // account already signed in. An entry written before this existed reads as a sign-in.
+  intent?: LoginIntent;
 }
+
+export type LoginIntent = 'sign-in' | 'link';
 
 // Where the pending sign-in survives the trip to the provider (web: this tab's sessionStorage).
 // `take` returns it once and forgets it.
@@ -61,6 +67,13 @@ export interface LoginCompletion {
   error: string | null;
 }
 
+// What a finished round trip turned out to be.
+export type LoginCompleted =
+  | { kind: 'signed-in'; next: string | null }
+  // The trip was for adding a way in: `linked`, or `in-use` when that identity is another
+  // account's way in (matching addresses never merge accounts, P03§11).
+  | { kind: 'linked'; outcome: 'linked' | 'in-use'; next: string | null };
+
 export interface AccountSignIn {
   store: StoreApi<AccountSignInState>;
   // Learns which providers the backend offers, once; false when the backend could not be reached
@@ -68,9 +81,12 @@ export interface AccountSignIn {
   loadProviders(): Promise<boolean>;
   // Sends the person to the provider; `next` is where to go once they are back and signed in.
   start(provider: string, next: string | null): Promise<void>;
-  // Finishes the sign-in the provider answered. Signed in: where to go next (null: the default).
-  // Otherwise `false`, with the error in the store.
-  complete(completion: LoginCompletion): Promise<{ next: string | null } | false>;
+  // Sends the person to the provider to add it as another way into the account already signed
+  // in; `next` is where to go once they are back.
+  startLink(provider: string, next: string | null): Promise<void>;
+  // Finishes the round trip the provider answered, whichever it was. `false` with the error in
+  // the store when it did not finish.
+  complete(completion: LoginCompletion): Promise<LoginCompleted | false>;
 }
 
 // How long a pending sign-in may wait for the provider's answer (the backend allows 5 minutes).
@@ -112,7 +128,20 @@ export function createAccountSignIn(deps: AccountSignInDeps): AccountSignIn {
         fail(startError(result.error));
         return;
       }
-      deps.pending.save({ verifier, next, startedAt: now() });
+      deps.pending.save({ verifier, next, startedAt: now(), intent: 'sign-in' });
+      store.setState({ status: 'leaving', error: null });
+      deps.leaveTo(result.value);
+    },
+    async startLink(provider, next) {
+      store.setState({ status: 'starting', error: null });
+      const verifier = deps.newVerifier();
+      const challenge = await deps.challengeOf(verifier);
+      const result = await deps.identity.startLinkProvider(provider, challenge);
+      if (!result.ok) {
+        fail(startError(result.error));
+        return;
+      }
+      deps.pending.save({ verifier, next, startedAt: now(), intent: 'link' });
       store.setState({ status: 'leaving', error: null });
       deps.leaveTo(result.value);
     },
@@ -123,6 +152,23 @@ export function createAccountSignIn(deps: AccountSignInDeps): AccountSignIn {
         return fail({ kind: 'failed' });
       }
       store.setState({ status: 'completing', error: null });
+      if (pending.intent === 'link') {
+        const linked = await deps.identity.completeLinkProvider(completion.code, pending.verifier);
+        if (!linked.ok) {
+          const failure = linked.error;
+          if (failure.kind === 'http' && failure.code === methodInUseCode) {
+            store.setState({ status: 'idle', error: null });
+            return { kind: 'linked', outcome: 'in-use', next: pending.next };
+          }
+          return fail(
+            failure.kind === 'network' || (failure.kind === 'http' && failure.status >= 500)
+              ? { kind: 'unavailable' }
+              : { kind: 'failed' },
+          );
+        }
+        store.setState({ status: 'idle', error: null });
+        return { kind: 'linked', outcome: 'linked', next: pending.next };
+      }
       const result = await deps.identity.completeLogin(
         completion.code,
         pending.verifier,
@@ -138,7 +184,7 @@ export function createAccountSignIn(deps: AccountSignInDeps): AccountSignIn {
       }
       deps.app.signIn(result.value);
       store.setState({ status: 'idle', error: null });
-      return { next: pending.next };
+      return { kind: 'signed-in', next: pending.next };
     },
   };
 }

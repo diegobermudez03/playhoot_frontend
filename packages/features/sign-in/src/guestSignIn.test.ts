@@ -29,6 +29,10 @@ function setup(createGuest: IdentityClient['createGuest']) {
     setDisplayName: vi.fn(),
     listLoginProviders: vi.fn(),
     completeLogin: vi.fn(),
+    startEmailLogin: vi.fn(),
+    completeEmailLogin: vi.fn(),
+    startLinkProvider: vi.fn(),
+    completeLinkProvider: vi.fn(),
   };
   let keys = 0;
   const telemetry: SignInTelemetry[] = [];

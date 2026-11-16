@@ -49,10 +49,48 @@
   text-align: center;
 }
 
-/* A way in whose layout is final but whose backend arrives later (the one-time code by email,
-   H3): shown so the panel never changes shape, never interactive. */
-.pending {
+/* The way in that needs no provider: the address, then the code that was emailed. */
+.emailForm {
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sent {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-wrap: pretty;
+}
+
+.emailActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--space-2);
+}
+
+/* The two ways in are separated by a line that says "or": neither is a step of the other. */
+.separator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  height: var(--outline-width);
+  background: var(--color-outline);
+}
+
+/* The 90-day guest expiry, said where a guest is created (P02§9). */
+.expiry {
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  text-wrap: pretty;
 }

@@ -13,6 +13,7 @@ import {
   Avatar,
   Button,
   Card,
+  Checkbox,
   CodeInput,
   CodeTiles,
   Dialog,
@@ -173,12 +174,20 @@ export function DesignRoute() {
               <option value="en">English</option>
               <option value="pt">Português</option>
             </Select>
+            <Checkbox
+              label="I live in this country and I am old enough to use Playhoot here."
+              hint="A declaration, not a verification."
+            />
+            <Checkbox label="Tick to go on" defaultChecked={false} error="Tick this to continue." />
           </div>
         </Orientations>
         <p className={styles.caption}>Code input (join code, second factor)</p>
         <CodeInputDemo />
         <p className={styles.caption}>Code input with its label drawn (the home page)</p>
         <CodeInputDemo labelVisible />
+        <p className={styles.caption}>Code input with a hint, and with an error</p>
+        <CodeInputDemo labelVisible hint="The 6 digits we emailed you." />
+        <CodeInputDemo labelVisible error="That code is not the one we sent." />
         <div className={styles.row}>
           <CodeTiles code="HOOT42" size="md" />
         </div>
@@ -467,7 +476,15 @@ function SoundBoard() {
   );
 }
 
-function CodeInputDemo({ labelVisible = false }: { labelVisible?: boolean }) {
+function CodeInputDemo({
+  labelVisible = false,
+  hint,
+  error,
+}: {
+  labelVisible?: boolean;
+  hint?: string;
+  error?: string;
+}) {
   const [code, setCode] = useState('HO');
   return (
     <CodeInput
@@ -477,6 +494,8 @@ function CodeInputDemo({ labelVisible = false }: { labelVisible?: boolean }) {
       alphabet={joinCodeAlphabet}
       label="Demo code"
       labelVisible={labelVisible}
+      {...(hint === undefined ? {} : { hint })}
+      {...(error === undefined ? {} : { error })}
     />
   );
 }
@@ -615,5 +634,6 @@ const noActions = {
   retry: () => undefined,
   leave: () => undefined,
   enterAnotherCode: () => undefined,
+  declare: () => undefined,
   copyInvite: async () => true,
 };

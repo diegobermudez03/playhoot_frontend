@@ -34,7 +34,7 @@ PH.screen({
   access: 'anonymous',
   variants: 'single',
   shows:
-    'A working indicator, or the error with a button back to sign-in. From H3 it also completes a provider round trip whose intent was linking a method (the pending state the app kept says which), landing back on the methods screen.',
+    'A working indicator, or the error with a button back to sign-in. It also completes a provider round trip whose intent was linking a method rather than entering (the pending state the app kept says which, and only that state tells them apart), landing back on the methods screen with how it went; an identity that is another account’s way in comes back as that, never as a merge (P03§11). What a signed-in account still has to accept is asked above this screen, by the step every page meets (D-037, D-042).',
   actions: [
     {
       name: 'Complete provider sign-in',

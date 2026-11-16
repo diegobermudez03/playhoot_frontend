@@ -65,6 +65,9 @@ export default [
       route('admin/budget', 'routes/admin-budget.tsx'),
       route('admin/email', 'routes/admin-email.tsx'),
     ]),
+    // Where a gated function sends a person who has not declared where they live and that they
+    // have the age that place asks for (D-038); it returns to what asked.
+    route('declaration', 'routes/declaration.tsx'),
     // AI apps (MCP): the consent they send the person to, and the account's connected ones.
     route('connect-ai', 'routes/connect-ai.tsx'),
     route('account/ai-connections', 'routes/ai-connections.tsx'),

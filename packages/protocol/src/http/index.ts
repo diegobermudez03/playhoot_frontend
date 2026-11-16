@@ -8,3 +8,5 @@ export * from './games';
 export * from './aiAccess';
 export * from './admin';
 export * from './secondFactor';
+export * from './compliance';
+export * from './emailLogin';

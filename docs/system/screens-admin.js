@@ -147,7 +147,11 @@ PH.screen({
   shows:
     'The matrix by country (and state or province where thresholds differ) and function: enabled or not, the age threshold, the pending-conditions note that keeps a market off, who changed what and why (append-only history, D-016). Appending a rule asks for the effective date (now or later, never the past) and a reason; enabling a market whose conditions note is still set asks the admin to confirm the real conditions are met and clear it (conditions_pending, 409). Values come from the answer, never from a list this build hardcodes.',
   actions: [
-    { name: 'Read the matrix (current, scheduled, history)', calls: 'GET:/admin/v1/markets', navigatesTo: null },
+    {
+      name: 'Read the matrix (current, scheduled, history)',
+      calls: 'GET:/admin/v1/markets',
+      navigatesTo: null,
+    },
     { name: 'Append a market rule', calls: 'PUT:/admin/v1/markets', navigatesTo: null },
   ],
 });

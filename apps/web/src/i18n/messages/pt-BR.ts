@@ -163,8 +163,6 @@ export const ptBR: Messages = {
   'auth.reason.admin': 'Entre na administração',
   'auth.lead.guest': 'É só escolher um nome. Não precisa de conta, e você pode criar uma depois.',
   'auth.lead.account': 'Com uma conta você pode criar partidas e voltar de qualquer dispositivo.',
-  'auth.emailCode': 'Receber um código por e-mail',
-  'auth.emailCodeSoon': 'Em breve você poderá entrar com um código por e-mail.',
   'auth.backToGuest': 'Com pressa? <link>Escolha só um nome</link>',
   'auth.guestSwitch.title': 'Sobre suas partidas de convidado',
   'auth.guestSwitch.body':
@@ -953,4 +951,97 @@ export const ptBR: Messages = {
     'Estados como o backend os guarda. Os corpos nunca são armazenados.',
   'admin.email.deliveryCount': '{state}: {count, number}',
   'admin.email.noDeliveries': 'Nenhum envio registrado.',
+
+  'auth.or': 'ou',
+  'identity.guestExpiry':
+    'Um convidado que passa 90 dias sem ser usado é apagado. Crie uma conta para guardar seus jogos.',
+
+  'emailCode.addressLabel': 'Seu e-mail',
+  'emailCode.addressPlaceholder': 'voce@exemplo.com',
+  'emailCode.addressHint': 'Enviamos um código de 6 dígitos. Sem senha para lembrar.',
+  'emailCode.send': 'Enviar um código',
+  'emailCode.sent':
+    'Se {address} puder receber, um código de 6 dígitos está a caminho. Ele dura 10 minutos.',
+  'emailCode.sentAgain': 'Outro código está a caminho de {address}. O anterior não serve mais.',
+  'emailCode.codeLabel': 'O código de 6 dígitos',
+  'emailCode.codeHint': 'Procure na caixa de entrada e no spam.',
+  'emailCode.confirm': 'Continuar',
+  'emailCode.resend': 'Enviar um código novo',
+  'emailCode.changeAddress': 'Usar outro e-mail',
+  'emailCode.error.invalidAddress': 'Isso não parece um endereço de e-mail.',
+  'emailCode.error.wrongCode': 'Esse não é o código que enviamos. Confira e tente de novo.',
+  'emailCode.error.attemptGone': 'Esse código não serve mais. Peça um novo.',
+  'emailCode.error.rateLimited': 'Tentativas demais por enquanto. Tente em alguns minutos.',
+  'emailCode.error.rateLimitedIn':
+    'Tentativas demais por enquanto. Tente em {seconds, plural, one {# segundo} other {# segundos}}.',
+  'emailCode.error.unavailable': 'Não conseguimos falar com o Playhoot. Tente daqui a pouco.',
+
+  'text.terms': 'Termos de uso',
+  'text.ownData': 'Como tratamos seus dados',
+  'text.classDataAgreement': 'Acordo de dados da turma',
+  'text.marketing': 'E-mails de novidades',
+  'texts.download': 'Baixar',
+  'texts.loading': 'Abrindo…',
+  'texts.notPublished': 'Este texto ainda não foi publicado.',
+
+  'acceptance.working': 'Um momento…',
+  'acceptance.title': 'Antes de começar',
+  'acceptance.lead': 'Leia e nos diga que concorda. Guardamos o que você aceitou e quando.',
+  'acceptance.read': 'Ler “{text}”',
+  'acceptance.version': 'versão {version, number}',
+  'acceptance.agree': '{count, plural, one {Li e aceito.} other {Li e aceito.}}',
+  'acceptance.required': 'Marque isto para continuar.',
+  'acceptance.failed': 'Não conseguimos guardar. Tente de novo.',
+  'acceptance.submit': 'Aceitar e continuar',
+  'acceptance.close': 'Fechar',
+
+  'declaration.function.create-games': 'Para criar jogos, diga onde você mora',
+  'declaration.function.subscribe': 'Para assinar, diga onde você mora',
+  'declaration.function.teach': 'Para ensinar com o Playhoot, diga onde você mora',
+  'declaration.function.minor-class-participation': 'Para entrar nesta turma, diga onde você mora',
+  'declaration.function.minor-family-participation': 'Para entrar neste grupo, diga onde você mora',
+  'declaration.function.interactive-use': 'Para jogar, diga onde você mora',
+  'declaration.function.unknown': 'Diga onde você mora',
+  'declaration.lead':
+    'Perguntamos uma vez. Sem data de nascimento e sem documentos: você nos diz e guardamos o que disse.',
+  'declaration.countryLabel': 'País de residência',
+  'declaration.countryHint': 'Onde você mora, não onde está hoje.',
+  'declaration.subdivisionLabel': 'Estado ou província',
+  'declaration.subdivisionHint': 'Neste país as regras mudam conforme o estado ou a província.',
+  'declaration.choose': 'Escolha…',
+  'declaration.meetsAge': 'Declaro que tenho a idade mínima que o Playhoot pede onde moro.',
+  'declaration.meetsAgeHint': 'É uma declaração, não uma verificação: não pedimos documentos.',
+  'declaration.correction':
+    'Responda com cuidado: uma resposta errada se corrige pelo suporte, não respondendo de novo.',
+  'declaration.submit': 'Continuar',
+  'declaration.below': 'Não tenho essa idade',
+  'declaration.belowTitle': 'Antes de responder isso',
+  'declaration.belowBody':
+    'Guardamos, fica na sua conta e o que você ia fazer continua indisponível. Mudar depois é pelo suporte.',
+  'declaration.belowConfirm': 'Sim, guardar',
+  'declaration.belowCancel': 'Voltar',
+  'declaration.belowClose': 'Fechar',
+  'declaration.restrictedTitle': 'Não está disponível para você',
+  'declaration.restrictedBody':
+    'Você disse que não tem {age, number}, que é a idade que isto pede onde você mora.',
+  'declaration.goHome': 'Ir para o início',
+  'declaration.error.countryRequired': 'Escolha seu país de residência.',
+  'declaration.error.subdivisionRequired': 'Escolha seu estado ou província.',
+  'declaration.error.ageRequired': 'Marque isto para seguir, ou diga que não tem essa idade.',
+  'declaration.error.place':
+    'Não podemos aceitar esse lugar. Confira o país e o estado ou província que ele pede.',
+  'declaration.error.conflict': 'Já existe outra declaração guardada. O suporte pode corrigir.',
+  'declaration.error.rateLimited': 'Tentativas demais. Tente em alguns minutos.',
+  'declaration.error.unavailable': 'Não conseguimos falar com o Playhoot. Tente daqui a pouco.',
+
+  'createGame.restricted': 'Criar jogos não está disponível onde você está.',
+
+  'outcome.declarationRequired.title': 'Primeiro uma coisa',
+  'outcome.declarationRequired.body':
+    'Diga onde você mora e que tem a idade pedida, e trazemos você de volta para cá.',
+  'outcome.marketRestricted.title': 'Não está disponível aqui',
+  'outcome.marketRestricted.body': 'O Playhoot não oferece isto onde você está.',
+  'outcome.action.declare': 'Dizer onde moro',
+
+  'seo.declaration.title': 'Onde você mora | Playhoot',
 };

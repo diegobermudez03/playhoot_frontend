@@ -6,6 +6,7 @@ export { AppShell, SplitStage, Stage } from './AppShell';
 export { Avatar } from './Avatar';
 export { Button } from './Button';
 export { Card } from './Card';
+export { Checkbox } from './Checkbox';
 export { CodeInput } from './CodeInput';
 export { CodeTiles } from './CodeTiles';
 export { Confetti } from './Confetti';

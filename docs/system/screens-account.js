@@ -9,7 +9,7 @@ PH.screen({
   status: 'planned',
   name: 'Profile',
   summary:
-    'The person\'s own corner: who they are, their mode and language, and the doors to methods, legal, notifications and deletion.',
+    "The person's own corner: who they are, their mode and language, and the doors to methods, legal, notifications and deletion.",
   mode: 'normal',
   access: 'anonymous',
   variants: 'horizontal+vertical',
@@ -121,7 +121,7 @@ PH.screen({
 PH.screen({
   id: 'declaration',
   path: '/declaration?function={kind}&next={path}',
-  status: 'planned',
+  status: 'implemented',
   name: 'Residence and age declaration',
   summary:
     'The contextual declaration: a gated operation sends the person here, the declaration is recorded, and they continue where they were.',
@@ -129,7 +129,7 @@ PH.screen({
   access: 'account',
   variants: 'horizontal+vertical',
   shows:
-    'The address is the whole input, like the sign-in screen (D-030, D-038): the function that asked (a kind this screen translates — "To create games…"), and where to continue. Country of residence, then state or province only where the market rules need one (US, Canada), then the single declaration — having reached the age the backend answers for that place — worded as a declaration, never as verification (P19§1), with no date of birth and no documents (P19§2). Answering below the threshold is recorded and the function stays restricted; the screen says a wrong answer is corrected through support, because answering again differently is refused (P19§3, conflict 409). Done, the person returns to `next` with everything already typed still there (WCAG 2.2 3.3.7).',
+    'The address is the whole input, like the sign-in screen (D-030, D-038): the function that asked (a kind this screen translates — "To create games…"; one it does not know asks the same thing without naming it), and where to continue. Country of residence, then state or province where the market rules need one (the United States and Canada, and any country the backend refuses the place of until one is given), then the single declaration — having reached the minimum age Playhoot asks for where the person lives — worded as a declaration, never as verification (P19§1), with no date of birth and no documents (P19§2). The age itself is not named before answering: nothing public tells this screen the threshold of a place, and the backend answers it only once a declaration is recorded (D-042). Saying so is the main action; saying the opposite is a separate action that confirms first, because it is recorded, binding, and leaves the function restricted — the screen then says so with the age the backend answered, and that a wrong answer is corrected through support rather than by answering again (P19§3, conflict 409). Done, the person returns to `next` with everything already typed still there (WCAG 2.2 3.3.7).',
   actions: [
     {
       name: 'Record the declaration',
@@ -165,9 +165,13 @@ PH.screen({
   access: 'guest',
   variants: 'horizontal+vertical',
   shows:
-    'Every in-app notification with the endpoint\'s filters (domain, type, date), unread distinguished from read, translated type names for the types this build knows and the backend\'s wording survives for ones it does not (T-204 rule). A notification is marked read on opening its content or explicitly, never by opening this list (P14§4). A notification whose destination this build knows navigates there; destinations arrive with each milestone\'s own types. Emails carry a link to this page and nothing else (P31§5), so it asks for sign-in through the contextual screen when the credential is missing.',
+    "Every in-app notification with the endpoint's filters (domain, type, date), unread distinguished from read, translated type names for the types this build knows and the backend's wording survives for ones it does not (T-204 rule). A notification is marked read on opening its content or explicitly, never by opening this list (P14§4). A notification whose destination this build knows navigates there; destinations arrive with each milestone's own types. Emails carry a link to this page and nothing else (P31§5), so it asks for sign-in through the contextual screen when the credential is missing.",
   actions: [
-    { name: 'List notifications (filters, history)', calls: 'GET:/v1/notifications', navigatesTo: null },
+    {
+      name: 'List notifications (filters, history)',
+      calls: 'GET:/v1/notifications',
+      navigatesTo: null,
+    },
     {
       name: 'Mark one read (explicitly, or on opening its content)',
       calls: 'POST:/v1/notifications/{entryUUID}/read',

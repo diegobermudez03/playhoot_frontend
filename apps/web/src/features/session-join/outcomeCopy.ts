@@ -3,7 +3,7 @@ import type { JoinOutcome } from '@playhoot/feature-session-join';
 import type { MessageId } from '../../i18n/catalogs';
 import type { MascotMood } from '../../ui';
 
-export type OutcomeAction = 'retry' | 'enter-code' | 'play-here';
+export type OutcomeAction = 'retry' | 'enter-code' | 'play-here' | 'declare';
 
 // How the screen reacts: a problem shakes the owl, a farewell is calm, a celebration cheers.
 export type OutcomeTone = 'problem' | 'farewell' | 'celebration';
@@ -21,6 +21,7 @@ export const outcomeActionLabels: Record<OutcomeAction, MessageId> = {
   retry: 'outcome.action.retry',
   'play-here': 'outcome.action.playHere',
   'enter-code': 'outcome.action.enterCode',
+  declare: 'outcome.action.declare',
 };
 
 // What a person reads when a join is over (as message ids), and what they can do next.
@@ -57,6 +58,8 @@ type OutcomeKey =
   | 'limitReached'
   | 'codeExpired'
   | 'cannotRejoin'
+  | 'declarationRequired'
+  | 'marketRestricted'
   | 'lobbyExpired'
   | 'hostClosedLobby'
   | 'hostEnded'
@@ -80,6 +83,8 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   limitReached: 'farewell',
   codeExpired: 'problem',
   cannotRejoin: 'farewell',
+  declarationRequired: 'problem',
+  marketRestricted: 'farewell',
   lobbyExpired: 'farewell',
   hostClosedLobby: 'farewell',
   hostEnded: 'farewell',

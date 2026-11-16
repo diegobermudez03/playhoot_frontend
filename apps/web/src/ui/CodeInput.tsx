@@ -20,6 +20,11 @@ interface CodeInputProps {
   autoComplete?: 'off' | 'one-time-code';
   // `numeric` for a field of digits only, so a phone shows the number pad.
   inputMode?: 'text' | 'numeric';
+  // What is wrong with what was typed. Announced and tied to the field, so a screen reader
+  // reads it as part of the field rather than as a loose line on the page.
+  error?: string | null;
+  // One line under the tiles while nothing is wrong.
+  hint?: string;
 }
 
 // Typing goes to a real, transparent input laid over the tiles, so keyboards, paste,
@@ -34,9 +39,13 @@ export function CodeInput({
   autoFocus,
   autoComplete = 'off',
   inputMode = 'text',
+  error = null,
+  hint,
 }: CodeInputProps) {
   const [focused, setFocused] = useState(false);
-  const labelId = useId();
+  const fieldId = useId();
+  const labelId = `${fieldId}-label`;
+  const describedBy = error ? `${fieldId}-error` : hint ? `${fieldId}-hint` : undefined;
   const sound = useSound();
   const clean = (raw: string) =>
     [...raw.toUpperCase()]
@@ -61,6 +70,8 @@ export function CodeInput({
         <input
           className={styles.input}
           {...(labelVisible ? { 'aria-labelledby': labelId } : { 'aria-label': label })}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : undefined}
           value={value}
           onChange={(event) => {
             const next = clean(event.target.value);
@@ -80,6 +91,17 @@ export function CodeInput({
           autoFocus={autoFocus}
         />
       </div>
+      {error ? (
+        <p id={`${fieldId}-error`} className={styles.error} role="alert">
+          {error}
+        </p>
+      ) : (
+        hint && (
+          <p id={`${fieldId}-hint`} className={styles.hint}>
+            {hint}
+          </p>
+        )
+      )}
     </div>
   );
 }

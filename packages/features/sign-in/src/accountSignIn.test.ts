@@ -48,6 +48,10 @@ function setup(identity: Partial<IdentityClient> = {}, signedIn: Credential | nu
     listLoginProviders: vi.fn(async () => ({ ok: true as const, value: ['google', 'local'] })),
     startLogin: vi.fn(async () => ({ ok: true as const, value: '/authorize?state=s' })),
     completeLogin: vi.fn(async () => ({ ok: true as const, value: account })),
+    startEmailLogin: vi.fn(),
+    completeEmailLogin: vi.fn(),
+    startLinkProvider: vi.fn(),
+    completeLinkProvider: vi.fn(),
     ...identity,
   };
   const leaveTo = vi.fn();
@@ -80,6 +84,7 @@ describe('createAccountSignIn', () => {
 
     expect(t.client.startLogin).toHaveBeenCalledWith('local', 'challenge-of-verifier');
     expect(t.pendingNow()).toEqual({
+      intent: 'sign-in',
       verifier: 'verifier',
       next: '/sessions/new',
       startedAt: 1_000,
@@ -94,7 +99,7 @@ describe('createAccountSignIn', () => {
 
     const done = await t.signIn.complete({ code: 'phl_code', error: null });
 
-    expect(done).toEqual({ next: '/sessions/new' });
+    expect(done).toEqual({ kind: 'signed-in', next: '/sessions/new' });
     expect(t.client.completeLogin).toHaveBeenCalledWith('phl_code', 'verifier', undefined);
     expect(t.app.store.getState().auth).toMatchObject({
       status: 'authenticated',

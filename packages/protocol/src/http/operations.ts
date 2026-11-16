@@ -16,6 +16,10 @@ export const operations = {
   joinSessionAsPlayer: 'JOIN_SESSION_AS_PLAYER',
   reportClientTelemetry: 'REPORT_CLIENT_TELEMETRY',
   viewOwnIdentity: 'VIEW_OWN_IDENTITY',
+  // Declaring where the caller lives and that they have the age that place asks for (D-038).
+  declareResidenceAndAge: 'DECLARE_RESIDENCE_AND_AGE',
+  // Reading the texts people accept and recording an acceptance (D-037).
+  acceptTexts: 'ACCEPT_TEXTS',
 } as const;
 export type Operation = (typeof operations)[keyof typeof operations];
 

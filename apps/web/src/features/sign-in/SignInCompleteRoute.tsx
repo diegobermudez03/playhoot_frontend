@@ -7,6 +7,7 @@ import { useServices } from '../../app/ServicesContext';
 import { capturedSignInCompletion } from '../../platform/signInCompletion';
 import { Button, Card, Mascot, Stage } from '../../ui';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
+import { profilePaths } from '../paths';
 import { accountSignInErrorText } from './accountSignInErrors';
 import styles from './SignIn.module.css';
 
@@ -22,12 +23,20 @@ export function SignInCompleteRoute() {
   const { accountSignIn } = useServices();
   const state = useStore(accountSignIn.store);
   const completion = capturedSignInCompletion();
-
   useEffect(() => {
     if (completing || !completion) return;
     completing = true;
     void accountSignIn.complete(completion).then((done) => {
-      if (done) void navigate(done.next ?? '/', { replace: true });
+      if (!done) return;
+      if (done.kind === 'linked') {
+        // The trip was for adding a way in, not for entering: back to where they are managed,
+        // which says how it went.
+        void navigate(linkedMethodsPath(done.outcome, done.next), { replace: true });
+        return;
+      }
+      // What the account still has to accept is asked above this screen, by the gate every page
+      // meets (D-037).
+      void navigate(done.next ?? '/', { replace: true });
     });
   }, [accountSignIn, completion, navigate]);
 
@@ -61,4 +70,10 @@ export function SignInCompleteRoute() {
       </Stage>
     </>
   );
+}
+
+// Back to the sign-in methods, telling that screen how the link went. `next` wins when the trip
+// was started from somewhere else.
+function linkedMethodsPath(outcome: 'linked' | 'in-use', next: string | null): string {
+  return next ?? `${profilePaths.methods}?${new URLSearchParams({ linked: outcome }).toString()}`;
 }

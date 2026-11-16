@@ -2,6 +2,7 @@
 export * from './adminClient';
 export * from './adminConnection';
 export * from './aiAccessClient';
+export * from './complianceClient';
 export * from './gamesClient';
 export * from './http';
 export * from './identityClient';
