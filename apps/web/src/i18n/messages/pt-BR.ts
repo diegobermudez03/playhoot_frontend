@@ -53,7 +53,7 @@ export const ptBR: Messages = {
   'identity.title': 'Como devemos te chamar?',
   'identity.joining': 'Você está entrando na partida <mark>{code}</mark>',
   'identity.nameLabel': 'Seu nome',
-  'identity.namePlaceholder': 'ex.: Coruja Noturna',
+  'identity.namePlaceholder': 'ex.: Gata de Papel',
   'identity.nameHint': 'É assim que os outros jogadores vão te ver.',
   'identity.submit': 'Bora jogar',
   'identity.error.empty': 'Digite um nome para continuar.',

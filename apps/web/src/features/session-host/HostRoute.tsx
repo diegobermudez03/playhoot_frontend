@@ -17,7 +17,7 @@ import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
 import type { MessageId } from '../../i18n/catalogs';
-import { AppShell, Avatar, Button, Card, CodeTiles, Owl, Stage } from '../../ui';
+import { AppShell, Avatar, Button, Card, CodeTiles, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout, type Layout } from '../layout';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
@@ -125,7 +125,7 @@ function Waiting({ reconnecting }: { reconnecting: boolean }) {
   return (
     <Stage>
       <div className={styles.hero}>
-        <Owl size={112} animated />
+        <Mascot size={112} animated />
         <p className={styles.lead}>
           <FormattedMessage id={reconnecting ? 'host.reconnecting' : 'host.connecting'} />
         </p>
@@ -504,7 +504,7 @@ function ClosedStep({ host, outcome }: { host: HostSession; outcome: HostOutcome
   return (
     <Stage>
       <div className={styles.hero}>
-        <Owl size={112} mood={outcome.kind === 'ended' ? 'happy' : 'surprised'} />
+        <Mascot size={112} mood={outcome.kind === 'ended' ? 'happy' : 'surprised'} />
         <h1 className={styles.title}>
           <FormattedMessage id={message} />
         </h1>

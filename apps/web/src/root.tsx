@@ -79,7 +79,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta httpEquiv="Content-Security-Policy" content="frame-src 'none'" />
         {/* No request tells another site which page it came from (a sign-in's code is in a URL). */}
         <meta name="referrer" content="no-referrer" />
-        <meta name="theme-color" content="#141134" />
+        <meta name="theme-color" content="#faf6ef" />
         <Meta />
         <Links />
       </head>

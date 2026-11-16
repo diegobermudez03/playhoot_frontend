@@ -50,7 +50,7 @@ export const en = {
   'identity.title': 'What should we call you?',
   'identity.joining': "You're joining game <mark>{code}</mark>",
   'identity.nameLabel': 'Your name',
-  'identity.namePlaceholder': 'e.g. Night Owl',
+  'identity.namePlaceholder': 'e.g. Paper Cat',
   'identity.nameHint': 'This is how other players will see you.',
   'identity.submit': "Let's play",
   'identity.error.empty': 'Type a name to continue.',

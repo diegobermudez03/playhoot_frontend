@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { FormattedMessage, useIntl, type IntlShape } from 'react-intl';
 
 import { useSound, type SoundId } from '../../sound';
-import { Avatar, Button, Card, CodeTiles, Confetti, Owl, Stage } from '../../ui';
+import { Avatar, Button, Card, CodeTiles, Confetti, Mascot, Stage } from '../../ui';
 import type { Layout } from '../layout';
 import {
   outcomeActionLabels,
@@ -67,7 +67,7 @@ function ConnectingStep({
   return (
     <Stage>
       <div className={styles.waiting} role="status" aria-live="polite">
-        <Owl size={112} animated />
+        <Mascot size={112} animated />
         <p className={styles.waitingText}>
           {leaving ? (
             <FormattedMessage id="connecting.leaving" />
@@ -219,7 +219,7 @@ function StartedStep({
     <Stage>
       <div className={styles.waiting} role="status" aria-live="polite">
         <Confetti />
-        <Owl size={112} mood="surprised" entrance="hop" />
+        <Mascot size={112} mood="surprised" entrance="hop" />
         <h1 className={styles.title}>
           <FormattedMessage id="started.title" />
         </h1>
@@ -255,7 +255,7 @@ function OutcomeStep({
     <Stage>
       <div className={styles.hero}>
         {copy.tone === 'celebration' && <Confetti />}
-        <Owl
+        <Mascot
           size={104}
           mood={copy.mood}
           entrance={

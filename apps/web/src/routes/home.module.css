@@ -28,28 +28,43 @@
   text-align: center;
 }
 
+/* Links, not buttons: they navigate. Drawn as the system's stickers so the
+   entry is coherent, with the same press as a Button (Button.module.css). */
 .primary,
 .secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 52px;
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-5);
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: var(--radius-md);
   font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-on-fill);
   text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-instant) var(--ease-standard),
+    box-shadow var(--duration-instant) var(--ease-standard);
 }
 
 .primary {
   background: var(--color-primary);
-  color: var(--color-on-primary);
 }
 
 .secondary {
-  color: var(--color-text-muted);
+  background: var(--color-surface-raised);
 }
 
 .primary:hover,
 .secondary:hover {
-  text-decoration: underline;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+.primary:active,
+.secondary:active {
+  transform: translate(var(--offset-sm), var(--offset-sm));
+  box-shadow: var(--shadow-none);
 }

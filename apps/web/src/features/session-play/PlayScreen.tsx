@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import { useSound } from '../../sound';
 import { SoundToggle } from '../../sound/SoundToggle';
 import type { Layout } from '../layout';
-import { Avatar, Button, Confetti, Owl } from '../../ui';
+import { Avatar, Button, Confetti, Mascot } from '../../ui';
 import styles from './PlayScreen.module.css';
 
 export type PlayerStatus = 'active' | 'reconnecting' | 'disconnected' | 'left' | 'unknown';
@@ -97,7 +97,7 @@ export function PlayScreen({
         {loading && (
           <div className={styles.overlay} role="status" aria-live="polite">
             <Confetti />
-            <Owl size={104} mood="surprised" entrance="hop" />
+            <Mascot size={104} mood="surprised" entrance="hop" />
             <h1 className={styles.title}>
               <FormattedMessage id="started.title" />
             </h1>
@@ -115,7 +115,7 @@ export function PlayScreen({
         )}
         {failed && (
           <div className={styles.overlay} role="alert">
-            <Owl size={96} mood="sleepy" />
+            <Mascot size={96} mood="sleepy" />
             <h1 className={styles.title}>
               <FormattedMessage id="play.failed.title" />
             </h1>

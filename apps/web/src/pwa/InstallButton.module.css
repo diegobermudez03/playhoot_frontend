@@ -14,7 +14,7 @@
   min-width: 40px;
   padding: 0 var(--space-3);
   /* Its outline is what says it is a control, so it keeps 3:1 against the bar (WCAG 1.4.11). */
-  border: 1px solid var(--color-text-subtle);
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: var(--radius-pill);
   background: transparent;
   color: var(--color-text);
@@ -28,7 +28,7 @@
 }
 
 .button:hover {
-  background: var(--color-hover-wash);
+  background: var(--color-surface-sunken);
 }
 
 .button:focus-visible {
@@ -67,10 +67,10 @@
   max-width: min(18rem, calc(100vw - 2 * var(--space-4)));
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
-  box-shadow: var(--shadow-pop);
+  box-shadow: var(--shadow-md);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }

@@ -1,0 +1,61 @@
+/* The shared skin of a typed-into or chosen-from control: paper pressed into
+   the board, ink outline, no shadow until it is focused. */
+
+.control {
+  width: 100%;
+  min-height: var(--control-height-lg);
+  padding: 0 var(--space-4);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: var(--text-md);
+  box-shadow: var(--shadow-inset);
+  transition: box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.control::placeholder {
+  color: var(--color-text-subtle);
+  font-weight: 600;
+}
+
+.control:hover:not(:disabled) {
+  box-shadow: var(--shadow-sm);
+}
+
+/* Something is wrong here: the control is outlined in the danger ink as well
+   as announced, so it does not rely on colour alone together with the message. */
+.control[aria-invalid='true'] {
+  border-width: var(--outline-width-thick);
+}
+
+.control:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-text-subtle);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* A select draws its own arrow: the native one does not belong to this ink. */
+.select {
+  appearance: none;
+  padding-right: var(--space-7);
+  cursor: pointer;
+}
+
+.selectWrap {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+
+.arrow {
+  position: absolute;
+  right: var(--space-4);
+  top: 50%;
+  translate: 0 -50%;
+  pointer-events: none;
+  display: block;
+  color: var(--color-text);
+}

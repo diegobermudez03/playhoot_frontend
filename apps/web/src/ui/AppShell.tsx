@@ -10,7 +10,6 @@ import { LanguagePicker } from '../i18n/LanguagePicker';
 import { SoundToggle } from '../sound/SoundToggle';
 import styles from './AppShell.module.css';
 import { Logo } from './Logo';
-import { Starfield } from './Starfield';
 
 interface AppShellProps {
   children: ReactNode;
@@ -27,14 +26,12 @@ export function AppShell({ children, bare = false, immersive = false }: AppShell
   if (immersive) {
     return (
       <div className={styles.shell}>
-        <Starfield />
         <main className={`${styles.main} ${styles.immersive}`}>{children}</main>
       </div>
     );
   }
   return (
     <div className={styles.shell}>
-      <Starfield />
       <header className={styles.bar}>
         {!bare && (
           <Link

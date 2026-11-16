@@ -15,13 +15,10 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const iconsDirectory = join(root, 'apps/web/public/assets/icons');
 
-// The palette of `src/ui/tokens.css`.
-const night = [0x14, 0x11, 0x34];
-const owlBody = [0x7b, 0x6c, 0xf6];
-const eyeWhite = [0xf8, 0xf6, 0xff];
-const amber = [0xff, 0xc5, 0x3d];
-const pupil = [0x0d, 0x0b, 0x20];
-const beak = [0xff, 0x6f, 0x91];
+// The primitives of `src/ui/tokens/primitives.css` ("Ink & Sticker", C-03).
+const paper = [0xfa, 0xf6, 0xef];
+const marigold = [0xff, 0xc4, 0x3d];
+const ink = [0x23, 0x20, 0x1c];
 
 // `safe` is the fraction of the square the drawing stays inside: a maskable icon may be cropped
 // to a circle, so its art lives in the middle 80 %.
@@ -34,29 +31,22 @@ const icons = [
   { file: 'apple-touch-icon.png', size: 180, safe: 1 },
 ];
 
-// Draws one icon as rows of RGB pixels.
+// Draws one icon as rows of RGB pixels: a marigold sticker on paper, outlined
+// in ink, with the ink play triangle inside it.
 function draw({ size, safe }) {
   const pixels = Buffer.alloc(size * size * 3);
-  // The owl's head fills the safe area; the eyes sit on its upper half.
   const centre = size / 2;
-  const head = (size * safe) / 2;
-  const eyeOffset = head * 0.42;
-  const eyeRadius = head * 0.34;
-  const irisRadius = eyeRadius * 0.78;
-  const pupilRadius = eyeRadius * 0.36;
-  const eyeY = centre - head * 0.12;
+  const half = (size * safe) / 2;
+  const outline = Math.max(2, Math.round(size * 0.035));
+  const radius = half * 0.3;
+  const triangle = half * 0.5;
 
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
-      let colour = night;
-      if (inCircle(x, y, centre, centre, head * 0.92)) colour = owlBody;
-      for (const direction of [-1, 1]) {
-        const eyeX = centre + direction * eyeOffset;
-        if (inCircle(x, y, eyeX, eyeY, eyeRadius)) colour = eyeWhite;
-        if (inCircle(x, y, eyeX, eyeY, irisRadius)) colour = amber;
-        if (inCircle(x, y, eyeX, eyeY, pupilRadius)) colour = pupil;
-      }
-      if (inTriangle(x, y, centre, eyeY + eyeRadius * 1.25, head * 0.17)) colour = beak;
+      let colour = paper;
+      if (inRoundedSquare(x, y, centre, half, radius)) colour = ink;
+      if (inRoundedSquare(x, y, centre, half - outline, radius)) colour = marigold;
+      if (inPlayTriangle(x, y, centre, triangle)) colour = ink;
       const at = (y * size + x) * 3;
       pixels[at] = colour[0];
       pixels[at + 1] = colour[1];
@@ -66,18 +56,24 @@ function draw({ size, safe }) {
   return { size, pixels };
 }
 
-function inCircle(x, y, cx, cy, r) {
-  const dx = x + 0.5 - cx;
-  const dy = y + 0.5 - cy;
-  return dx * dx + dy * dy <= r * r;
+// A square of half-size `half` around (cx, cx) with corners of radius `r`.
+function inRoundedSquare(x, y, centre, half, r) {
+  const dx = Math.abs(x + 0.5 - centre);
+  const dy = Math.abs(y + 0.5 - centre);
+  if (dx > half || dy > half) return false;
+  const ox = dx - (half - r);
+  const oy = dy - (half - r);
+  if (ox <= 0 || oy <= 0) return true;
+  return ox * ox + oy * oy <= r * r;
 }
 
-// A downward-pointing beak of half-width `half`.
-function inTriangle(x, y, cx, topY, half) {
-  const dy = y + 0.5 - topY;
-  if (dy < 0 || dy > half * 1.4) return false;
-  const width = half * (1 - dy / (half * 1.4));
-  return Math.abs(x + 0.5 - cx) <= width;
+// A right-pointing triangle of half-height `half`, centred on the square.
+function inPlayTriangle(x, y, centre, half) {
+  const dx = x + 0.5 - (centre - half * 0.55);
+  const dy = y + 0.5 - centre;
+  if (dx < 0 || dx > half * 1.5) return false;
+  const reach = half * (1 - dx / (half * 1.5));
+  return Math.abs(dy) <= reach;
 }
 
 // A minimal PNG: 8-bit RGB, no interlacing, one zlib stream of filtered rows.

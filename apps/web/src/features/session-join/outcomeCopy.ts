@@ -1,7 +1,7 @@
 import type { JoinOutcome } from '@playhoot/feature-session-join';
 
 import type { MessageId } from '../../i18n/catalogs';
-import type { OwlMood } from '../../ui';
+import type { MascotMood } from '../../ui';
 
 export type OutcomeAction = 'retry' | 'enter-code' | 'play-here';
 
@@ -11,7 +11,7 @@ export type OutcomeTone = 'problem' | 'farewell' | 'celebration';
 export interface OutcomeCopy {
   title: MessageId;
   body: MessageId;
-  mood: OwlMood;
+  mood: MascotMood;
   tone: OutcomeTone;
   // First action is the primary one.
   actions: OutcomeAction[];
@@ -95,7 +95,7 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   deviceNotSupported: 'farewell',
 };
 
-function copy(key: OutcomeKey, mood: OwlMood, actions: OutcomeAction[]): OutcomeCopy {
+function copy(key: OutcomeKey, mood: MascotMood, actions: OutcomeAction[]): OutcomeCopy {
   return {
     title: `outcome.${key}.title`,
     body: `outcome.${key}.body`,

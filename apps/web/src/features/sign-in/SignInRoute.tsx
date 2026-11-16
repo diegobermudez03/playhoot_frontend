@@ -4,7 +4,7 @@ import { Navigate, useLocation } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Owl, SplitStage, Stage } from '../../ui';
+import { AppShell, Button, Card, Mascot, SplitStage, Stage } from '../../ui';
 import { useLayout } from '../layout';
 import { safeNext } from '../paths';
 import { accountSignInErrorText } from './accountSignInErrors';
@@ -53,7 +53,7 @@ export function SignInRoute() {
 
   const hero = (
     <div className={styles.hero}>
-      <Owl size={88} />
+      <Mascot size={88} />
       <h1 className={styles.title}>
         <FormattedMessage id="signIn.title" />
       </h1>

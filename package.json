@@ -21,8 +21,9 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && node scripts/check-assets.mjs",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && node scripts/check-styles.mjs && node scripts/check-assets.mjs",
     "assets": "node scripts/check-assets.mjs",
+    "styles": "node scripts/check-styles.mjs",
     "icons": "node scripts/make-placeholder-icons.mjs",
     "fixtures": "npm run build -w @playhoot/fixture-space-drift -w @playhoot/fixture-parques",
     "game": "node --experimental-strip-types --no-warnings=ExperimentalWarning packages/game-tools/src/cli.ts"

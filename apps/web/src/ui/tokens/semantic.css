@@ -1,0 +1,86 @@
+/*
+ * Tier 2 — semantic roles (D-021). The only colour, type, depth and motion
+ * tokens components and screens are allowed to use.
+ *
+ * Measured contrast (WCAG 2.2 AA, sRGB), recorded in the T-203 result:
+ *   ink on board 12.6 · on paper 15.1 · on sunken 13.9 · on card 16.2
+ *   ink-soft on board 5.6 · on paper 6.7 · on card 7.3
+ *   ink-subtle on board 4.5 · on paper 5.4 · on card 5.9
+ *   ink on every accent fill: coral 4.9 · marigold 10.2 · teal 7.4 ·
+ *     lilac 9.0 · sky 10.5 · rose 8.2 · lime 11.4 · tangerine 8.1
+ *   danger text 6.1 on paper · success text 6.7 on paper
+ *   the ink outline that bounds every control: >= 4.9 against its own fill and
+ *   >= 12.6 against any surface, so component boundaries never rely on the fill.
+ */
+
+:root {
+  /* --- Surfaces --- */
+  --color-page: var(--paper-board);
+  --color-surface: var(--paper-100);
+  --color-surface-raised: var(--paper-card);
+  --color-surface-sunken: var(--paper-200);
+  --color-surface-muted: var(--paper-300);
+
+  /* --- Ink (text and drawing) --- */
+  --color-text: var(--ink-900);
+  --color-text-muted: var(--ink-600);
+  --color-text-subtle: var(--ink-400);
+  --color-on-fill: var(--ink-900);
+
+  /* --- Outlines and rules --- */
+  --color-outline: var(--ink-900);
+  --color-rule: var(--ink-line);
+  --color-focus: var(--ink-900);
+  --color-focus-gap: var(--paper-100);
+  /* What a modal lays over the board. */
+  --color-scrim: rgb(35 32 28 / 55%);
+
+  /* --- Roles --- */
+  --color-primary: var(--coral-500);
+  --color-primary-soft: var(--coral-300);
+  --color-accent: var(--marigold-500);
+  --color-accent-soft: var(--marigold-300);
+  --color-highlight: var(--lilac-500);
+  --color-info: var(--sky-500);
+
+  --color-success: var(--teal-500);
+  --color-success-text: var(--teal-900);
+  --color-danger: var(--coral-500);
+  --color-danger-text: var(--red-900);
+
+  /* The marker that highlights a word inside a sentence. */
+  --color-marker: var(--marigold-500);
+
+  /* --- Depth: hard offset shadows, no blur. --- */
+  --shadow-sm: var(--offset-sm) var(--offset-sm) 0 var(--color-outline);
+  --shadow-md: var(--offset-md) var(--offset-md) 0 var(--color-outline);
+  --shadow-lg: var(--offset-lg) var(--offset-lg) 0 var(--color-outline);
+  --shadow-none: 0 0 0 var(--color-outline);
+  /* Pressed down into the page, for inputs and anything sunken. */
+  --shadow-inset: inset var(--offset-sm) var(--offset-sm) 0 rgb(35 32 28 / 8%);
+
+  /* --- Player colours, assigned to people in a room in this order. --- */
+  --player-1: var(--marigold-500);
+  --player-2: var(--teal-500);
+  --player-3: var(--coral-500);
+  --player-4: var(--sky-500);
+  --player-5: var(--lilac-500);
+  --player-6: var(--lime-500);
+  --player-7: var(--rose-500);
+  --player-8: var(--tangerine-500);
+
+  /* --- The mascot's skin (the placeholder cat; final art is P-14/P-15). --- */
+  --mascot-fur: var(--marigold-500);
+  --mascot-belly: var(--paper-100);
+  --mascot-inner: var(--coral-500);
+  --mascot-line: var(--ink-900);
+  --mascot-eye: var(--ink-900);
+  --mascot-glint: var(--paper-card);
+
+  /* --- Minimum pointer target (WCAG 2.2 2.5.8). --- */
+  --target-min: 24px;
+  --control-height: 44px;
+  --control-height-lg: 56px;
+
+  color-scheme: light;
+}

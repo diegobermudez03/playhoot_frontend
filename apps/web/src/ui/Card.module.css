@@ -1,10 +1,12 @@
+/* A card is a sticker on the board: white paper, ink outline, hard shadow. */
+
 .card {
   position: relative;
   padding: var(--space-5);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  background: linear-gradient(180deg, var(--color-sheen), transparent 40%), var(--color-surface);
-  box-shadow: var(--shadow-card);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-md);
 }
 
 @media (min-width: 600px) {
@@ -13,6 +15,23 @@
   }
 }
 
-.raised {
-  background: var(--color-surface-raised);
+/* Lying flat on the board: no shadow, used inside another card. */
+.flat {
+  box-shadow: none;
+  background: var(--color-surface);
+}
+
+/* Coloured stickers, for the one card on a screen that carries the message. */
+.accent {
+  background: var(--color-accent);
+}
+
+.highlight {
+  background: var(--color-highlight);
+}
+
+/* Slightly askew, the way a sticker is actually stuck down. Decorative only:
+   it never changes what the card contains or the order it is read in. */
+.tilted {
+  rotate: var(--tilt-left);
 }

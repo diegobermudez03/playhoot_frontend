@@ -1,0 +1,99 @@
+/*
+ * Tier 1 — primitives (D-021). The raw values of the chosen visual direction,
+ * "Ink & Sticker" (C-03, answered 2026-11-15; contract render
+ * ../../../../../docs/agent/designs/c03/direction-a.html).
+ *
+ * Warm paper, near-black ink, flat accent fills, 2 px ink outlines and hard
+ * offset shadows with no blur: everything reads as a sticker on a game board.
+ *
+ * Nothing outside tier 2 (semantic.css) may use these: components and screens
+ * consume the semantic roles only.
+ */
+
+:root {
+  /* --- Paper: the warm neutrals, from the board up to a white card. --- */
+  --paper-board: #e9e2d4;
+  --paper-100: #faf6ef;
+  --paper-200: #f3ede2;
+  --paper-300: #e3dccd;
+  --paper-card: #ffffff;
+
+  /* --- Ink: the single near-black the whole system is drawn with. --- */
+  --ink-900: #23201c;
+  --ink-600: #5c564d;
+  --ink-400: #6b6458;
+  --ink-line: #d8d0c2;
+
+  /* --- Flat accent fills. Always carried by an ink outline, never alone. --- */
+  --coral-500: #f4573c;
+  --coral-300: #ff8a6b;
+  --marigold-500: #ffc43d;
+  --marigold-300: #ffdb8a;
+  --teal-500: #2bc4a9;
+  --lilac-500: #c9b8f0;
+  --sky-500: #9bd9f2;
+  --rose-500: #ff9bb5;
+  --lime-500: #c8e46a;
+  --tangerine-500: #ffa14d;
+
+  /* Deep variants, for text and icons that must read on paper. */
+  --teal-900: #0a6355;
+  --red-900: #b3261e;
+
+  /* --- Type: Fredoka for display, Nunito for body (both OFL, self-hosted). --- */
+  --font-display: 'Fredoka Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Nunito Variable', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'SF Mono', Consolas, monospace;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(1.5rem, 1.2rem + 1.2vw, 1.875rem);
+  --text-2xl: clamp(1.875rem, 1.4rem + 2vw, 2.5rem);
+  --text-display: clamp(2.5rem, 1.6rem + 4vw, 4rem);
+
+  /* --- Space: a 4 px scale. --- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* --- Shape: generous, hand-cut corners. --- */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* --- Outline and offset shadow: the two marks that make a sticker. --- */
+  --outline-width: 2px;
+  --outline-width-thick: 3px;
+  --offset-sm: 2px;
+  --offset-md: 4px;
+  --offset-lg: 6px;
+
+  /* --- Motion: short and springy; collapsed by prefers-reduced-motion. --- */
+  --duration-instant: 80ms;
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-enter: 420ms;
+  --duration-celebrate: 900ms;
+  --duration-loop: 1200ms;
+  --duration-pulse: 1800ms;
+  --duration-idle: 2400ms;
+  --duration-idle-slow: 3200ms;
+  --stagger-step: 70ms;
+  --ease-standard: ease;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.5, 1.8, 0.5, 0.8);
+
+  /* --- Tilt: the small rotations that keep things from looking printed. --- */
+  --tilt-left: -1.5deg;
+  --tilt-right: 2deg;
+}

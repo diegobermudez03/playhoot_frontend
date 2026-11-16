@@ -1,0 +1,67 @@
+/* Tag and Pill: the same outlined lozenge at two weights. A tag labels content
+   (a category, a count); a pill states a status and carries a little more ink. */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-3);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-on-fill);
+  font-weight: 800;
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.pill {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.accent {
+  background: var(--color-accent);
+}
+
+.info {
+  background: var(--color-info);
+}
+
+.success {
+  background: var(--color-success);
+}
+
+.danger {
+  background: var(--color-primary);
+}
+
+.highlight {
+  background: var(--color-highlight);
+}
+
+/* A tag that can be removed is a button, so it has to reach the 24 px target. */
+.removable {
+  min-height: var(--target-min);
+  padding-right: var(--space-1);
+}
+
+.remove {
+  display: inline-grid;
+  place-items: center;
+  width: var(--target-min);
+  height: var(--target-min);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--color-surface-raised);
+}

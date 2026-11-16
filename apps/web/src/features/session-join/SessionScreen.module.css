@@ -77,7 +77,7 @@
   border-radius: 50%;
   background: var(--color-success);
   box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 60%, transparent);
-  animation: pulse 1.8s infinite;
+  animation: pulse var(--duration-pulse) infinite;
 }
 
 @keyframes pulse {
@@ -161,7 +161,7 @@
 
 .you {
   background:
-    linear-gradient(90deg, var(--color-primary-tint), transparent), var(--color-surface-sunken);
+    linear-gradient(90deg, var(--color-accent-soft), transparent), var(--color-surface-sunken);
 }
 
 .playerName {
@@ -177,7 +177,7 @@
   padding: 2px 10px;
   border-radius: var(--radius-pill);
   background: var(--color-primary);
-  color: var(--color-on-primary);
+  color: var(--color-on-fill);
   font-size: var(--text-xs);
   font-weight: 800;
   text-transform: uppercase;

@@ -54,7 +54,7 @@
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-standard);
 }
@@ -92,8 +92,8 @@
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-pop);
+  border: var(--outline-width) solid var(--color-outline);
+  box-shadow: var(--shadow-md);
   animation: motion-pop var(--duration-enter) var(--ease-bounce) both;
 }
 
@@ -133,7 +133,7 @@
   font-size: var(--text-xs);
   padding: 0 var(--space-2);
   border-radius: var(--radius-pill);
-  background: var(--color-primary-tint);
+  background: var(--color-accent-soft);
   color: var(--color-primary);
 }
 
@@ -180,9 +180,9 @@
   min-height: 320px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--color-bg-deep);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
+  background: var(--color-page);
+  border: var(--outline-width) solid var(--color-outline);
+  box-shadow: var(--shadow-md);
 }
 
 .frame {
@@ -200,7 +200,7 @@
   gap: var(--space-3);
   padding: var(--space-5);
   text-align: center;
-  background: var(--color-bg);
+  background: var(--color-page);
   animation: motion-fade var(--duration-base) var(--ease-standard) both;
 }
 
@@ -232,9 +232,9 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
   background: var(--color-accent);
-  color: var(--color-on-accent);
+  color: var(--color-on-fill);
   font-weight: 700;
-  box-shadow: var(--shadow-pop);
+  box-shadow: var(--shadow-md);
   white-space: nowrap;
   animation: motion-pop var(--duration-enter) var(--ease-bounce) both;
 }
@@ -254,11 +254,11 @@
   padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
   border-radius: var(--radius-lg);
   background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   color: var(--color-text);
   font-weight: 700;
   font-size: var(--text-sm);
-  box-shadow: var(--shadow-pop);
+  box-shadow: var(--shadow-md);
   animation: motion-pop var(--duration-enter) var(--ease-bounce) both;
 }
 
@@ -285,7 +285,7 @@
   height: 22px;
   border: 2px solid var(--color-primary);
   border-radius: 4px;
-  animation: rotate-hint 2.4s var(--ease-out) infinite;
+  animation: rotate-hint var(--duration-idle) var(--ease-out) infinite;
 }
 
 @keyframes rotate-hint {

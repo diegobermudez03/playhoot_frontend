@@ -1,94 +1,112 @@
+/* Tier 3 — the button's own tokens. A sticker you can press: ink outline, flat
+   fill, hard offset shadow; on press it slides into its own shadow. */
+
 .button {
   --btn-bg: var(--color-primary);
-  --btn-bg-hover: var(--color-primary-hover);
-  --btn-edge: var(--color-primary-shade);
-  --btn-fg: var(--color-on-primary);
+  --btn-fg: var(--color-on-fill);
+  --btn-offset: var(--offset-sm);
+  --btn-lift: 1px;
 
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: 48px;
+  min-height: var(--control-height);
+  min-width: var(--target-min);
   padding: 0 var(--space-5);
-  border: 0;
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: var(--radius-md);
   background: var(--btn-bg);
   color: var(--btn-fg);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-md);
-  letter-spacing: 0.01em;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: var(--text-sm);
   cursor: pointer;
-  box-shadow: 0 var(--edge) 0 var(--btn-edge);
-  transform: translateY(0);
+  box-shadow: var(--btn-offset) var(--btn-offset) 0 var(--color-outline);
   transition:
-    transform var(--duration-instant) var(--ease-out),
-    box-shadow var(--duration-instant) var(--ease-out),
+    transform var(--duration-instant) var(--ease-standard),
+    box-shadow var(--duration-instant) var(--ease-standard),
     background-color var(--duration-fast) var(--ease-standard);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 .button:hover:not(:disabled) {
-  background: var(--btn-bg-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 calc(var(--edge) + 1px) 0 var(--btn-edge);
+  transform: translate(calc(var(--btn-lift) * -1), calc(var(--btn-lift) * -1));
+  box-shadow: calc(var(--btn-offset) + var(--btn-lift)) calc(var(--btn-offset) + var(--btn-lift)) 0
+    var(--color-outline);
 }
 
+/* The press: the sticker goes down onto the board and its shadow disappears. */
 .button:active:not(:disabled) {
-  transform: translateY(var(--edge));
-  box-shadow: 0 0 0 var(--btn-edge);
+  transform: translate(var(--btn-offset), var(--btn-offset));
+  box-shadow: var(--shadow-none);
 }
 
 .button:disabled {
   cursor: not-allowed;
 }
 
-/* Not available yet: a neutral piece, not a faded version of the action. */
+/* Not available yet: a blank piece, not a faded action. The ink outline stays,
+   so the control is still clearly a control. */
 .button:disabled:not(.loading) {
-  --btn-bg: var(--color-surface-raised);
-  --btn-edge: var(--night-950);
+  --btn-bg: var(--color-surface-muted);
   --btn-fg: var(--color-text-subtle);
-}
-
-.ghost:disabled:not(.loading) {
-  --btn-bg: transparent;
-  --btn-edge: transparent;
+  transform: none;
+  box-shadow: var(--shadow-none);
 }
 
 .secondary {
   --btn-bg: var(--color-surface-raised);
-  --btn-bg-hover: var(--night-600);
-  --btn-edge: var(--night-950);
-  --btn-fg: var(--color-text);
+}
+
+.accent {
+  --btn-bg: var(--color-accent);
 }
 
 .danger {
-  --btn-bg: var(--color-accent);
-  --btn-bg-hover: var(--color-accent-hover);
-  --btn-edge: var(--color-accent-shade);
-  --btn-fg: var(--color-on-accent);
+  --btn-bg: var(--color-primary);
 }
 
 .ghost {
   --btn-bg: transparent;
-  --btn-bg-hover: var(--color-hover-wash);
-  --btn-edge: transparent;
-  --btn-fg: var(--color-text-muted);
+  border-color: transparent;
   box-shadow: none;
 }
 
-.ghost:hover:not(:disabled),
+.ghost:hover:not(:disabled) {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-outline);
+  transform: none;
+  box-shadow: none;
+}
+
 .ghost:active:not(:disabled) {
   transform: none;
   box-shadow: none;
-  color: var(--color-text);
+}
+
+.ghost:disabled:not(.loading) {
+  --btn-bg: transparent;
+  border-color: transparent;
+}
+
+.sm {
+  min-height: var(--target-min);
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
 }
 
 .lg {
-  min-height: 60px;
+  --btn-offset: var(--offset-md);
+  --btn-lift: 2px;
+
+  min-height: var(--control-height-lg);
   padding: 0 var(--space-6);
+  font-family: var(--font-display);
+  font-weight: 600;
   font-size: var(--text-lg);
   border-radius: var(--radius-lg);
 }
@@ -102,16 +120,14 @@
   display: inline-flex;
 }
 
-.loading .label {
-  opacity: 0.85;
-}
-
+/* Busy: the label keeps its place and three dots count up after it, so the
+   button neither resizes nor loses its name to a spinner. */
 .loading .label::after {
   content: '';
   display: inline-block;
   width: 1.2em;
   text-align: left;
-  animation: dots 1.2s steps(4, end) infinite;
+  animation: dots var(--duration-loop) steps(4, end) infinite;
 }
 
 @keyframes dots {

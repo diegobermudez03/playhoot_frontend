@@ -1,20 +1,25 @@
 .wrap {
   position: relative;
   display: flex;
-  justify-content: center;
+  width: 100%;
 }
 
+/* A real input laid over the tiles: keyboards, paste, autofill and screen
+   readers all work as with any text field, and the focus ring lands on it. */
 .input {
   position: absolute;
   inset: 0;
   width: 100%;
-  opacity: 0;
   border: 0;
-  cursor: text;
-  /* Keeps iOS from zooming into the field. */
-  font-size: 16px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font-size: var(--text-lg);
+  text-align: center;
+  letter-spacing: 0.5em;
 }
 
-.wrap:focus-within {
-  outline: none;
+.input:focus-visible {
+  outline-offset: var(--offset-md);
 }

@@ -1,39 +1,18 @@
-import { useId, type InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes } from 'react';
 
-import styles from './TextField.module.css';
+import styles from './Control.module.css';
+import { Field } from './Field';
 
-interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
+interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
   label: string;
   hint?: string;
   error?: string | null;
 }
 
 export function TextField({ label, hint, error, className, ...input }: TextFieldProps) {
-  const id = useId();
-  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
-    <div className={[styles.field, className].filter(Boolean).join(' ')}>
-      <label className={styles.label} htmlFor={id}>
-        {label}
-      </label>
-      <input
-        id={id}
-        className={styles.input}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={describedBy}
-        {...input}
-      />
-      {error ? (
-        <p id={`${id}-error`} className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : (
-        hint && (
-          <p id={`${id}-hint`} className={styles.hint}>
-            {hint}
-          </p>
-        )
-      )}
-    </div>
+    <Field label={label} hint={hint} error={error} className={className}>
+      {(wiring) => <input {...wiring} className={styles.control} {...input} />}
+    </Field>
   );
 }

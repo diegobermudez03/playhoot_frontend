@@ -21,7 +21,7 @@
   appearance: none;
   min-height: 40px;
   padding: 0 34px 0 38px;
-  border: 2px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: var(--radius-pill);
   background-color: var(--color-surface);
   background-image:
@@ -38,7 +38,7 @@
 }
 
 .select:hover {
-  border-color: var(--color-border-strong);
+  border-color: var(--color-outline);
 }
 
 .select option {

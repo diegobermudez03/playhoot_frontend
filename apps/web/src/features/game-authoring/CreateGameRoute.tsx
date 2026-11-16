@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Owl, Stage, TextField } from '../../ui';
+import { AppShell, Button, Card, Mascot, Stage, TextField } from '../../ui';
 import { RequireOperation } from '../access';
 import { gameWorkspacePath } from '../paths';
 import styles from './GameWorkspace.module.css';
@@ -80,7 +80,11 @@ function CreateGame() {
     <AppShell>
       <Stage>
         <div className={styles.hero}>
-          <Owl size={112} animated={creating} mood={failure === 'other' ? 'surprised' : 'happy'} />
+          <Mascot
+            size={112}
+            animated={creating}
+            mood={failure === 'other' ? 'surprised' : 'happy'}
+          />
           <h1 className={styles.heroTitle}>
             <FormattedMessage id="createGame.title" />
           </h1>

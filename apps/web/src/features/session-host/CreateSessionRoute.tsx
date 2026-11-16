@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { useNavigate, useSearchParams } from 'react-router';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Owl, Stage } from '../../ui';
+import { AppShell, Button, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { sessionHostPath } from '../paths';
 import { hostedGameUUID } from './hostedGame';
@@ -62,7 +62,7 @@ function CreateSession() {
     <AppShell>
       <Stage>
         <div className={styles.hero}>
-          <Owl size={112} animated={creation.status === 'creating'} />
+          <Mascot size={112} animated={creation.status === 'creating'} />
           <h1 className={styles.title}>
             {creation.status === 'creating' ? (
               <FormattedMessage id="createSession.creating" />

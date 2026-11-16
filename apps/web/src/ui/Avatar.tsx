@@ -9,7 +9,7 @@ interface AvatarProps {
   // What the disc shows. Defaults to the label's initial.
   text?: string | undefined;
   highlighted?: boolean;
-  size?: 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 // A player token: a colored disc with an initial.

@@ -15,7 +15,7 @@ import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
 import type { MessageId } from '../../i18n/catalogs';
-import { AppShell, Button, Card, Owl, Stage } from '../../ui';
+import { AppShell, Button, Card, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
 import { BriefPhaseChip, BriefSummary } from './BriefSummary';
@@ -169,7 +169,7 @@ function WorkspaceScreen({
       <AppShell>
         <Stage>
           <div className={styles.hero}>
-            <Owl size={112} animated={!failed} mood={failed ? 'sleepy' : 'happy'} />
+            <Mascot size={112} animated={!failed} mood={failed ? 'sleepy' : 'happy'} />
             <h1 className={styles.heroTitle}>
               {load.status === 'failed' ? (
                 <FormattedMessage

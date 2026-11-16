@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Owl, SplitStage, Stage, TextField } from '../../ui';
+import { AppShell, Button, Card, Mascot, SplitStage, Stage, TextField } from '../../ui';
 import { useLayout } from '../layout';
 import { identityErrorText } from './GuestSignInRoute';
 import styles from './SignIn.module.css';
@@ -26,7 +26,7 @@ export function DisplayNameScreen() {
 
   const hero = (
     <div className={styles.hero}>
-      <Owl size={88} />
+      <Mascot size={88} />
       <h1 className={styles.title}>
         <FormattedMessage id="displayName.title" />
       </h1>

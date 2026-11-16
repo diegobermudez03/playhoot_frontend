@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Owl, type OwlMood } from '../ui';
+import { Mascot, type MascotMood } from '../ui';
 import styles from './Notice.module.css';
 
 // A full-screen message with the owl: not found, errors.
@@ -12,12 +12,12 @@ export function Notice({
 }: {
   title: ReactNode;
   body: ReactNode;
-  mood?: OwlMood;
+  mood?: MascotMood;
   children?: ReactNode;
 }) {
   return (
     <div className={styles.notice}>
-      <Owl size={104} mood={mood} />
+      <Mascot size={104} mood={mood} />
       <h1 className={styles.title}>{title}</h1>
       {body && <p className={styles.body}>{body}</p>}
       {children}

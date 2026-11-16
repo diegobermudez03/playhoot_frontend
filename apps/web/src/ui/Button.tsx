@@ -4,8 +4,8 @@ import { useSound, type SoundId } from '../sound';
 import styles from './Button.module.css';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'accent' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
   block?: boolean;
   loading?: boolean;
   icon?: ReactNode;

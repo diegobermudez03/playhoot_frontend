@@ -1,0 +1,85 @@
+/* StatusArea and Toast: the one place a screen says what just happened.
+   Tone is carried by a fill AND a mark, never by colour alone. */
+
+.status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-align: start;
+}
+
+.mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-family: var(--font-display);
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.text {
+  min-width: 0;
+  padding-top: 0.15em;
+}
+
+.info .mark {
+  background: var(--color-info);
+}
+
+.success .mark {
+  background: var(--color-success);
+}
+
+.warning .mark {
+  background: var(--color-accent);
+}
+
+.danger .mark {
+  background: var(--color-primary);
+}
+
+/* The screen's live region: it holds the space whether or not it has a message,
+   so announcing something never shifts the layout. */
+.area {
+  min-height: var(--control-height);
+  display: flex;
+  align-items: center;
+}
+
+.area > * {
+  width: 100%;
+  animation: motion-pop var(--duration-base) var(--ease-bounce) both;
+}
+
+/* Toasts: stacked at the bottom, above everything, out of the way of the
+   bottom-right PWA notices (PwaNotices.module.css, z-index 50). */
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
+  translate: -50% 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(28rem, calc(100vw - var(--space-5) * 2));
+  pointer-events: none;
+}
+
+.toasts > * {
+  pointer-events: auto;
+  box-shadow: var(--shadow-md);
+  animation: motion-rise var(--duration-base) var(--ease-out) both;
+}

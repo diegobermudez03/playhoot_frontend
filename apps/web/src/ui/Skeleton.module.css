@@ -1,0 +1,25 @@
+/* A placeholder while something loads: the outline of the thing, drawn but not
+   filled in. It never animates a shimmer across the page — the whole block
+   breathes once per cycle, and stops under prefers-reduced-motion. */
+
+.skeleton {
+  display: block;
+  border: var(--outline-width) dashed var(--color-text-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  animation: motion-breathe var(--duration-celebrate) var(--ease-standard) infinite alternate;
+}
+
+.text {
+  height: 1em;
+  border-radius: var(--radius-pill);
+}
+
+.block {
+  min-height: var(--control-height-lg);
+}
+
+.circle {
+  border-radius: 50%;
+  aspect-ratio: 1;
+}

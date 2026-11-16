@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Owl, Stage } from '../../ui';
+import { AppShell, Button, Card, Mascot, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import styles from './GameWorkspace.module.css';
 
@@ -38,7 +38,7 @@ function ConnectAi() {
     <AppShell>
       <Stage>
         <div className={styles.hero}>
-          <Owl size={96} />
+          <Mascot size={96} />
           <h1 className={styles.heroTitle}>
             <FormattedMessage id="connectAi.title" />
           </h1>

@@ -1,0 +1,40 @@
+/* The top of a screen: a kicker sticker, the title with its marker stroke, one
+   line of explanation, and the screen's own actions on the right. */
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.texts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.kicker {
+  align-self: flex-start;
+  rotate: var(--tilt-left);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 60ch;
+  color: var(--color-text-muted);
+  font-weight: 700;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-left: auto;
+}

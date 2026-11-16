@@ -159,35 +159,36 @@ function offlineDocument(): string {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="robots" content="noindex" />
     <meta name="referrer" content="no-referrer" />
-    <meta name="theme-color" content="#141134" />
+    <meta name="theme-color" content="#faf6ef" />
     <title>${escapeHtml(fallback.title)}</title>
     <style>
-      :root { color-scheme: dark; }
+      :root { color-scheme: light; }
       body {
         margin: 0;
         min-height: 100svh;
         display: grid;
         place-items: center;
         padding: 24px;
-        background: #141134;
-        color: #f8f6ff;
+        background: #e9e2d4;
+        color: #23201c;
         font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
         text-align: center;
       }
       main { max-width: 32rem; display: grid; gap: 16px; justify-items: center; }
       h1 { font-size: 1.75rem; margin: 0; text-wrap: balance; }
-      p { margin: 0; color: #c9c2f2; text-wrap: balance; line-height: 1.5; }
+      p { margin: 0; color: #5c564d; text-wrap: balance; line-height: 1.5; }
       button {
         font: inherit;
         font-weight: 700;
         cursor: pointer;
-        border: 0;
-        border-radius: 999px;
+        border: 2px solid #23201c;
+        border-radius: 14px;
         padding: 12px 28px;
-        background: #ffc53d;
-        color: #2b1d00;
+        background: #ffc43d;
+        color: #23201c;
+        box-shadow: 4px 4px 0 #23201c;
       }
-      button:focus-visible { outline: 3px solid #ffd76a; outline-offset: 3px; }
+      button:focus-visible { outline: 3px solid #23201c; outline-offset: 3px; }
     </style>
   </head>
   <body>

@@ -1,24 +1,28 @@
 /*
- * Shared motion vocabulary (docs/design/DESIGN_SYSTEM.md "Motion").
- * Use the utility classes, or the keyframes from component CSS. Timing comes from the motion
- * tokens; `--motion-index` staggers siblings. prefers-reduced-motion collapses all of it
- * (tokens.css).
+ * The shared motion vocabulary of "Ink & Sticker" (docs/design/DESIGN_SYSTEM.md).
+ * Things arrive the way a sticker is pressed onto a board: a short pop with a
+ * slight tilt, never a slow fade. Timing comes from the motion tokens and
+ * `--motion-index` staggers siblings. prefers-reduced-motion collapses all of
+ * it (tokens.css) — nothing here is required to understand a screen.
+ *
+ * The mascot's idle loops (bob, blink, tail) are the reusable motion parts
+ * P24§3 asks for; Mascot.module.css drives them from these keyframes.
  */
 
 @keyframes motion-rise {
   from {
     opacity: 0;
-    transform: translateY(16px) scale(0.98);
+    transform: translateY(14px) rotate(var(--tilt-left));
   }
 }
 
 @keyframes motion-pop {
   from {
     opacity: 0;
-    transform: scale(0.6);
+    transform: scale(0.7) rotate(var(--tilt-right));
   }
   70% {
-    transform: scale(1.06);
+    transform: scale(1.06) rotate(calc(var(--tilt-left) / 3));
   }
 }
 
@@ -30,7 +34,7 @@
 
 @keyframes motion-bump {
   40% {
-    transform: scale(1.25);
+    transform: scale(1.22) rotate(var(--tilt-left));
   }
 }
 
@@ -69,15 +73,47 @@
   }
 }
 
-@keyframes motion-twinkle {
+/* The mascot breathing in place. */
+@keyframes motion-bob {
   0%,
   100% {
-    opacity: 0.25;
-    transform: scale(0.8);
+    transform: translateY(0);
   }
   50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes motion-blink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  95%,
+  97% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes motion-tail {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(14deg);
+  }
+}
+
+/* A placeholder waiting for its content: ink showing faintly through paper. */
+@keyframes motion-breathe {
+  0%,
+  100% {
     opacity: 1;
-    transform: scale(1.15);
+  }
+  50% {
+    opacity: 0.45;
   }
 }
 

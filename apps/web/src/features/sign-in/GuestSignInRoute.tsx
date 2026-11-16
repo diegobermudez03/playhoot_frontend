@@ -6,7 +6,7 @@ import { Link, Navigate, useLocation } from 'react-router';
 import { useStore } from 'zustand';
 
 import { useAuth, useServices } from '../../app/ServicesContext';
-import { AppShell, Button, Card, Owl, SplitStage, Stage, TextField } from '../../ui';
+import { AppShell, Button, Card, Mascot, SplitStage, Stage, TextField } from '../../ui';
 import { useLayout } from '../layout';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
 import { joinCodeOf, safeNext } from '../paths';
@@ -42,7 +42,7 @@ function GuestSignInScreen({ next }: { next: string | null }) {
 
   const hero = (
     <div className={styles.hero}>
-      <Owl size={88} />
+      <Mascot size={88} />
       <h1 className={styles.title}>
         <FormattedMessage id="identity.title" />
       </h1>

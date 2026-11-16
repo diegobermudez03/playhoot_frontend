@@ -1,33 +1,43 @@
+/* Celebration: flat, ink-outlined scraps of paper thrown outwards. Decorative
+   and `aria-hidden`; it does not render at all under prefers-reduced-motion,
+   because a burst cannot be usefully slowed down. */
+
 .burst {
   position: absolute;
-  left: 50%;
-  top: 40%;
-  width: 0;
-  height: 0;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: visible;
   pointer-events: none;
 }
 
 .piece {
-  position: absolute;
-  width: 9px;
+  grid-area: 1 / 1;
+  width: 12px;
   height: 14px;
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: var(--piece-shape);
   background: var(--piece-color);
-  opacity: 0;
-  animation: burst calc(var(--duration-celebrate) * 1.6) var(--ease-out) var(--piece-delay) both;
+  animation: throw var(--duration-celebrate) var(--ease-out) both;
+  animation-delay: var(--piece-delay);
 }
 
-@keyframes burst {
-  0% {
+@keyframes throw {
+  from {
     opacity: 1;
     transform: translate(0, 0) rotate(0) scale(0.4);
   }
-  70% {
+  60% {
     opacity: 1;
   }
-  100% {
+  to {
     opacity: 0;
-    transform: translate(var(--piece-x), calc(var(--piece-y) + 140px)) rotate(var(--piece-spin))
-      scale(1);
+    transform: translate(var(--piece-x), var(--piece-y)) rotate(var(--piece-spin)) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burst {
+    display: none;
   }
 }

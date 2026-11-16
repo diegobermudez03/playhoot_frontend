@@ -1,0 +1,96 @@
+/* The mascot slot's skin. Every colour is a `--mascot-*` semantic token, so the
+   final character (P-15) can be re-skinned without touching this file. */
+
+.wrap {
+  display: inline-block;
+  line-height: 0;
+}
+
+.mascot {
+  display: block;
+  overflow: visible;
+}
+
+.fur {
+  fill: var(--mascot-fur);
+  stroke: var(--mascot-line);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+.belly {
+  fill: var(--mascot-belly);
+  stroke: var(--mascot-line);
+  stroke-width: 4;
+}
+
+.inner {
+  fill: var(--mascot-inner);
+}
+
+.paw {
+  fill: var(--mascot-fur);
+  stroke: var(--mascot-line);
+  stroke-width: 4.5;
+}
+
+.eye {
+  fill: var(--mascot-eye);
+}
+
+.glint {
+  fill: var(--mascot-glint);
+}
+
+.line {
+  fill: none;
+  stroke: var(--mascot-line);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.nose {
+  fill: var(--mascot-inner);
+  stroke: var(--mascot-line);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+}
+
+.whisker {
+  fill: none;
+  stroke: var(--mascot-line);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.tailLine {
+  fill: none;
+  stroke: var(--mascot-line);
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+
+.tailFill {
+  fill: none;
+  stroke: var(--mascot-fur);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+/* The reusable moving parts of P24§3. All of them stop under
+   prefers-reduced-motion through the global rule in tokens.css. */
+
+.eyes {
+  transform-origin: 113px 96px;
+  animation: motion-blink calc(var(--duration-idle-slow) * 1.4) infinite;
+  animation-delay: var(--blink-delay, 0s);
+}
+
+.tail {
+  transform-origin: 150px 196px;
+  animation: motion-tail var(--duration-idle-slow) var(--ease-standard) infinite;
+}
+
+.animated {
+  animation: motion-bob var(--duration-idle-slow) var(--ease-standard) infinite;
+}

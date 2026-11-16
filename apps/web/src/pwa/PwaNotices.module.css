@@ -10,10 +10,10 @@
   display: grid;
   gap: var(--space-2);
   padding: var(--space-4);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: var(--radius-md);
   background: var(--color-surface-raised);
-  box-shadow: var(--shadow-pop);
+  box-shadow: var(--shadow-md);
   animation: notice-in var(--duration-enter) var(--ease-out) both;
 }
 
@@ -65,11 +65,11 @@
 
 .accept {
   background: var(--color-primary);
-  color: var(--color-on-primary);
+  color: var(--color-on-fill);
 }
 
 .accept:hover {
-  background: var(--color-primary-hover);
+  background: var(--color-primary);
 }
 
 .decline {
@@ -80,7 +80,7 @@
 }
 
 .decline:hover {
-  background: var(--color-hover-wash);
+  background: var(--color-surface-sunken);
 }
 
 .accept:focus-visible,

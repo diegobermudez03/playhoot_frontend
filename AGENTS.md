@@ -48,18 +48,24 @@ untrusted games, the Game SDK and the Game <-> Host bridge. The backend
   parity (test); complete ICU sentences; feature state exposes kinds, never text;
   never show a backend `message`.
 - Styles: CSS Modules and tokens only; no raw colors, durations or shadows in components.
+  The design system is "Ink & Sticker" (C-03, built by T-203): three token tiers
+  (`src/ui/tokens/primitives.css` -> `semantic.css` -> a component's own module), core
+  components in `src/ui/`, gallery at `/design` in development. Components and screens use
+  semantic tokens only; a new core component is added to the gallery in the same task.
+  `npm run styles` (part of `npm run check`) is what enforces this — ESLint does not read CSS.
+  See `docs/design/DESIGN_SYSTEM.md`.
 - Assets: register in `apps/web/src/assets/assets.json`, use by id, give a
   placeholder while missing, document in `docs/design/ASSETS.md`. The creator
   sources the files.
 - Accessibility target: WCAG 2.2 AA for navigation and management screens.
-- The current visual identity (dark "game night", owl mascot) is being replaced
-  in milestone H2. Do not extend it.
+- The mascot is the `Mascot` slot, not a picture: the final character is pending
+  (`CREATOR_TODO.md` P-15) and no screen changes when it arrives.
 
 ## Commands
 
 From the repository root: `npm install`, `npm run dev`, `npm run typecheck`,
 `npm run lint`, `npm test`, `npm run build`. Run **`npm run check`** (typecheck,
-lint, format check, tests, asset registry) before every commit.
+lint, format check, tests, style rules, asset registry) before every commit.
 
 ## Historical decisions
 

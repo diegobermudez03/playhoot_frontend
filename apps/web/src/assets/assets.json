@@ -37,6 +37,11 @@
       "path": "/assets/images/og-share.png"
     },
     {
+      "id": "mascot.primary",
+      "kind": "animation",
+      "path": "/assets/mascot/mascot.json"
+    },
+    {
       "id": "sound.tap",
       "kind": "sound",
       "path": "/assets/sounds/tap.mp3"

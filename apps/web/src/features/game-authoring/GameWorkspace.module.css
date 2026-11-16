@@ -41,7 +41,7 @@
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-pill);
   background: var(--color-primary);
-  color: var(--color-bg);
+  color: var(--color-page);
 }
 
 .badge {
@@ -106,7 +106,7 @@
   white-space: nowrap;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   background: var(--color-surface-sunken);
   color: var(--color-text-muted);
   cursor: pointer;
@@ -163,7 +163,7 @@
   line-height: 1.5;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   background: var(--color-surface-sunken);
   color: var(--color-text);
   resize: vertical;
@@ -212,7 +212,7 @@
   line-height: 1.5;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   background: var(--color-surface-sunken);
   color: var(--color-text);
 }
@@ -380,7 +380,7 @@
   width: 8rem;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   background: var(--color-surface-sunken);
   color: var(--color-text);
   font-size: var(--text-md);
@@ -412,7 +412,7 @@
   min-width: 3.5rem;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   background: var(--color-surface-sunken);
   color: var(--color-text);
   font-family: var(--font-mono);
@@ -504,7 +504,7 @@
   align-items: flex-start;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: var(--outline-width) solid var(--color-outline);
   cursor: pointer;
 }
 

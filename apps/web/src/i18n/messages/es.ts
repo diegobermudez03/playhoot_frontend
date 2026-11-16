@@ -52,7 +52,7 @@ export const es: Messages = {
   'identity.title': '¿Cómo te llamamos?',
   'identity.joining': 'Te estás uniendo a la partida <mark>{code}</mark>',
   'identity.nameLabel': 'Tu nombre',
-  'identity.namePlaceholder': 'p. ej. Búho Nocturno',
+  'identity.namePlaceholder': 'p. ej. Gata de Papel',
   'identity.nameHint': 'Así te verán los demás jugadores.',
   'identity.submit': '¡A jugar!',
   'identity.error.empty': 'Escribe un nombre para continuar.',

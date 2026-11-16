@@ -5,7 +5,7 @@ import { useStore } from 'zustand';
 
 import { useServices } from '../../app/ServicesContext';
 import { capturedSignInCompletion } from '../../platform/signInCompletion';
-import { AppShell, Button, Card, Owl, Stage } from '../../ui';
+import { AppShell, Button, Card, Mascot, Stage } from '../../ui';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
 import { accountSignInErrorText } from './accountSignInErrors';
 import styles from './SignIn.module.css';
@@ -39,7 +39,7 @@ export function SignInCompleteRoute() {
     <AppShell>
       <Stage>
         <div className={styles.hero}>
-          <Owl size={88} />
+          <Mascot size={88} />
           <h1 className={styles.title}>
             <FormattedMessage
               id={failed ? 'signInComplete.failedTitle' : 'signInComplete.working'}

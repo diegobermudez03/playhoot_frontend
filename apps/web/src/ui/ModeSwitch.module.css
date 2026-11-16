@@ -1,0 +1,44 @@
+/* The segmented control of the direction render: one outlined lozenge cut into
+   segments by ink lines, the chosen one filled. */
+
+.switch {
+  display: inline-flex;
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.option {
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-right: var(--outline-width) solid var(--color-outline);
+  background: transparent;
+  color: var(--color-text);
+  font-weight: 800;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.option:last-child {
+  border-right: 0;
+}
+
+.option:hover:not(.on) {
+  background: var(--color-surface-sunken);
+}
+
+.on {
+  background: var(--color-highlight);
+}
+
+/* The focus ring is drawn inside: an outline outside a segment would be clipped
+   by the lozenge (WCAG 2.2 2.4.11, focus not obscured). */
+.option:focus-visible {
+  outline-offset: calc(var(--outline-width-thick) * -1);
+}

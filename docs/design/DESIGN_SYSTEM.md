@@ -1,111 +1,225 @@
-> Previous identity, redefined in H2.
+# Playhoot Design System — Ink & Sticker
 
-# Playhoot Design System
+Status: **IN FORCE** since T-203 (2026-11-15). The creator chose the visual
+direction **A — Ink & Sticker** at the close of T-202 (`../../../docs/agent/DECISIONS.md`,
+C-03), with no adjustments. The contract render is
+`../../../docs/agent/designs/c03/direction-a.html`; this system is that render
+turned into tokens and components. The previous identity ("game night", the owl
+Hoot, a dark indigo sky) is gone: its tokens, its mascot and its starfield no
+longer exist in the code.
 
-Status: ACCEPTED DIRECTION (the human approved the agent's proposal on 2026-10-20 and asked for it to stay token-driven, lively and with sound). Details keep evolving with the human's feedback.
+Gallery: `npm run dev` → `http://localhost:5173/design` (development only). It
+shows every core component in its states, in both orientations, and the
+implemented screens with fake state. **A task that adds a core component adds it
+to the gallery in the same piece of work.**
 
-Living style guide: run `npm run dev` and open `http://localhost:5173/design` (development only). It shows the tokens, the components and every Join Session screen with fake state.
+Code: tokens in `apps/web/src/ui/tokens.css` (+ `tokens/`), motion in
+`apps/web/src/ui/motion.css`, components in `apps/web/src/ui/`, sound in
+`apps/web/src/sound/`. Files (images, sounds, music): `ASSETS.md`.
 
-Code: tokens in `apps/web/src/ui/tokens.css`, motion in `apps/web/src/ui/motion.css`, components in `apps/web/src/ui/`, sound in `apps/web/src/sound/`. Styling approach: ADR-0003. Files (images, sounds, music): `docs/design/ASSETS.md`.
+## The thesis
 
-## Rule: everything comes from global variables
+A tabletop-game box brought to the screen. Warm paper, honest near-black ink,
+flat accent fills, visible 2 px outlines and **hard offset shadows with no
+blur**. Buttons physically press down into their own shadow, cards sit slightly
+askew like stickers, the mascot is a flat vector character with Lottie-style
+blinks and tail swings.
 
-Components use semantic tokens only (colors, the owl's colors, shadows, radii, spacing, type, durations, easings). No color, duration or shadow value is written inside a component. Derived colors (tints, glows, hover washes) are computed from the base tokens with `color-mix`, so changing one palette value updates everything that depends on it. Re-theming means editing `tokens.css`.
+It is deliberately *drawn* — the opposite of the gradient-and-glass default —
+which answers P24's two requirements at once: it does not look AI-generated, and
+ink on paper makes AA contrast the starting point rather than a retrofit.
 
-## Concept: game night
+No dark mode in phase 1 (D-021).
 
-Playhoot is for playing social games with friends (backend `PROJECT_OVERVIEW.md`). The name gives the idea: an owl that hoots, a night of games. The identity aims for warm and playful, not childish, and quick to read on a phone held at arm's length.
+## Rule: three tiers, and components see only the middle one
 
-- **Night sky** backgrounds: deep indigo with two soft glows and a few stars.
-- **Owl-eye amber** as the one action color: what to press next is always amber.
-- **Game pieces**: rounded shapes with a chunky bottom edge, so buttons, tiles and avatars feel like things you press or pick up.
-- **Hoot**, the owl mascot, carries emotion in states that would otherwise be plain text: happy (default), surprised (something unexpected), sleepy (ended, lost, waiting too long), and blinking/bobbing as the loading indicator.
+D-021. Nothing below tier 2 may be named outside the token files.
 
-## Color
+| Tier | File | What it holds |
+| --- | --- | --- |
+| 1 · primitives | `ui/tokens/primitives.css` | The raw values of the direction: paper and ink scales, the accent fills, type, the 4 px space scale, radii, outline widths, shadow offsets, motion durations and easings, tilts. |
+| 2 · semantic | `ui/tokens/semantic.css` | The roles components use: surfaces, ink, outline, focus, primary/accent/highlight/info/success/danger, shadows, player colours, the mascot's skin, the minimum target size. |
+| 3 · component | each `*.module.css` | A component's own knobs, declared at the top of its own file (`--btn-bg`, `--btn-offset`, …). |
 
-Dark only for now (`color-scheme: dark`).
+No colour, duration, shadow or radius value is ever written inside a component
+or a screen. **ESLint does not read CSS**, so what enforces this is
+`npm run styles` (`scripts/check-styles.mjs`, part of `npm run check`): it scans
+every stylesheet outside the token files for a raw colour, a raw duration or a
+shadow with a blur radius, and fails the check. A genuine exception goes in that
+script's allow list with its reason — today there is one, the Google sign-in
+button, whose colours Google's branding guidelines fix. Re-skinning means
+editing tier 1.
 
-| Role | Token | Value | Use |
-| --- | --- | --- | --- |
-| Background | `--color-bg` | night-900 `#141134` | Page |
-| Surface | `--color-surface` | night-800 `#211c52` | Cards |
-| Raised | `--color-surface-raised` | night-700 `#2c2669` | Secondary buttons, chips |
-| Sunken | `--color-surface-sunken` | night-850 `#1a1642` | Inputs, list rows, empty tiles |
-| Border | `--color-border` | night-600 `#3b3485` | Card and input outlines |
-| Text | `--color-text` | `#f8f6ff` | Main text |
-| Muted text | `--color-text-muted` | `#c9c2f2` | Secondary text |
-| Primary | `--color-primary` | amber-400 `#ffc53d` | The main action, filled code tiles, "You" |
-| Accent | `--color-accent` | coral-400 `#ff6f91` | Destructive or attention actions |
-| Success | `--color-success` | mint-400 `#4ee0a6` | Live / OK signals |
-| Danger | `--color-danger` | red-400 `#ff6b6b` | Errors |
+## Colour
 
-Player colors are assigned by seat, in this order: amber, coral, mint, sky, violet, lime, orange, teal (`--player-1` … `--player-8`). Eight because the seed games allow up to eight players.
+| Role | Token | Value |
+| --- | --- | --- |
+| Page (the board) | `--color-page` | `#e9e2d4` |
+| Surface (paper) | `--color-surface` | `#faf6ef` |
+| Sunken | `--color-surface-sunken` | `#f3ede2` |
+| Raised (a card) | `--color-surface-raised` | `#ffffff` |
+| Muted (disabled) | `--color-surface-muted` | `#e3dccd` |
+| Ink | `--color-text`, `--color-outline`, `--color-focus` | `#23201c` |
+| Ink, secondary | `--color-text-muted` | `#5c564d` |
+| Ink, subtle | `--color-text-subtle` | `#6b6458` |
+| Primary (the main action) | `--color-primary` | coral `#f4573c` |
+| Accent | `--color-accent` | marigold `#ffc43d` |
+| Highlight | `--color-highlight` | lilac `#c9b8f0` |
+| Info | `--color-info` | sky `#9bd9f2` |
+| Success | `--color-success` | teal `#2bc4a9` |
+| Success, as text | `--color-success-text` | `#0a6355` |
+| Danger, as text | `--color-danger-text` | `#b3261e` |
+
+Player colours are assigned by seat (`--player-1` … `--player-8`): marigold,
+teal, coral, sky, lilac, lime, rose, tangerine. Eight, because the seed games
+allow up to eight players.
+
+**Why this passes AA by construction.** Every control, tag, avatar and card is
+bound by the same ink outline, so a component boundary never depends on its
+fill: ink is ≥ 4.85:1 against any accent fill and ≥ 12.58:1 against any surface
+(WCAG 1.4.11 needs 3:1). Text is ink on paper (12.6–16.2:1) or ink on a fill
+(4.85–11.4:1). The two tiers of quieter ink were chosen so they also pass on the
+darkest surface, the board: muted 5.63:1, subtle 4.54:1. The full table of
+measured pairs is in the T-203 result (`../../../docs/agent/tasks/T-203.md`).
+
+Tone is never carried by colour alone (WCAG 1.4.1): `Status` draws a mark
+(`i ✓ ! ×`) beside its fill, an invalid control thickens its outline, and a
+field error is prefixed by a circled `!`.
 
 ## Type
 
-- Display and headings: **Fredoka** (variable): round and friendly, with strong weights for short titles.
-- Body: **Nunito** (variable): rounded like Fredoka but very legible at small sizes.
-- Both are self-hosted through `@fontsource-variable` packages: no requests to third-party font servers, which also keeps a future strict CSP simple.
-- Sizes are tokens (`--text-xs` … `--text-display`); the larger ones scale with the viewport.
+- Display and headings: **Fredoka** (variable). Body: **Nunito** (variable).
+- Both OFL and self-hosted through `@fontsource-variable`: no request to a
+  third-party font server, which keeps a future strict CSP simple (P25).
+- Body text is set at weight 600 and labels at 800: on warm paper a light weight
+  looks washed out.
+- Sizes are tokens (`--text-xs` … `--text-display`); the larger ones scale with
+  the viewport.
+- Only those two families are shipped. `@fontsource/roboto` is loaded by the
+  Google sign-in button alone, because Google's branding guidelines require
+  their own type on it.
 
-## Shape, space, depth
+## Shape, depth and tilt
 
-- Radii: 10 / 16 / 24 / 32 px and pill. Cards use 32, controls 16 to 24.
-- Spacing: 4 px base (`--space-1` … `--space-8`).
-- Depth: the press edge (`--edge: 4px`) under buttons, tiles and avatars; soft long shadows under cards.
+- Radii: 10 / 14 / 22 / 28 px and pill. Cards 22, controls 14.
+- Space: a 4 px scale (`--space-1` … `--space-8`).
+- Outline: 2 px (`--outline-width`), 3 px where something must shout (an invalid
+  control, a modal, the focus ring).
+- Depth is an **offset, not a blur**: `--shadow-sm/md/lg` are 2 / 4 / 6 px hard
+  ink offsets. Pressing a control moves it by its own offset and removes the
+  shadow, so it visibly goes down onto the board. Inputs use `--shadow-inset`
+  instead: they are pressed *into* the paper.
+- `--tilt-left` / `--tilt-right` are the small rotations that keep a surface from
+  looking printed. Always decorative — a tilt never changes reading order.
 
-## Components (web)
+## Focus
+
+One indicator for the whole system, declared once in `tokens.css`: a 3 px ink
+ring with a 2 px gap, which reads on white paper and on a coral button alike
+(≥ 12.58:1 either way). A component may move it inwards where an outline would
+be clipped (`ModeSwitch`) but never removes it. Pointer targets are at least
+24 × 24 px (`--target-min`, WCAG 2.2 2.5.8); standard controls are 44 px high.
+
+## The core components
+
+All in `apps/web/src/ui/`, exported from `ui/index.ts`, all shared by the
+horizontal and vertical implementations of every screen.
 
 | Component | Notes |
 | --- | --- |
-| `Button` | primary / secondary / danger / ghost, md / lg, block, loading. Presses down on click. Disabled becomes a neutral piece rather than a faded amber. |
-| `TextField` | Label above, hint or error below; error announced with `role="alert"`. |
-| `Card` | The main container on every screen. |
-| `CodeTiles` | A join code as letter tiles. Large tiles fill the space they are given and shrink with it. |
-| `CodeInput` | Tiles with a transparent real input on top: typing, paste, mobile keyboards and screen readers behave as in a normal field. Filters to the join-code alphabet and uppercases. |
-| `Avatar` | Seat-colored disc with an initial or seat number. |
-| `Owl` / `Logo` | Mascot (moods, animated) and wordmark "play**hoot**". |
-| `AppShell` / `Stage` | Top bar with logo, safe-area aware; centered column for single-task screens (480 px, or 960 px wide). |
+| `Button` | primary / secondary / accent / ghost / danger, sm / md / lg, `block`, `loading`, `icon`. Presses into its own shadow. Disabled is a blank piece, not a faded action; it keeps its outline. |
+| `Field` | The shared frame: label, control, one line of hint **or** error. Wires `id`, `aria-describedby` and `aria-invalid` for whatever control it holds. |
+| `TextField` · `Select` | `Field` plus the shared control skin (`Control.module.css`). The select keeps the native list and draws its own arrow. |
+| `CodeInput` · `CodeTiles` | A join code or a second factor as letter tiles, with a real transparent input over them: typing, paste, mobile keyboards and screen readers behave as in a normal field. |
+| `Card` | default / flat / accent / highlight, optionally `tilted`. The main container on every screen. |
+| `Dialog` | The native `<dialog>`: the browser traps focus, restores it on close and handles Escape. Nothing re-implements that. |
+| `Status` · `StatusArea` · `ToastStack` | What just happened. `StatusArea` is an always-mounted live region that holds its space, so announcing something never shifts the layout. Toasts stack at the bottom above everything, clear of the PWA notices. |
+| `Tag` · `Pill` | The outlined lozenge at two weights: a tag labels content (and can be removable), a pill states a status. |
+| `Avatar` | Seat-coloured disc with an initial, sm / md / lg, `highlighted`. |
+| `ModeSwitch` | The segmented control (the 3-mode switch, an orientation, a filter). A radio group, not tabs: it reveals nothing. |
+| `Skeleton` | text / block / circle. `aria-hidden`: loading is announced once by the live region, not by a row of empty boxes. |
+| `EmptyState` | Mascot, one sentence and the way out. Never an error. |
+| `PageHeading` | kicker, title, lead and the screen's actions, so headings keep one shape (WCAG 2.4.6). |
+| `Mascot` | The mascot slot (below). |
+| `Logo` | The mark (a tilted marigold sticker with the play triangle) plus "play**hoot**", the brand name, never translated. |
+| `Confetti` | A one-off burst of ink-outlined paper scraps in the player colours. Removed entirely under reduced motion. |
+| `AppShell` · `Stage` · `SplitStage` | The top bar, cut from the board by one ink rule, and the two centred skeletons (480 px / 960 px). |
+
+## The mascot slot
+
+`Mascot` is a **slot, not a picture**. P24§3 asks for characters built from
+reusable, code-drawn parts rather than one flat image, so the head, eyes, tail
+and bounce are separate pieces driven by the motion tokens, and every colour is
+a `--mascot-*` role.
+
+What it draws today is the **placeholder** cat of the direction render,
+registered as the pending asset `mascot.primary`. When the creator supplies or
+approves the final character (`CREATOR_TODO.md` P-15), either this drawing is
+replaced or a Lottie file is mounted in the same wrapper — every screen asks for
+the slot, never for the drawing, so no screen changes.
+
+Moods: `happy` (default), `surprised` (something unexpected), `sleepy` (ended,
+waiting too long, nothing here). `animated` bobs it as the "something is
+happening" indicator; `entrance` hops it for a celebration or shakes it when
+something went wrong.
 
 ## Motion
 
-Lively and playful, never slow or in the way: things pop, bounce and settle in under half a second. Everything collapses under `prefers-reduced-motion`.
+Things arrive the way a sticker is pressed onto a board: a short pop with a
+slight tilt, never a slow fade. Everything collapses under
+`prefers-reduced-motion` — nothing in the system is needed to understand a
+screen.
 
-- Tokens: `--duration-instant` (presses) · `--duration-fast` · `--duration-base` · `--duration-enter` (entrances) · `--duration-celebrate`; `--stagger-step` between siblings; easings `--ease-out`, `--ease-bounce`, `--ease-spring`.
-- Global vocabulary (`motion.css`): `motion-rise`, `motion-pop`, `motion-fade`, `motion-bump`, `motion-hop`, `motion-shake`, and `motion-cascade` (children enter one after another; every `Stage` uses it, so every screen enters in a cascade). Stagger siblings with `--motion-index`.
-- In use: screens cascade in; buttons press down; code tiles pop as they fill; lobby players pop in one after another; the player count bumps when it changes; the owl blinks (each owl on its own rhythm), bobs while loading, hops when celebrating and shakes when something went wrong; confetti in the player colors when a game starts or is won; the background stars twinkle.
-- CSS Modules rename keyframes per file, so shared animations are applied with the global classes, not referenced by name from module CSS.
+- Tokens: `--duration-instant` (presses) · `--duration-fast` · `--duration-base`
+  · `--duration-enter` · `--duration-celebrate` · `--duration-idle` (the
+  mascot's loops); `--stagger-step` between siblings; easings `--ease-out`,
+  `--ease-bounce`, `--ease-spring`.
+- Vocabulary (`motion.css`): `motion-rise`, `motion-pop`, `motion-fade`,
+  `motion-bump`, `motion-hop`, `motion-shake`, the mascot's `motion-bob`,
+  `motion-blink`, `motion-tail`, the placeholder's `motion-breathe`, and
+  `motion-cascade` (children enter one after another; every `Stage` uses it).
+  Stagger siblings with `--motion-index`.
+- CSS Modules rename keyframes per file, so shared animations are applied with
+  the global classes, never referenced by name from a module.
 
 ## Sound
 
-Toy-like, musical and soft (`docs/design/ASSETS.md` for the sound direction). Web Audio player in `apps/web/src/sound/`:
-
-- On by default; the speaker button in the top bar mutes everything (remembered per browser). Audio starts after the first tap or key press, as browsers require.
-- `Button` plays a soft tap by default (`sound` prop to change or silence it); the code input ticks per letter; the lobby plays a welcome, a pop per player joining, a blip per player leaving, and loops quiet lobby music; the game start plays a fanfare; endings play an error bonk, a farewell chime or a leave whoosh.
-- A missing sound file plays its placeholder tones, so the experience is complete while assets are pending. `/design` has a sound board to hear every sound.
+Unchanged by T-203 (direction and files: `ASSETS.md`). Toy-like, musical and
+soft; Web Audio player in `apps/web/src/sound/`; on by default, muted from the
+top bar, remembered per browser; a missing file plays its placeholder tone.
+`/design` has a board to hear every sound.
 
 ## Voice and languages
 
-Short, warm, direct; talk to the player as "you" ("tú" in Spanish, "você" in Portuguese); say what happened and what to do next. Every way a join can end has a title, a sentence and one or two actions (`apps/web/src/features/session-join/outcomeCopy.ts`).
+Short, warm, direct; talk to the player as "you" ("tú", "você"); say what
+happened and what to do next. Every way a join can end has a title, a sentence
+and one or two actions (`apps/web/src/features/session-join/outcomeCopy.ts`).
 
-The UI is in Spanish, English and Brazilian Portuguese (French planned), switched from the language picker in the top bar of every page. All text lives in the message catalogs (`apps/web/src/i18n/messages/`); the rules are in `docs/engineering/standards/user-facing-text.md`.
+The UI is in Spanish, English and Brazilian Portuguese; all text lives in the
+message catalogs (`apps/web/src/i18n/messages/`), rules in
+`docs/engineering/standards/user-facing-text.md`.
 
-## Responsive behavior
+## Responsive behaviour
 
 Mobile first, checked at 320, 390 and 1280 px without horizontal scrolling.
 
-Adaptive layouts (plan §6, step 8, 2026-10-20, the agent's proposal for the human to react to): every screen has one of two skeletons, chosen once per route by `selectLayout` (`apps/web/src/features/layout.ts`) from the device capabilities, never by scattered checks:
+Every screen has one of two skeletons, chosen once per route by `selectLayout`
+(`apps/web/src/features/layout.ts`) from the device capabilities, never by
+scattered checks:
 
-- `compact`: a portrait display, or one narrower than 600 px. One column: the greeting (logo or owl) above the task, the invitation above the players, the game below a bar with the seat and Leave.
-- `wide`: a landscape display at least 600 px wide (a phone held sideways, a landscape tablet, a desktop window). Side by side: the greeting beside the form (`SplitStage`, so the form stays whole above a phone keyboard), the invitation beside the players, and the game immersive: no top bar, a rail beside the game with the seat, the sound button and Leave, so the game gets the whole height.
+- `compact`: a portrait display, or one narrower than 600 px. One column.
+- `wide`: a landscape display at least 600 px wide. Side by side (`SplitStage`),
+  and the game immersive: no top bar, a rail beside it, so the game gets the
+  whole height.
 
-Screens that are one centered message (connecting, the outcomes, "game on") have a single skeleton. Inside each skeleton, sizes still follow the responsive tokens (`clamp` type, spacing). `/design` has a compact / wide switch to review both on any display.
+Inside each skeleton, sizes still follow the responsive tokens. `/design` has a
+compact / wide switch and shows the core components in both orientations.
 
-## Open questions for the human
+## What T-203 did not decide
 
-1. ~~Overall direction~~: approved by the human on 2026-10-20.
-2. ~~Language of the UI~~: decided 2026-10-20: Spanish, English and Portuguese now, French later (`docs/engineering/standards/user-facing-text.md`). Open: fallback for devices in other languages is English; Spanish instead?
-3. **Light theme**: dark only for now. Needed?
-4. **The owl**: keep Hoot as mascot and loading indicator? Name it?
-5. **Other players' names**: the lobby shows "Player 2" because the backend stores no names (BACKEND_CONTRACT.md G3). Should the backend return names in the lobby and the roster?
-6. **Host experience**: there is no UI to create or start a game yet (a dev script stands in). When does it come?
+- **Screen redesigns.** D-006: the screens keep their structure; T-203 only
+  swapped their tokens and fonts so the app stays coherent. Each screen is
+  redesigned in its own milestone.
+- **Dark mode.** None in phase 1 (D-021).
+- **Game-side SDK visual components.** H7, P24§3.
+- **The final mascot and the four app icons.** The creator's, P-14 and P-15.

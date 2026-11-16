@@ -1,13 +1,23 @@
+/* A player token: a flat disc, ink outline, hard shadow — a game piece on the
+   board. The ink text on every player fill is at least 4.85:1. */
+
 .avatar {
   display: inline-grid;
   place-items: center;
   flex: none;
+  border: var(--outline-width) solid var(--color-outline);
   border-radius: 50%;
   background: var(--avatar-color);
-  color: var(--night-950);
+  color: var(--color-on-fill);
   font-family: var(--font-display);
-  font-weight: 700;
-  box-shadow: var(--shadow-piece);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.sm {
+  width: 32px;
+  height: 32px;
+  font-size: 0.95rem;
 }
 
 .md {
@@ -20,9 +30,11 @@
   width: 64px;
   height: 64px;
   font-size: 1.75rem;
+  box-shadow: var(--shadow-md);
 }
 
+/* This is you / this one is being spoken about: a second ink ring around it. */
 .highlighted {
-  outline: 3px solid var(--star-50);
-  outline-offset: 3px;
+  outline: var(--outline-width-thick) solid var(--color-outline);
+  outline-offset: var(--offset-sm);
 }
