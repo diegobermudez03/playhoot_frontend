@@ -16,7 +16,7 @@ import { TemplatePicker } from './TemplatePicker';
 // going back does not create another one.
 export function CreateGameRoute() {
   return (
-    <RequireOperation operation={operations.createGame}>
+    <RequireOperation operation={operations.createGame} reason="create-game">
       <CreateGame />
     </RequireOperation>
   );

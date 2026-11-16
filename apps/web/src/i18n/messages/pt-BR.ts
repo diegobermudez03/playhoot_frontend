@@ -123,15 +123,12 @@ export const ptBR: Messages = {
   'seo.signIn.title': 'Entrar | Playhoot',
   'seo.signIn.description':
     'Entre ou crie sua conta do Playhoot para organizar partidas e criar jogos.',
-  'seo.signInGuest.title': 'Jogue como convidado | Playhoot',
-  'seo.signInGuest.description': 'Escolha um nome e entre na partida como convidado.',
 
   'enterCode.title': 'Entre em uma partida',
   'enterCode.codeLabel': 'Código da partida',
   'enterCode.join': 'Entrar',
   'enterCode.footnote': 'Recebeu um código do anfitrião? Digite acima.',
 
-  'identity.title': 'Como devemos te chamar?',
   'identity.joining': 'Você está entrando na partida <mark>{code}</mark>',
   'identity.nameLabel': 'Seu nome',
   'identity.namePlaceholder': 'ex.: Gata de Papel',
@@ -145,13 +142,30 @@ export const ptBR: Messages = {
   'identity.error.unavailable': 'Não conseguimos falar com o Playhoot. Tente de novo em instantes.',
   'identity.useAccount': 'Prefere usar uma conta? <link>Entre ou cadastre-se</link>',
 
-  'signIn.title': 'Entre ou crie sua conta',
-  'signIn.lead': 'Com uma conta você pode criar partidas e voltar de qualquer dispositivo.',
+  // Por que a tela de autenticação foi aberta. Quem chama indica um tipo (features/paths.ts) e
+  // aqui ele vira uma frase; esse texto nunca vem de quem chama nem do backend.
+  'auth.reason.sign-in': 'Entre ou crie sua conta',
+  'auth.reason.join-session': 'Entre na partida',
+  'auth.reason.create-session': 'Crie uma partida',
+  'auth.reason.host-session': 'Abra sua tela de anfitrião',
+  'auth.reason.create-game': 'Crie um jogo',
+  'auth.reason.edit-game': 'Edite seu jogo',
+  'auth.reason.my-games': 'Veja seus jogos',
+  'auth.reason.connect-ai': 'Conecte seu aplicativo de IA',
+  'auth.lead.guest': 'É só escolher um nome. Não precisa de conta, e você pode criar uma depois.',
+  'auth.lead.account': 'Com uma conta você pode criar partidas e voltar de qualquer dispositivo.',
+  'auth.emailCode': 'Receber um código por e-mail',
+  'auth.emailCodeSoon': 'Em breve você poderá entrar com um código por e-mail.',
+  'auth.backToGuest': 'Com pressa? <link>Escolha só um nome</link>',
+  'auth.guestSwitch.title': 'Sobre suas partidas de convidado',
+  'auth.guestSwitch.body':
+    'Você está jogando como convidado ({name}). Uma conta nova mantém seu nome e suas partidas. Se você já tinha uma conta, vai entrar nela e as partidas deste convidado não passam para a conta.',
+  'auth.guestSwitch.confirm': 'Continuar',
+  'auth.guestSwitch.cancel': 'Seguir como convidado',
+  'auth.guestSwitch.close': 'Fechar',
+
   'signIn.google': 'Continuar com o Google',
   'signIn.googleSoon': 'Em breve você poderá entrar com o Google.',
-  'signIn.guestSwitch':
-    'Você está jogando como convidado ({name}). Uma conta nova mantém seu nome e suas partidas. Se você já tinha uma conta, vai entrar nela e as partidas deste convidado não passam para a conta.',
-
   'signIn.local': 'Conta local de teste (desenvolvimento)',
   'signIn.error.cancelled': 'Você cancelou a entrada. Pode tentar de novo.',
   'signIn.error.providerUnavailable': 'Essa forma de entrar não está disponível agora.',

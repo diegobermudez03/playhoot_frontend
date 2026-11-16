@@ -25,7 +25,7 @@ import { SessionScreen } from './SessionScreen';
 // the backend accepts for playing: without one, the person is sent to authenticate and back here.
 export function SessionRoute() {
   return (
-    <RequireOperation operation={operations.joinSessionAsPlayer}>
+    <RequireOperation operation={operations.joinSessionAsPlayer} reason="join-session">
       <JoinSessionRoute />
     </RequireOperation>
   );

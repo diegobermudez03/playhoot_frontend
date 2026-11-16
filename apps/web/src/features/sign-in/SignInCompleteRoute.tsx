@@ -52,7 +52,7 @@ export function SignInCompleteRoute() {
               <p className={styles.notice} role="alert">
                 {accountSignInErrorText(intl, failed)}
               </p>
-              <Button block onClick={() => void navigate(paths.signIn(), { replace: true })}>
+              <Button block onClick={() => void navigate(paths.auth(), { replace: true })}>
                 <FormattedMessage id="signInComplete.back" />
               </Button>
             </div>

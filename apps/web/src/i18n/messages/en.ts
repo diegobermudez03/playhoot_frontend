@@ -119,15 +119,12 @@ export const en = {
     'Type the code your host gave you and join the game from any device, with no app to install.',
   'seo.signIn.title': 'Sign in — Playhoot',
   'seo.signIn.description': 'Sign in or create your Playhoot account to host and create games.',
-  'seo.signInGuest.title': 'Play as a guest — Playhoot',
-  'seo.signInGuest.description': 'Choose a name and join the game as a guest.',
 
   'enterCode.title': 'Join a game',
   'enterCode.codeLabel': 'Game code',
   'enterCode.join': 'Join',
   'enterCode.footnote': 'Got a code from your host? Type it above.',
 
-  'identity.title': 'What should we call you?',
   'identity.joining': "You're joining game <mark>{code}</mark>",
   'identity.nameLabel': 'Your name',
   'identity.namePlaceholder': 'e.g. Paper Cat',
@@ -141,13 +138,30 @@ export const en = {
   'identity.error.unavailable': "We couldn't reach Playhoot. Try again in a moment.",
   'identity.useAccount': 'Rather use an account? <link>Sign in or sign up</link>',
 
-  'signIn.title': 'Sign in or create your account',
-  'signIn.lead': 'With an account you can host games and get back in from any device.',
+  // Why the one authentication screen was opened. The caller names a kind (features/paths.ts) and
+  // this is where it becomes a sentence; no caller and no backend ever supplies this text.
+  'auth.reason.sign-in': 'Sign in or create your account',
+  'auth.reason.join-session': 'Join the game',
+  'auth.reason.create-session': 'Host a game',
+  'auth.reason.host-session': 'Open your host screen',
+  'auth.reason.create-game': 'Create a game',
+  'auth.reason.edit-game': 'Edit your game',
+  'auth.reason.my-games': 'See your games',
+  'auth.reason.connect-ai': 'Connect your AI app',
+  'auth.lead.guest': 'Just pick a name. No account needed, and you can create one later.',
+  'auth.lead.account': 'With an account you can host games and get back in from any device.',
+  'auth.emailCode': 'Get a code by email',
+  'auth.emailCodeSoon': 'Signing in with a code by email is coming soon.',
+  'auth.backToGuest': 'In a hurry? <link>Just pick a name</link>',
+  'auth.guestSwitch.title': 'About your guest games',
+  'auth.guestSwitch.body':
+    "You're playing as a guest ({name}). A new account keeps your name and your games. If you already have an account, you'll enter it and this guest's games won't move to it.",
+  'auth.guestSwitch.confirm': 'Continue',
+  'auth.guestSwitch.cancel': 'Stay a guest',
+  'auth.guestSwitch.close': 'Close',
+
   'signIn.google': 'Continue with Google',
   'signIn.googleSoon': 'Signing in with Google is coming soon.',
-  'signIn.guestSwitch':
-    "You're playing as a guest ({name}). A new account keeps your name and your games. If you already have an account, you'll enter it and this guest's games won't move to it.",
-
   'signIn.local': 'Local test account (development)',
   'signIn.error.cancelled': 'You cancelled signing in. You can try again.',
   'signIn.error.providerUnavailable': "That way of signing in isn't available right now.",

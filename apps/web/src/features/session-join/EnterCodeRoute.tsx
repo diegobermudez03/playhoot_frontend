@@ -62,13 +62,25 @@ export function EnterCodeRoute() {
       <p className={styles.footnote}>
         <FormattedMessage id="enterCode.footnote" />
       </p>
-      <Button variant="ghost" block onClick={() => goTo(operations.createSession, newSessionPath)}>
+      <Button
+        variant="ghost"
+        block
+        onClick={() => goTo(operations.createSession, newSessionPath, 'create-session')}
+      >
         <FormattedMessage id="createSession.button" />
       </Button>
-      <Button variant="ghost" block onClick={() => goTo(operations.createGame, newGamePath)}>
+      <Button
+        variant="ghost"
+        block
+        onClick={() => goTo(operations.createGame, newGamePath, 'create-game')}
+      >
         <FormattedMessage id="createGame.button" />
       </Button>
-      <Button variant="ghost" block onClick={() => goTo(operations.editGame, myGamesPath)}>
+      <Button
+        variant="ghost"
+        block
+        onClick={() => goTo(operations.editGame, myGamesPath, 'my-games')}
+      >
         <FormattedMessage id="myGames.button" />
       </Button>
     </>

@@ -13,7 +13,7 @@ import styles from './GameWorkspace.module.css';
 // it at its next request; what it already read cannot be taken back.
 export function AiConnectionsRoute() {
   return (
-    <RequireOperation operation={operations.editGame}>
+    <RequireOperation operation={operations.editGame} reason="connect-ai">
       <AiConnections />
     </RequireOperation>
   );

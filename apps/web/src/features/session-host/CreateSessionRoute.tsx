@@ -14,7 +14,7 @@ import styles from './HostScreen.module.css';
 // replacing this URL so going back does not create another one.
 export function CreateSessionRoute() {
   return (
-    <RequireOperation operation={operations.createSession}>
+    <RequireOperation operation={operations.createSession} reason="create-session">
       <CreateSession />
     </RequireOperation>
   );

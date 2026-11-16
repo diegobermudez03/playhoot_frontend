@@ -15,7 +15,7 @@ import styles from './GameWorkspace.module.css';
 // answers. Tokens are exchanged between the backend and the AI app: never shown nor kept here.
 export function ConnectAiRoute() {
   return (
-    <RequireOperation operation={operations.editGame}>
+    <RequireOperation operation={operations.editGame} reason="connect-ai">
       <ConnectAi />
     </RequireOperation>
   );

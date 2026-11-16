@@ -3,16 +3,21 @@ import type { ReactNode } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 
 import { useOperationAccess, useServices } from '../app/ServicesContext';
-import { useLocalePaths, type LocalePaths } from '../i18n/useLocalePaths';
+import { useLocalePaths } from '../i18n/useLocalePaths';
+import type { AuthReason } from './paths';
 
 // Renders `children` only once the person may perform `operation` (backend operation catalog);
-// otherwise sends them to the most flexible authentication it allows and back here afterwards.
+// otherwise sends them to the one authentication screen with the reason it was opened, the
+// weakest identity that would do, and this address to come back to (B, P14§1).
 // UX only: the backend still decides every request.
 export function RequireOperation({
   operation,
+  reason,
   children,
 }: {
   operation: string;
+  // What the person was trying to do, so the screen can say it in their language.
+  reason: AuthReason;
   children: ReactNode;
 }) {
   const access = useOperationAccess(operation);
@@ -20,24 +25,27 @@ export function RequireOperation({
   const paths = useLocalePaths();
   if (access.status === 'pending') return null;
   if (access.status === 'allowed') return <>{children}</>;
+  // Everything typed so far is in the address, so coming back asks for none of it again
+  // (WCAG 2.2 3.3.7).
   const next = location.pathname + location.search;
-  return <Navigate to={authenticatePath(paths, access.level, next)} replace />;
+  return <Navigate to={paths.auth({ reason, level: access.level, next })} replace />;
 }
 
-// Goes to `path` to perform `operation`, through sign-in first when the person cannot yet.
-export function useNavigateToOperation(): (operation: string, path: string) => void {
+// Goes to `path` to perform `operation`, through the authentication screen first when the person
+// cannot yet.
+export function useNavigateToOperation(): (
+  operation: string,
+  path: string,
+  reason: AuthReason,
+) => void {
   const { app } = useServices();
   const navigate = useNavigate();
   const paths = useLocalePaths();
-  return (operation, path) => {
+  return (operation, path, reason) => {
     const { auth, operations } = app.store.getState();
     const access = operationAccess(auth, operations, operation);
-    navigate(access.status === 'needs' ? authenticatePath(paths, access.level, path) : path);
+    void navigate(
+      access.status === 'needs' ? paths.auth({ reason, level: access.level, next: path }) : path,
+    );
   };
-}
-
-// The guest page offers the account option too; an operation that needs an account goes straight
-// to signing in.
-function authenticatePath(paths: LocalePaths, level: 'guest' | 'account', next: string): string {
-  return level === 'guest' ? paths.guestSignIn(next) : paths.signIn(next);
 }

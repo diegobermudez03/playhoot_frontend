@@ -14,7 +14,7 @@ import styles from './GameWorkspace.module.css';
 // `/games`: the account's own games, newest first, each leading to its workspace.
 export function MyGamesRoute() {
   return (
-    <RequireOperation operation={operations.editGame}>
+    <RequireOperation operation={operations.editGame} reason="my-games">
       <MyGames />
     </RequireOperation>
   );

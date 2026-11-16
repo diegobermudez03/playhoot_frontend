@@ -7,7 +7,7 @@ import { useStore } from 'zustand';
 import { useServices } from '../../app/ServicesContext';
 import { Button, Card, Mascot, SplitStage, Stage, TextField } from '../../ui';
 import { useLayout } from '../layout';
-import { identityErrorText } from './GuestSignInRoute';
+import { identityErrorText } from './identityErrors';
 import styles from './SignIn.module.css';
 
 // Shown instead of any page while the account has no display name (an account starts without

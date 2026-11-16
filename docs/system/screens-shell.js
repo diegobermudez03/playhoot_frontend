@@ -1,10 +1,10 @@
 /* global PH */
 // The app shell, the public entry and contextual authentication (H2 design, T-200).
 // T-204 built `app-shell` and `home`, and with them `home` replaced `root-redirect`,
-// whose entry is gone. `auth-contextual` is still planned and replaces `sign-in` +
-// `sign-in-guest` when it is built (the provider callback screen `sign-in-complete`
-// stays). Email-code sign-in is listed in the shell of that screen but its endpoint
-// arrives with H3.
+// whose entry is gone. `auth-contextual` is the one authentication screen (T-205): it
+// replaced `sign-in` and `sign-in-guest`, whose entries are retired; the provider
+// callback screen `sign-in-complete` stays. Email-code sign-in is listed in the shell
+// of that screen but its endpoint arrives with H3.
 PH.screen({
   id: 'app-shell',
   path: '(layout around every user screen)',
@@ -36,7 +36,7 @@ PH.screen({
     { name: 'Go home', calls: null, navigatesTo: 'home' },
     { name: 'Join a session', calls: null, navigatesTo: 'enter-code' },
     { name: 'Create a game', calls: null, navigatesTo: 'create-game' },
-    { name: 'Sign in or see the account menu', calls: null, navigatesTo: 'sign-in' },
+    { name: 'Sign in or see the account menu', calls: null, navigatesTo: 'auth-contextual' },
     {
       name: 'Change language (kept locally and in a cookie; on the account from H3)',
       calls: null,
@@ -76,8 +76,8 @@ PH.screen({
 
 PH.screen({
   id: 'auth-contextual',
-  path: '/{language}/sign-in',
-  status: 'planned',
+  path: '/{language}/sign-in?reason={reason}&level={guest|account}&use=account&next={path}',
+  status: 'implemented',
   name: 'Contextual sign-in',
   summary:
     'One authentication screen that receives from its caller the reason, the minimum account type that works, and the destination to return to with its data kept.',
@@ -85,7 +85,7 @@ PH.screen({
   access: 'anonymous',
   variants: 'horizontal+vertical',
   shows:
-    'The reason it was opened ("to join this session", "to create a game", …) and only what is needed: when a guest suffices, a display name field first with account sign-in behind a link; when a real account is required, Google featured plus one-time code by email (endpoint in H3) and the local provider in development. A guest switching to an existing account is warned identities do not merge (P03§10). When done it returns to the operation that sent it, keeping destination and entered data (P14§1, B).',
+    'The reason it was opened ("Join the game", "Create a game", …) as the page heading, which is where focus lands, and only what is needed below it. The address is the whole input: the reason as a kind the screen translates (never text from the caller or the backend), the weakest identity that works (`level`), whether the person asked for the account options although a guest would do (`use=account`), and where to continue (`next`, which still carries everything already typed, so nothing is asked twice — WCAG 2.2 3.3.7). Copying the address reproduces the same screen. When a guest suffices, the display-name field is the main action (C-01: a guest is asked for a name and nothing else) with the account options one link below; when an account is required, Google is featured, a disabled "code by email" entry shows where that way in will be (its endpoint arrives with H3) and the fictitious local provider of this backend appears only where it is offered. A guest who chooses an account is warned, before leaving for the provider, that a new account keeps their name and games while entering an existing one does not merge them (P03§10). When done it returns to the operation that sent it (P14§1, B).',
   actions: [
     {
       name: 'List available providers',
@@ -102,7 +102,11 @@ PH.screen({
       calls: 'POST:/v1/guests',
       navigatesTo: null,
     },
-    { name: 'Send one-time code by email (H3)', calls: null, navigatesTo: null },
+    {
+      name: 'Send one-time code by email (shown, not interactive until H3)',
+      calls: null,
+      navigatesTo: null,
+    },
   ],
 });
 

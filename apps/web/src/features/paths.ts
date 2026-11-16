@@ -33,15 +33,76 @@ export const gameWorkspacePath = (gameUUID: string, section?: string) =>
   `/games/${encodeURIComponent(gameUUID)}/edit` +
   (section ? `?${new URLSearchParams({ section }).toString()}` : '');
 
-// Signing in or registering with an account: the definitive route. `next` is where to continue.
-export const signInRoute = '/sign-in';
-// Playing as a guest, with the account option. Only for operations that allow guests.
-export const guestSignInRoute = '/sign-in/guest';
+// The one authentication screen (B, P14§1): it receives why it was opened, the weakest identity
+// that would work, and where to continue. The language-independent form; screens link to it
+// through `i18n/useLocalePaths.ts`, which puts the reader's language in front.
+export const authRoute = '/sign-in';
 
-// The language-independent form of the public paths. Screens link to them through
-// `i18n/useLocalePaths.ts`, which puts the reader's language in front.
-export const signInPath = (next?: string) => withNext(signInRoute, next);
-export const guestSignInPath = (next?: string) => withNext(guestSignInRoute, next);
+// Why the screen was opened. The caller names the kind and the screen translates it: a reason is
+// never text the caller (or the backend) wrote.
+export const authReasons = [
+  // No operation behind it: the entry in the top bar.
+  'sign-in',
+  'join-session',
+  'create-session',
+  'host-session',
+  'create-game',
+  'edit-game',
+  'my-games',
+  'connect-ai',
+] as const;
+export type AuthReason = (typeof authReasons)[number];
+
+// The weakest identity the operation accepts. `anonymous` never reaches this screen.
+export type AuthLevel = 'guest' | 'account';
+
+export interface AuthOptions {
+  reason?: AuthReason;
+  // The minimum that works; an account when the caller says nothing.
+  level?: AuthLevel;
+  // Show the account options although a guest would do (the person asked for them).
+  account?: boolean;
+  next?: string | null;
+}
+
+// What the screen was asked for, read back from the URL: the address is the whole input, so a
+// copied link reproduces the same screen.
+export interface AuthRequest {
+  reason: AuthReason;
+  level: AuthLevel;
+  account: boolean;
+  next: string | null;
+}
+
+const authAccountValue = 'account';
+
+export function authPath(options: AuthOptions = {}): string {
+  const query = new URLSearchParams();
+  if (options.reason && options.reason !== 'sign-in') query.set('reason', options.reason);
+  if (options.level === 'guest') query.set('level', 'guest');
+  if (options.account) query.set('use', authAccountValue);
+  if (options.next) query.set('next', options.next);
+  const search = query.toString();
+  return search ? `${authRoute}?${search}` : authRoute;
+}
+
+export function authRequest(search: string, origin?: string): AuthRequest {
+  const query = new URLSearchParams(search);
+  const reason = query.get('reason');
+  const level = query.get('level');
+  return {
+    // A reason this build does not know is no reason at all: the screen still works.
+    reason: isAuthReason(reason) ? reason : 'sign-in',
+    // Anything but the explicit `guest` asks for an account: the stricter answer is the safe one.
+    level: level === 'guest' ? 'guest' : 'account',
+    account: query.get('use') === authAccountValue,
+    next: origin === undefined ? safeNext(search) : safeNext(search, origin),
+  };
+}
+
+function isAuthReason(value: string | null): value is AuthReason {
+  return value !== null && (authReasons as readonly string[]).includes(value);
+}
 
 // The `next` a sign-in route was given, if it is a path of this app. Anything else (another site,
 // a protocol-relative URL) is dropped, so a crafted link cannot send someone away after signing in.
@@ -63,10 +124,6 @@ export function safeNext(search: string, origin: string = window.location.origin
 export function joinCodeOf(next: string | null): string | null {
   const match = next?.match(/^\/join\/([^/?#]+)$/);
   return match ? decodeURIComponent(match[1]!).toUpperCase() : null;
-}
-
-export function withNext(path: string, next: string | undefined): string {
-  return next ? `${path}?${new URLSearchParams({ next }).toString()}` : path;
 }
 
 // Where an AI app sends the person to approve its connection (OAuth consent). `request` is the

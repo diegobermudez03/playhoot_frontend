@@ -72,7 +72,7 @@ const draftSections: readonly WorkspaceSection[] = [
 // CHECKLIST B). Everything is read again from the backend when the route opens.
 export function GameWorkspaceRoute() {
   return (
-    <RequireOperation operation={operations.editGame}>
+    <RequireOperation operation={operations.editGame} reason="edit-game">
       <Workspace />
     </RequireOperation>
   );

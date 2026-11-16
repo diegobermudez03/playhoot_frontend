@@ -15,7 +15,6 @@ const publicPages = segments.flatMap((segment) =>
     layout('app/ClientLayout.tsx', { id: `public.${segment}` }, [
       route('join', 'routes/join-entry.tsx', { id: `join-entry.${segment}` }),
       route('sign-in', 'routes/sign-in.tsx', { id: `sign-in.${segment}` }),
-      route('sign-in/guest', 'routes/sign-in-guest.tsx', { id: `sign-in-guest.${segment}` }),
     ]),
   ]),
 );
@@ -25,7 +24,6 @@ const publicRedirects = [
   index('routes/public-redirect.ts', { id: 'redirect.home' }),
   route('join', 'routes/public-redirect.ts', { id: 'redirect.join' }),
   route('sign-in', 'routes/public-redirect.ts', { id: 'redirect.sign-in' }),
-  route('sign-in/guest', 'routes/public-redirect.ts', { id: 'redirect.sign-in-guest' }),
 ];
 
 const devTools =

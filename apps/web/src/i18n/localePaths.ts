@@ -24,9 +24,9 @@ export const localeSegmentList: readonly LocaleSegment[] = supportedLocales.map(
 // Public paths that exist in every language. Each one is reachable as `/<segment><path>`, and the
 // bare path redirects to the person's language. Session and account URLs are not here: they are
 // private links, carry no language and are never indexed.
-export const localePublicPaths = ['/', '/join', '/sign-in', '/sign-in/guest'] as const;
+export const localePublicPaths = ['/', '/join', '/sign-in'] as const;
 
-// Public paths offered to crawlers (sitemap). Sign-in pages are not worth indexing.
+// Public paths offered to crawlers (sitemap). The sign-in page is not worth indexing.
 export const indexablePublicPaths = ['/', '/join'] as const;
 
 export function segmentOfLocale(locale: Locale): LocaleSegment {

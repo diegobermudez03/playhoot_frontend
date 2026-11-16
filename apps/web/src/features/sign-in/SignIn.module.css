@@ -48,3 +48,11 @@
   font-size: var(--text-sm);
   text-align: center;
 }
+
+/* A way in whose layout is final but whose backend arrives later (the one-time code by email,
+   H3): shown so the panel never changes shape, never interactive. */
+.pending {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

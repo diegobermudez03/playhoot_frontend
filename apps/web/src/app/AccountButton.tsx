@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Link, useLocation } from 'react-router';
 
-import { aiConnectionsPath, myGamesPath, signInRoute } from '../features/paths';
+import { aiConnectionsPath, authRoute, myGamesPath } from '../features/paths';
 import { publicPathOf } from '../i18n/localePaths';
 import { useLocalePaths } from '../i18n/useLocalePaths';
 import { Avatar } from '../ui/Avatar';
@@ -25,17 +25,16 @@ function AccountButtonInner() {
   const { app } = useServices();
   const paths = useLocalePaths();
   const here = location.pathname + location.search;
-  // The same page in any language: `/es/sign-in` is the sign-in page just as `/sign-in` is.
-  const onSignInPage = (publicPathOf(location.pathname) ?? location.pathname).startsWith(
-    signInRoute,
-  );
+  // The same page in any language: `/es/sign-in` is the authentication screen just as
+  // `/sign-in` is.
+  const onSignInPage = (publicPathOf(location.pathname) ?? location.pathname).startsWith(authRoute);
 
   if (auth.status === 'unknown') return null;
   if (auth.status === 'none') {
     if (onSignInPage) return null;
     const label = intl.formatMessage({ id: 'account.signIn' });
     return (
-      <Link className={styles.signIn} to={paths.signIn(here)} aria-label={label}>
+      <Link className={styles.signIn} to={paths.auth({ next: here })} aria-label={label}>
         <PersonIcon />
         <span className={styles.signInText}>{label}</span>
       </Link>
@@ -49,7 +48,9 @@ function AccountButtonInner() {
         name={name}
         kind={intl.formatMessage({ id: 'account.guest' })}
         action={
-          onSignInPage ? null : { kind: 'link', to: paths.signIn(here), label: 'account.signIn' }
+          onSignInPage
+            ? null
+            : { kind: 'link', to: paths.auth({ next: here }), label: 'account.signIn' }
         }
       />
     );

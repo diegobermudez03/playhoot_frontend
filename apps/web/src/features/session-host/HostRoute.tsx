@@ -31,7 +31,7 @@ import styles from './HostScreen.module.css';
 // CHECKLIST P). One admin connection while the route is open; reloading rebuilds it from the URL.
 export function HostRoute() {
   return (
-    <RequireOperation operation={operations.joinSessionAsAdmin}>
+    <RequireOperation operation={operations.joinSessionAsAdmin} reason="host-session">
       <HostSessionRoute />
     </RequireOperation>
   );
