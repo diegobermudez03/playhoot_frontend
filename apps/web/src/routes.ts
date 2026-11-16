@@ -49,6 +49,17 @@ export default [
     route('games', 'routes/my-games.tsx'),
     route('games/new', 'routes/new-game.tsx'),
     route('games/:gameUUID/edit', 'routes/game-workspace.tsx'),
+    // The admin area (D-023): its own minimal shell, recognised from the address so the public
+    // bar never shows here. The two screens before admin mode frame themselves; the panels sit
+    // behind the admin-mode token that `AdminArea` requires.
+    route('admin/sign-in', 'routes/admin-sign-in.tsx'),
+    route('admin/second-factor', 'routes/admin-second-factor.tsx'),
+    layout('features/admin/AdminArea.tsx', { id: 'admin' }, [
+      route('admin', 'routes/admin-home.tsx'),
+      route('admin/queues', 'routes/admin-queues.tsx'),
+      route('admin/budget', 'routes/admin-budget.tsx'),
+      route('admin/email', 'routes/admin-email.tsx'),
+    ]),
     // AI apps (MCP): the consent they send the person to, and the account's connected ones.
     route('connect-ai', 'routes/connect-ai.tsx'),
     route('account/ai-connections', 'routes/ai-connections.tsx'),

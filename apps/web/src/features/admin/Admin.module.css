@@ -1,0 +1,299 @@
+/*
+ * The admin area's plain skin (D-023, SPEC_MAP §23: functional, no experience
+ * requirement). Desktop first, one responsive implementation; semantic tokens
+ * only, like every other screen.
+ */
+
+.area {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--color-surface-sunken);
+}
+
+.skip {
+  position: absolute;
+  left: var(--space-2);
+  top: var(--space-2);
+  transform: translateY(-200%);
+  z-index: 1;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface-raised);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+}
+
+.skip:focus-visible {
+  transform: translateY(0);
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface);
+  border-bottom: var(--outline-width) solid var(--color-outline);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+}
+
+.navLink {
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--target-min);
+  border: var(--outline-width) solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  text-decoration: none;
+}
+
+.navLink:hover {
+  border-color: var(--color-rule);
+}
+
+/* The open panel is named by its border and its weight, never by colour alone. */
+.navActive {
+  border-color: var(--color-outline);
+  background: var(--color-surface-raised);
+  font-weight: 800;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+}
+
+.remaining {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.main {
+  flex: 1 1 auto;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.narrow {
+  width: min(560px, 100%);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.note {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* A plain figure with its name above it. */
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-3);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--color-surface-raised);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.figureName {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.figureValue {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table caption {
+  text-align: left;
+  padding: var(--space-3);
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-top: var(--outline-width) solid var(--color-rule);
+  vertical-align: top;
+}
+
+.table thead th {
+  border-top: 0;
+  border-bottom: var(--outline-width) solid var(--color-outline);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  word-break: break-all;
+}
+
+.rowActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-height);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-raised);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+}
+
+.secret {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.secretValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-sunken);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  word-break: break-all;
+}
+
+.qr {
+  display: block;
+  width: min(260px, 100%);
+  height: auto;
+  background: var(--color-surface-raised);
+  border: var(--outline-width) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

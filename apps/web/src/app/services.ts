@@ -1,5 +1,6 @@
 import { createAppState, type AppState, type RefreshOutcome } from '@playhoot/app-core';
 import {
+  createAdminClient,
   createAdminConnector,
   createAiAccessClient,
   createGamesClient,
@@ -8,8 +9,10 @@ import {
   createNotificationsClient,
   createPreviewConnector,
   createSessionConnector,
+  createSecondFactorClient,
   createSessionsClient,
   createTelemetryReporter,
+  type AdminClient,
   type AdminConnector,
   type AiAccessClient,
   type GamesClient,
@@ -17,6 +20,7 @@ import {
   type IdentityClient,
   type NotificationsClient,
   type PreviewConnector,
+  type SecondFactorClient,
   type SessionConnector,
   type SessionsClient,
 } from '@playhoot/communication';
@@ -28,6 +32,7 @@ import {
   type AssetLoader,
 } from '@playhoot/game-host';
 
+import { createAdminSession, type AdminSession } from '@playhoot/feature-admin';
 import { createNotifications, type Notifications } from '@playhoot/feature-notifications';
 import { createAccountSignIn, type AccountSignIn } from '@playhoot/feature-sign-in';
 import { refreshInvalidCode } from '@playhoot/protocol';
@@ -63,6 +68,10 @@ import { config } from './config';
 export interface Services {
   // Signing in with an account: one per page, since a sign-in leaves the page and comes back.
   accountSignIn: AccountSignIn;
+  // The administrator's panels over `/admin/v1`, called with the admin-mode token alone (D-023).
+  admin: AdminClient;
+  // Admin mode itself: the 15-minute token a TOTP code buys, held in memory only.
+  adminSession: AdminSession;
   // The creator's admin connections to their Sessions.
   admins: AdminConnector;
   // The account's AI apps over MCP: consenting to a connection, listing and revoking them.
@@ -86,6 +95,9 @@ export interface Services {
   sessions: SessionConnector;
   // Session creation (REST).
   sessionsApi: SessionsClient;
+  // The administrator's TOTP credential, and the codes that buy admin mode and a step-up proof.
+  // Called with the account credential, like every other `/v1/identity` endpoint.
+  secondFactor: SecondFactorClient;
   sound: SoundPlayer;
   // Classified telemetry, sent to the backend in batches (plan §17).
   telemetry: AppTelemetry;
@@ -117,6 +129,14 @@ export function createServices(): Services {
     onCredentialRejected: app.signOut,
   });
   identityClient = createIdentityClient(http);
+  // Admin mode is a second credential, not a stronger one: its own token, its own HTTP client,
+  // and no renewal — when the backend refuses it, admin mode is simply over (D-023).
+  const adminSession = createAdminSession();
+  const adminHttp = createHttpClient({
+    baseUrl: config.apiBaseUrl,
+    credentials: adminSession.credentials,
+    onCredentialRejected: adminSession.release,
+  });
   const notificationsApi = createNotificationsClient(http);
   const sessions = createSessionConnector({
     realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
@@ -149,6 +169,8 @@ export function createServices(): Services {
       leaveTo: (url) =>
         window.location.assign(new URL(url, config.apiBaseUrl || window.location.origin).href),
     }),
+    admin: createAdminClient(adminHttp),
+    adminSession,
     admins: createAdminConnector({
       realtimeBaseUrl: realtimeBaseUrl(config.apiBaseUrl),
       credentials: app.credentials,
@@ -169,6 +191,7 @@ export function createServices(): Services {
     }),
     sessions,
     sessionsApi: createSessionsClient(http),
+    secondFactor: createSecondFactorClient(http),
     sound,
     telemetry,
   };

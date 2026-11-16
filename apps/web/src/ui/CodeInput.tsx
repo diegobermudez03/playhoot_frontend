@@ -15,6 +15,11 @@ interface CodeInputProps {
   // screen whose code field is one task among several shows it (WCAG 2.2 3.3.2).
   labelVisible?: boolean;
   autoFocus?: boolean;
+  // What the field is for, so the browser can fill it (WCAG 2.2 1.3.5): a join code is `off`, a
+  // one-time code from an authenticator or an email is `one-time-code`.
+  autoComplete?: 'off' | 'one-time-code';
+  // `numeric` for a field of digits only, so a phone shows the number pad.
+  inputMode?: 'text' | 'numeric';
 }
 
 // Typing goes to a real, transparent input laid over the tiles, so keyboards, paste,
@@ -27,6 +32,8 @@ export function CodeInput({
   label,
   labelVisible = false,
   autoFocus,
+  autoComplete = 'off',
+  inputMode = 'text',
 }: CodeInputProps) {
   const [focused, setFocused] = useState(false);
   const labelId = useId();
@@ -64,11 +71,11 @@ export function CodeInput({
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           maxLength={length}
-          autoComplete="off"
+          autoComplete={autoComplete}
           autoCorrect="off"
           autoCapitalize="characters"
           spellCheck={false}
-          inputMode="text"
+          inputMode={inputMode}
           enterKeyHint="go"
           autoFocus={autoFocus}
         />

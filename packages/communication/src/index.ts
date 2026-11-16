@@ -1,4 +1,5 @@
 // HTTP/WebSocket clients and credential-aware transport. Responsibility and boundaries: see ../README.md.
+export * from './adminClient';
 export * from './adminConnection';
 export * from './aiAccessClient';
 export * from './gamesClient';
@@ -7,6 +8,7 @@ export * from './identityClient';
 export * from './notificationsClient';
 export * from './previewConnection';
 export * from './result';
+export * from './secondFactorClient';
 export * from './sessionConnection';
 export * from './sessionsClient';
 export * from './telemetryReporter';

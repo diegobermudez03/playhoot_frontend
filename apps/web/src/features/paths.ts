@@ -50,6 +50,8 @@ export const authReasons = [
   'edit-game',
   'my-games',
   'connect-ai',
+  // The admin area asks for an account before its own second factor (D-023).
+  'admin',
 ] as const;
 export type AuthReason = (typeof authReasons)[number];
 
@@ -132,3 +134,27 @@ export const connectAiRoute = '/connect-ai';
 
 // The account's connected AI apps, each revocable.
 export const aiConnectionsPath = '/account/ai-connections';
+
+// The admin area (D-023). Its addresses carry no language: it is the administrator's own area,
+// framed by nothing of the public app, and it is never linked from the public shell.
+export const adminPaths = {
+  home: '/admin',
+  signIn: '/admin/sign-in',
+  secondFactor: '/admin/second-factor',
+  queues: '/admin/queues',
+  budget: '/admin/budget',
+  email: '/admin/email',
+} as const;
+
+// Where to send someone whose admin mode is not open (or has just lapsed), so that signing in
+// again brings them back to the panel they were on, with everything its address carried.
+export function adminSignInPath(next?: string | null): string {
+  return next
+    ? `${adminPaths.signIn}?${new URLSearchParams({ next }).toString()}`
+    : adminPaths.signIn;
+}
+
+// Whether an address belongs to the admin area, which frames itself.
+export function isAdminPath(pathname: string): boolean {
+  return pathname === adminPaths.home || pathname.startsWith(`${adminPaths.home}/`);
+}

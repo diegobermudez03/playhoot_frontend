@@ -27,6 +27,11 @@ untrusted games, the Game SDK and the Game <-> Host bridge. The backend
 - Each screen has two presentation implementations, horizontal and vertical,
   chosen at the route edge and sharing components; each is also responsive. A route the server
   renders chooses with `useMediaLayout`; one under `ClientLayout` with `useLayout`.
+  **The admin area is the one exception** (D-023): desktop-first, one responsive implementation.
+- The admin area lives under `/admin` with its own frame and navigation and is never linked from
+  the public shell. Admin mode is a second credential (D-031): `services.adminSession` keeps the
+  15-minute token in memory only, and the `HttpClient` built on it is the only caller of
+  `/admin/v1`. Feature state in `packages/features/admin`, screens in `apps/web/src/features/admin/`.
 - The shell (top bar + frame) is rendered once above the router in `root.tsx`, inside a
   `ServicesBoundary` that gives every page the same services once it is interactive (D-028). A
   screen never wraps itself in `AppShell`: it calls `useShellMode` when it wants `bare`,

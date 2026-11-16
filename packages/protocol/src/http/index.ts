@@ -6,3 +6,5 @@ export * from './operations';
 export * from './sessions';
 export * from './games';
 export * from './aiAccess';
+export * from './admin';
+export * from './secondFactor';
