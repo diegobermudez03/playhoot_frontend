@@ -33,12 +33,18 @@ PH.screen({
   mode: 'normal',
   access: 'anonymous',
   variants: 'single',
-  shows: 'A working indicator, or the error with a button back to sign-in.',
+  shows:
+    'A working indicator, or the error with a button back to sign-in. From H3 it also completes a provider round trip whose intent was linking a method (the pending state the app kept says which), landing back on the methods screen.',
   actions: [
     {
       name: 'Complete provider sign-in',
       calls: 'POST:/v1/identity/login/complete',
       navigatesTo: null,
+    },
+    {
+      name: 'Complete linking a provider (H3)',
+      calls: 'POST:/v1/identity/me/methods/provider/complete',
+      navigatesTo: 'profile-methods',
     },
   ],
 });

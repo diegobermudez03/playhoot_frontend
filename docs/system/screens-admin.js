@@ -132,3 +132,41 @@ PH.screen({
     { name: 'Set email mode', calls: 'PUT:/admin/v1/email/mode', navigatesTo: null },
   ],
 });
+
+// ---------- H3 panels (designed by T-300, planned): markets and acceptance texts ----------
+PH.screen({
+  id: 'admin-markets',
+  path: '/admin/markets',
+  status: 'planned',
+  name: 'Market matrix',
+  summary:
+    'The market-and-function matrix over the H1 endpoints: current rules, scheduled ones, history, and appending a change.',
+  mode: 'admin',
+  access: 'admin',
+  variants: 'single',
+  shows:
+    'The matrix by country (and state or province where thresholds differ) and function: enabled or not, the age threshold, the pending-conditions note that keeps a market off, who changed what and why (append-only history, D-016). Appending a rule asks for the effective date (now or later, never the past) and a reason; enabling a market whose conditions note is still set asks the admin to confirm the real conditions are met and clear it (conditions_pending, 409). Values come from the answer, never from a list this build hardcodes.',
+  actions: [
+    { name: 'Read the matrix (current, scheduled, history)', calls: 'GET:/admin/v1/markets', navigatesTo: null },
+    { name: 'Append a market rule', calls: 'PUT:/admin/v1/markets', navigatesTo: null },
+  ],
+});
+
+PH.screen({
+  id: 'admin-texts',
+  path: '/admin/texts',
+  status: 'planned',
+  name: 'Acceptance texts',
+  summary:
+    'The four acceptance texts by language: versions, publish dates, missing pairs, and publishing a new immutable version.',
+  mode: 'admin',
+  access: 'admin',
+  variants: 'single',
+  shows:
+    'Each kind (terms, own-data, class data agreement, marketing) by language with its current version and publish date; a kind-language pair with no version is named plainly, because production serves nothing until the real text is published (CREATOR_TODO P-23) — this panel is where the creator loads them without a deploy. Publishing shows the text as it will be served, warns that a version is immutable and that people will be asked to accept the new one where an operation requires a current acceptance (D-037), and records it. Existing versions can be read and downloaded.',
+  actions: [
+    { name: 'List texts and versions', calls: 'GET:/admin/v1/texts', navigatesTo: null },
+    { name: 'Publish a new version', calls: 'PUT:/admin/v1/texts', navigatesTo: null },
+    { name: 'Preview a served text', calls: 'GET:/v1/compliance/texts/{kind}', navigatesTo: null },
+  ],
+});
