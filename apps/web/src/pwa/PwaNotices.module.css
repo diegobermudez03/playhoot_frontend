@@ -1,0 +1,90 @@
+/* A card in the corner of the page, above everything but covering nothing important: it sits
+   clear of the safe area on a phone and never grows past a readable width. */
+.notice {
+  position: fixed;
+  z-index: 50;
+  inset-inline: var(--space-4);
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  margin-inline: auto;
+  max-width: 26rem;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-pop);
+  animation: notice-in var(--duration-enter) var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notice {
+    animation: none;
+  }
+}
+
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-4));
+  }
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.body {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.accept,
+.decline {
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-4);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.accept {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.accept:hover {
+  background: var(--color-primary-hover);
+}
+
+.decline {
+  background: transparent;
+  /* Its outline is what says it is a control, so it keeps 3:1 against the card (WCAG 1.4.11). */
+  border-color: var(--color-text-subtle);
+  color: var(--color-text);
+}
+
+.decline:hover {
+  background: var(--color-hover-wash);
+}
+
+.accept:focus-visible,
+.decline:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}

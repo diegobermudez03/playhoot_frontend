@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { reactRouter } from '@react-router/dev/vite';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 
+import { playhootPwa } from './vite-pwa';
+
 // In development the browser talks only to this dev server; `/v1` (REST and WebSocket) is proxied
 // to the local backend. Same origin means the backend needs no CORS for REST, and because the
 // Host header is kept (no changeOrigin) the backend's WebSocket origin check sees Origin == Host.
@@ -12,7 +14,7 @@ export default defineConfig(({ mode }) => {
   const backend = env.PLAYHOOT_BACKEND_URL || 'http://localhost:8081';
 
   return {
-    plugins: [reactRouter(), fixtureGames()],
+    plugins: [reactRouter(), playhootPwa(), fixtureGames()],
     server: {
       port: 5173,
       strictPort: true,

@@ -6,6 +6,8 @@ import {
   type Locale,
 } from '@playhoot/app-core';
 
+import { localeCookieName } from './localeCookie';
+
 // The segment each language takes in a public URL (D-022). Brazilian Portuguese is `/pt`: the
 // path names the language, not the regional catalog behind it.
 export const localeSegments = { es: 'es', en: 'en', 'pt-BR': 'pt' } as const satisfies Record<
@@ -58,7 +60,7 @@ export function publicPathOf(pathname: string): string | null {
 
 // The cookie the browser keeps beside the stored preference, so the server can honour the chosen
 // language on the first request of a visit (D-024).
-export const localeCookieName = 'playhoot_locale';
+export { localeCookieName };
 const localeCookieMaxAgeSeconds = 60 * 60 * 24 * 365;
 
 export function localeCookie(locale: Locale): string {

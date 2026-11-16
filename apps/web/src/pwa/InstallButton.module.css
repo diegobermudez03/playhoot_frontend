@@ -1,0 +1,76 @@
+/* A quiet entry in the top bar, the same height as the controls beside it. On a narrow screen
+   only the icon is left, with the words carried by its label, so the bar still fits a phone —
+   which is where installing matters most. */
+.button {
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 40px;
+  min-width: 40px;
+  padding: 0 var(--space-3);
+  /* Its outline is what says it is a control, so it keeps 3:1 against the bar (WCAG 1.4.11). */
+  border: 1px solid var(--color-text-subtle);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  white-space: nowrap;
+  list-style: none;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.button::-webkit-details-marker {
+  display: none;
+}
+
+.button:hover {
+  background: var(--color-hover-wash);
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.label {
+  display: none;
+}
+
+@media (width >= 40rem) {
+  .label {
+    display: inline;
+  }
+}
+
+.steps {
+  position: relative;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  inset-inline-end: 0;
+  z-index: 40;
+  width: max-content;
+  max-width: min(18rem, calc(100vw - 2 * var(--space-4)));
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-pop);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}

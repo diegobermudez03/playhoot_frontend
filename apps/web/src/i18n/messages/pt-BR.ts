@@ -8,6 +8,25 @@ export const ptBR: Messages = {
   'sound.mute': 'Desativar o som',
   'sound.unmute': 'Ativar o som',
 
+  'pwa.install': 'Instalar o Playhoot',
+  'pwa.hint.title': 'Adicione o Playhoot à sua tela de início',
+  'pwa.hint.body':
+    'Instale para abrir o Playhoot na própria janela, com mais espaço para o jogo. No navegador tudo funciona igual.',
+  'pwa.hint.install': 'Instalar',
+  'pwa.hint.dismiss': 'Agora não',
+  'pwa.hint.appleSteps':
+    'No Safari, abra o menu de compartilhamento e escolha "Adicionar à Tela de Início".',
+  'pwa.hint.close': 'Fechar',
+  'pwa.update.title': 'Há uma nova versão do Playhoot',
+  'pwa.update.body': 'Atualize para usá-la. Você não perde nada do que está fazendo.',
+  'pwa.update.refresh': 'Atualizar',
+  'pwa.update.later': 'Mais tarde',
+
+  'offline.title': 'Você está sem conexão',
+  'offline.body':
+    'O Playhoot precisa de conexão para jogar. Verifique sua conexão e tente de novo.',
+  'offline.retry': 'Tentar de novo',
+
   'home.title': 'Joguem juntos, em qualquer lugar',
   'home.intro':
     'O Playhoot é um lugar para jogar com as pessoas ao seu redor. Entre com um código de qualquer dispositivo, ou crie o seu próprio jogo.',

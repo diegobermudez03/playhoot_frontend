@@ -26,6 +26,8 @@ import {
   localeFromCookieHeader,
   localeOfPathname,
 } from './i18n/localePaths';
+import { ClientOnly } from './app/ClientOnly';
+import { PwaNotices, PwaProvider } from './pwa';
 import { siteOrigin } from './seo/siteOrigin';
 
 export interface RootData {
@@ -113,7 +115,16 @@ export function ErrorBoundary() {
 function Providers({ locale, children }: { locale: Locale; children: ReactNode }) {
   return (
     <LocaleProvider initialLocale={locale}>
-      <I18nProvider>{children}</I18nProvider>
+      <I18nProvider>
+        {/* Installing and updating are the browser's business and the same on every page,
+            public or not, so this sits above the routes (D-020). */}
+        <PwaProvider>
+          {children}
+          <ClientOnly>
+            <PwaNotices />
+          </ClientOnly>
+        </PwaProvider>
+      </I18nProvider>
     </LocaleProvider>
   );
 }

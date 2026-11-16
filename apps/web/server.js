@@ -26,9 +26,13 @@ app.use(
     redirect: false,
     maxAge: '1h',
     setHeaders(response, filePath) {
-      if (/-[A-Za-z0-9_-]{8,}\.[a-z0-9]+$/.test(path.basename(filePath))) {
+      const name = path.basename(filePath);
+      if (/-[A-Za-z0-9_-]{8,}\.[a-z0-9]+$/.test(name)) {
         response.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       }
+      // The service worker decides when a new version exists, so it must never be answered from
+      // a cache: a stale one would keep a build alive after it was replaced.
+      if (name === 'sw.js') response.setHeader('Cache-Control', 'no-cache');
     },
   }),
 );

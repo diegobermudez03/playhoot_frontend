@@ -5,5 +5,7 @@
     "rootDirs": [".", "./.react-router/types"],
     "types": ["node"]
   },
-  "include": ["src", ".react-router/types/**/*"]
+  "include": ["src", ".react-router/types/**/*"],
+  // The service worker has its own scope and its own check (tsconfig.sw.json).
+  "exclude": ["src/pwa/sw.ts"]
 }

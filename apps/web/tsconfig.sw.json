@@ -1,0 +1,10 @@
+{
+  // The service worker runs in a worker scope, not in a document: it has no `window` and no DOM.
+  // It is checked on its own so the rest of the app keeps its DOM types.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "WebWorker"],
+    "types": []
+  },
+  "include": ["src/pwa/sw.ts", "src/pwa/swPolicy.ts"]
+}

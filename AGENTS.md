@@ -32,6 +32,9 @@ untrusted games, the Game SDK and the Game <-> Host bridge. The backend
   `useLocalePaths()`. Everything that needs the browser hangs off `app/ClientLayout.tsx` and
   renders nothing on the server — never read `window`, storage or the services while rendering
   outside it. See D-019, D-022, D-024, D-025 and `apps/web/README.md`.
+- The app is an installable PWA (D-020): `apps/web/src/pwa/`, with the worker and the offline page
+  written by `apps/web/vite-pwa.ts` at build time. The worker never touches `/v1` or `/admin/v1`
+  and never stores a navigation; there is no push code anywhere and never will be (P29).
 - The game is untrusted: sandboxed iframe, no network, no tokens, no socket;
   everything goes through the versioned, validated bridge.
 - Frontend visibility never replaces backend authorization.

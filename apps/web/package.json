@@ -8,7 +8,7 @@
     "build": "npm run typecheck && react-router build",
     "start": "node ./server.js",
     "preview": "npm run build && npm run start",
-    "typecheck": "react-router typegen && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
+    "typecheck": "react-router typegen && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.sw.json"
   },
   "dependencies": {
     "@fontsource-variable/fredoka": "^5.3.0",
@@ -40,6 +40,7 @@
     "@react-router/dev": "^7.18.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.28.2",
     "vite": "^8.3.4"
   }
 }

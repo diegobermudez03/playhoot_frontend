@@ -8,6 +8,23 @@ export const en = {
   'sound.mute': 'Turn sound off',
   'sound.unmute': 'Turn sound on',
 
+  'pwa.install': 'Install Playhoot',
+  'pwa.hint.title': 'Add Playhoot to your home screen',
+  'pwa.hint.body':
+    'Install it to open Playhoot in its own window, with more room for the game. Everything works the same in the browser.',
+  'pwa.hint.install': 'Install',
+  'pwa.hint.dismiss': 'No thanks',
+  'pwa.hint.appleSteps': 'In Safari, open the share menu and choose "Add to Home Screen".',
+  'pwa.hint.close': 'Close',
+  'pwa.update.title': 'A new version of Playhoot is ready',
+  'pwa.update.body': 'Refresh to use it. Nothing you are doing right now is lost.',
+  'pwa.update.refresh': 'Refresh',
+  'pwa.update.later': 'Later',
+
+  'offline.title': "You're offline",
+  'offline.body': 'Playhoot needs a connection to play. Check your connection and try again.',
+  'offline.retry': 'Try again',
+
   'home.title': 'Play together, anywhere',
   'home.intro':
     'Playhoot is a place to play games with the people around you. Join with a code from any device, or create your own game.',

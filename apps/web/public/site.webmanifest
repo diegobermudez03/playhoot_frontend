@@ -1,7 +1,12 @@
 {
+  "id": "/",
   "name": "Playhoot",
   "short_name": "Playhoot",
+  "description": "Play games together, anywhere.",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#141134",
   "theme_color": "#141134",

@@ -3,6 +3,8 @@ import { useIntl } from 'react-intl';
 import { Link } from 'react-router';
 
 import { AccountButton } from '../app/AccountButton';
+import { ClientOnly } from '../app/ClientOnly';
+import { InstallButton } from '../pwa';
 import { useLocalePaths } from '../i18n/useLocalePaths';
 import { LanguagePicker } from '../i18n/LanguagePicker';
 import { SoundToggle } from '../sound/SoundToggle';
@@ -44,6 +46,10 @@ export function AppShell({ children, bare = false, immersive = false }: AppShell
           </Link>
         )}
         <div className={styles.trailing}>
+          {/* Whether the app can be installed is only known in the browser (D-020). */}
+          <ClientOnly>
+            <InstallButton />
+          </ClientOnly>
           <SoundToggle />
           <LanguagePicker />
           <AccountButton />

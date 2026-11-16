@@ -15,7 +15,7 @@ PH.screen({
   access: 'anonymous',
   variants: 'horizontal+vertical',
   shows:
-    'Fixed top bar (P14, B: search): logo/home, join, create, notifications with unread count, plan/profile or sign-up calls to action, the 3-mode switch (normal / teacher / student — teacher without a plan sees a presentation + invitation, H8) and the language selector (es / en / pt; the browser suggests, the person decides, the choice is remembered). Also the global toast/feedback layer and the non-intrusive PWA install offer for returning visitors (P01§5).',
+    'Fixed top bar (P14, B: search): logo/home, join, create, notifications with unread count, plan/profile or sign-up calls to action, the 3-mode switch (normal / teacher / student — teacher without a plan sees a presentation + invitation, H8) and the language selector (es / en / pt; the browser suggests, the person decides, the choice is remembered). Also the global toast/feedback layer and the non-intrusive PWA install offer for returning visitors (P01§5). T-202 built the install offer and the update notice and placed them in the bar; T-204 builds the rest of the bar and moves the install entry into its menu.',
   actions: [
     { name: 'Resolve identity, role and mode', calls: 'GET:/v1/identity/me', navigatesTo: null },
     {
@@ -93,5 +93,22 @@ PH.screen({
       navigatesTo: null,
     },
     { name: 'Send one-time code by email (H3)', calls: null, navigatesTo: null },
+  ],
+});
+
+PH.screen({
+  id: 'offline',
+  path: '/offline.html',
+  status: 'implemented',
+  name: 'Offline page',
+  summary:
+    'What the installed app shows when a page cannot reach the network: a plain explanation and a way to try again.',
+  mode: 'normal',
+  access: 'anonymous',
+  variants: 'single',
+  shows:
+    "A heading, one sentence saying Playhoot needs a connection to play, and a button that reloads. It is written at build time from the message catalogs in all three languages and picks one in the browser the way the server would (the playhoot_locale cookie, then the browser's language), because it renders with no application running and no network. It claims nothing about playing offline (D-020). One implementation: it is a page of its own, not a screen of the app.",
+  actions: [
+    { name: 'Try again (reloads the address that failed)', calls: null, navigatesTo: null },
   ],
 });
