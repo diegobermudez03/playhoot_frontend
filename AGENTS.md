@@ -27,6 +27,11 @@ untrusted games, the Game SDK and the Game <-> Host bridge. The backend
 - Each screen has two presentation implementations, horizontal and vertical,
   chosen at the route edge and sharing components; each is also responsive.
 - The URL fully determines the screen and its input. Leaving a route discards its state.
+- React Router runs in framework mode (`apps/web/src/routes.ts`). Public pages are rendered by the
+  server and carry their language in the path (`/es`, `/en`, `/pt`); link to them with
+  `useLocalePaths()`. Everything that needs the browser hangs off `app/ClientLayout.tsx` and
+  renders nothing on the server — never read `window`, storage or the services while rendering
+  outside it. See D-019, D-022, D-024, D-025 and `apps/web/README.md`.
 - The game is untrusted: sandboxed iframe, no network, no tokens, no socket;
   everything goes through the versioned, validated bridge.
 - Frontend visibility never replaces backend authorization.

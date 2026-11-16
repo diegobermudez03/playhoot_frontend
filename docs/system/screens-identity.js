@@ -2,20 +2,22 @@
 // Screens of entry, sign-in and the no-match fallback.
 PH.screen({
   id: 'root-redirect',
-  path: '/',
+  path: '/, /join, /sign-in, /sign-in/guest',
   status: 'implemented',
-  name: 'Root',
-  summary: 'There is no home page yet: immediately sends everyone to the code entry.',
+  name: 'Public path without a language',
+  summary:
+    'A public address that names no language: sends the person to the same page in theirs (D-022).',
   mode: 'normal',
   access: 'anonymous',
   variants: 'single',
-  shows: 'Nothing; redirects at once.',
-  actions: [{ name: 'Redirect', calls: null, navigatesTo: 'enter-code' }],
+  shows:
+    'Nothing; redirects at once to `/{language}{path}`, keeping the query. The language is the remembered choice (cookie), else what the browser asks for, else English.',
+  actions: [{ name: 'Redirect', calls: null, navigatesTo: 'home' }],
 });
 
 PH.screen({
   id: 'enter-code',
-  path: '/join',
+  path: '/{language}/join',
   status: 'implemented',
   name: 'Enter code',
   summary: 'Logo, tagline and a 6-character join code input, with shortcuts to create or manage.',
@@ -34,7 +36,7 @@ PH.screen({
 
 PH.screen({
   id: 'sign-in',
-  path: '/sign-in',
+  path: '/{language}/sign-in',
   status: 'implemented',
   name: 'Sign in',
   summary:
@@ -60,7 +62,7 @@ PH.screen({
 
 PH.screen({
   id: 'sign-in-guest',
-  path: '/sign-in/guest',
+  path: '/{language}/sign-in/guest',
   status: 'implemented',
   name: 'Sign in as guest',
   summary: 'Plays as a guest by giving a display name, with a link to sign in or register instead.',

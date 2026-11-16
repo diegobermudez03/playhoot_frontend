@@ -6,7 +6,7 @@ import { useStore } from 'zustand';
 import { useServices } from '../../app/ServicesContext';
 import { capturedSignInCompletion } from '../../platform/signInCompletion';
 import { AppShell, Button, Card, Owl, Stage } from '../../ui';
-import { signInPath } from '../paths';
+import { useLocalePaths } from '../../i18n/useLocalePaths';
 import { accountSignInErrorText } from './accountSignInErrors';
 import styles from './SignIn.module.css';
 
@@ -18,6 +18,7 @@ let completing = false;
 export function SignInCompleteRoute() {
   const intl = useIntl();
   const navigate = useNavigate();
+  const paths = useLocalePaths();
   const { accountSignIn } = useServices();
   const state = useStore(accountSignIn.store);
   const completion = capturedSignInCompletion();
@@ -51,7 +52,7 @@ export function SignInCompleteRoute() {
               <p className={styles.notice} role="alert">
                 {accountSignInErrorText(intl, failed)}
               </p>
-              <Button block onClick={() => void navigate(signInPath(), { replace: true })}>
+              <Button block onClick={() => void navigate(paths.signIn(), { replace: true })}>
                 <FormattedMessage id="signInComplete.back" />
               </Button>
             </div>

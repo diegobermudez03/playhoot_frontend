@@ -18,6 +18,12 @@ export function ServicesProvider({
   return <ServicesContext.Provider value={services}>{children}</ServicesContext.Provider>;
 }
 
+// Null while the server renders a public page: the services exist only in the browser. Shell
+// pieces that have nothing to show without them use this and render nothing.
+export function useOptionalServices(): Services | null {
+  return useContext(ServicesContext);
+}
+
 export function useServices(): Services {
   const services = useContext(ServicesContext);
   if (!services) throw new Error('useServices must be used inside <ServicesProvider>');

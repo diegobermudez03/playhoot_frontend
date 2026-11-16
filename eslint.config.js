@@ -15,7 +15,15 @@ const hostOnlyPackages = [
 ];
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/coverage/**', '**/node_modules/**'] },
+  {
+    ignores: [
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      '**/node_modules/**',
+      '**/.react-router/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

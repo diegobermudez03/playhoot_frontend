@@ -13,7 +13,8 @@ import { useAuth, useServices } from '../../app/ServicesContext';
 import { AppShell } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout } from '../layout';
-import { enterCodePath, joinPath, sessionPlayPath } from '../paths';
+import { useLocalePaths } from '../../i18n/useLocalePaths';
+import { joinPath, sessionPlayPath } from '../paths';
 import { SessionPlayView } from '../session-play/SessionPlayView';
 import { SessionScreen } from './SessionScreen';
 
@@ -70,6 +71,7 @@ function SessionView({
   const auth = useAuth();
   const layout = useLayout();
   const navigate = useNavigate();
+  const paths = useLocalePaths();
   const location = useLocation();
   const target = state.target;
   const joinCode =
@@ -94,8 +96,8 @@ function SessionView({
   useEffect(() => {
     if (state.view.phase !== 'closed') return;
     if (onLeft) onLeft(state.view.outcome);
-    else if (state.view.outcome.kind === 'left') navigate(enterCodePath);
-  }, [state.view, navigate, onLeft]);
+    else if (state.view.outcome.kind === 'left') navigate(paths.enterCode);
+  }, [state.view, navigate, onLeft, paths.enterCode]);
 
   const copyInvite = useCallback(async () => {
     const path = joinCode
@@ -126,7 +128,7 @@ function SessionView({
         actions={{
           retry: join.retry,
           leave: join.leave,
-          enterAnotherCode: () => navigate(enterCodePath),
+          enterAnotherCode: () => navigate(paths.enterCode),
           copyInvite,
         }}
         renderPlay={(view) => (

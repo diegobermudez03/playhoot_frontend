@@ -20,7 +20,8 @@ import type { MessageId } from '../../i18n/catalogs';
 import { AppShell, Avatar, Button, Card, CodeTiles, Owl, Stage } from '../../ui';
 import { RequireOperation } from '../access';
 import { useLayout, type Layout } from '../layout';
-import { enterCodePath, joinPath, sessionPlayPath } from '../paths';
+import { useLocalePaths } from '../../i18n/useLocalePaths';
+import { joinPath, sessionPlayPath } from '../paths';
 import { outcomeCopy } from '../session-join/outcomeCopy';
 import { PlayerSession } from '../session-join/SessionRoute';
 import { HostGameView } from './HostGameView';
@@ -498,6 +499,7 @@ function StartedStep({
 
 function ClosedStep({ host, outcome }: { host: HostSession; outcome: HostOutcome }) {
   const navigate = useNavigate();
+  const paths = useLocalePaths();
   const { message, retry } = closedCopy(outcome);
   return (
     <Stage>
@@ -513,7 +515,7 @@ function ClosedStep({ host, outcome }: { host: HostSession; outcome: HostOutcome
             <FormattedMessage id="host.closed.retry" />
           </Button>
         )}
-        <Button variant="secondary" block onClick={() => navigate(enterCodePath)}>
+        <Button variant="secondary" block onClick={() => navigate(paths.enterCode)}>
           <FormattedMessage id="host.closed.home" />
         </Button>
       </div>

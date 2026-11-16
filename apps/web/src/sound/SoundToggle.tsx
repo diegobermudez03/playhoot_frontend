@@ -1,10 +1,16 @@
 import { useIntl } from 'react-intl';
 import { useStore } from 'zustand';
 
+import { useOptionalServices } from '../app/ServicesContext';
 import { useSound } from './SoundContext';
 import styles from './SoundToggle.module.css';
 
+// There is no sound until the app runs in the browser, so the server renders no control for it.
 export function SoundToggle() {
+  return useOptionalServices() ? <SoundToggleInner /> : null;
+}
+
+function SoundToggleInner() {
   const sound = useSound();
   const muted = useStore(sound.store, (state) => state.muted);
   const intl = useIntl();

@@ -1,12 +1,14 @@
 # @playhoot/web
 
-The web host: React + TypeScript shell (plan §2, §3.1). Trusted Playhoot code.
+The web host: React + TypeScript, on React Router in framework mode (D-019). Trusted Playhoot code.
 
-Status: JOIN SESSION: Enter a code at `/join` (`/` redirects there; no home page yet), Join Session on both Session URLs (ADR-0002), design system and a dev-only style guide at `/design`; WebGameHost (sandboxed iframe container, artifact cache) exercised by the dev-only GameHost lab at `/dev/game-host`.
+Status: JOIN SESSION: Enter a code at `/{language}/join` (`/join` redirects to the reader's language), Join Session on both Session URLs (ADR-0002), design system and a dev-only style guide at `/design`; WebGameHost (sandboxed iframe container, artifact cache) exercised by the dev-only GameHost lab at `/dev/game-host`.
 
 ## Owns
 
-- App routing (React Router): the URL decides which feature is open; a direct link and a refresh rebuild the view (plan §5).
+- App routing (React Router framework mode, `src/routes.ts`): the URL decides which feature is open; a direct link and a refresh rebuild the view (plan §5).
+- Rendering: public pages (`/es`, `/en`, `/pt` and their `/join` and `/sign-in`) are rendered on the server with their own metadata; the home of each language is written out at build time. Everything else renders in the browser, under `app/ClientLayout.tsx`, exactly as before (D-019).
+- Public metadata and addresses: title, description, canonical, hreflang alternates, Open Graph and JSON-LD (`src/seo/`), `robots.txt` and `sitemap.xml` (`src/routes/`), and the language in the path (`src/i18n/localePaths.ts`, D-022).
 - Web presentation of each feature under `src/features/<feature>/`, including adaptive variants (portrait/compact vs landscape/wide) chosen at the presentation edge (plan §6).
 - Web platform adapters: DeviceCapabilities detection for the browser, `WebGameHost` wiring (sandboxed iframe), credential persistence for the browser.
 - App bootstrap wiring (plan §13.1).
@@ -21,8 +23,12 @@ Status: JOIN SESSION: Enter a code at `/join` (`/` redirects there; no home page
 
 ```text
 src/
-├── main.tsx            # entry point
-├── app/                # composition root (services.ts), React bindings, router, app-level routes
+├── root.tsx            # the document (html, head, providers) around every page
+├── routes.ts           # the route table: public pages per language, then the app
+├── entry.client.tsx    # what runs in the browser before anything else
+├── routes/             # one module per route: what it renders and how it describes itself
+├── app/                # composition root (services.ts), React bindings, the client-only layout
+├── seo/                # metadata every public route is described with
 ├── platform/           # browser adapters: credential storage, device capability detection,
 │                       #   WebGameHost container (sandboxed iframe + CSP), game artifact cache
 ├── ui/                 # design system (proposal): tokens.css + components, docs/design/DESIGN_SYSTEM.md
@@ -41,13 +47,31 @@ To play through a Session without a host UI: `node scripts/dev-host.mjs` signs i
 
 ## Deployment
 
-`npm run build -w @playhoot/web` produces a static site in `apps/web/dist`. Requirements for whatever hosts it (decided by the human, 2026-10-25: shared join links must open directly):
+`npm run build -w @playhoot/web` produces `apps/web/build/`: `client/` (everything the browser
+downloads, plus the pages written out at build time) and `server/` (the render). The deployable
+unit is a Node process, not a static site: `npm run start -w @playhoot/web` runs `server.js`,
+which serves `build/client` and hands every other request to the render. `npm run preview -w
+@playhoot/web` builds and starts it.
 
-- **History fallback.** Every route lives inside the app (`/join/{code}`, `/sessions/{uuid}/play`, ...), not as files. A request for a path that is not a file must answer `index.html` with status 200, or opening a shared link or reloading any page gives the host's 404. Files that exist (`/assets/...`) are served as they are. Examples: Firebase Hosting `"rewrites": [{ "source": "**", "destination": "/index.html" }]`; nginx `try_files $uri $uri/ /index.html;`; a bucket behind a CDN: the 404 page set to `index.html` with status rewritten to 200. Development (`npm run dev`) and `vite preview` already do it.
-- **Caching.** `index.html` must not be cached long (it names the current build's files); `/assets/*` files have content hashes in their names and can be cached for a year.
-- **Content-Security-Policy.** `index.html` carries `frame-src 'none'` as a meta tag (ADR-0006); a host adding its own CSP header must keep that directive.
-- **Backend origin.** The backend's `CORS_ALLOWED_ORIGINS` and `WEBSOCKET_ALLOWED_ORIGINS` list this site's origin, and the storage bucket's CORS too (backend `deploy/README.md`).
+Requirements for wherever it runs:
+
+- **Node.** Node >= 22.12, with `build/` and `node_modules` beside `server.js`. `PORT` chooses the
+  port (3000 by default).
+- **Public origin.** `PLAYHOOT_SITE_URL` is the address people use (`https://…`). Every canonical
+  link, alternate, Open Graph URL and sitemap entry is built on it, and the pages written out at
+  build time carry it, so it must be set **for the build as well as for the server**. Without it
+  the request's own origin is used, which is wrong behind a proxy.
+- **Request logs.** Nothing may log a request URL with its query: a sign-in's one-time code
+  travels in one (backend IDENTITY-ADR-0003 point 8). `server.js` logs no requests; a proxy in
+  front of it must not either, or must strip the query.
+- **Caching.** Files whose name carries a content hash are served immutable for a year; everything
+  else for an hour. Rendered pages are not cached.
+- **Content-Security-Policy.** The rendered document carries `frame-src 'none'` as a meta tag
+  (ADR-0006); a host adding its own CSP header must keep that directive.
+- **Backend origin.** The backend's `CORS_ALLOWED_ORIGINS` and `WEBSOCKET_ALLOWED_ORIGINS` list
+  this site's origin, and the storage bucket's CORS too (backend `deploy/README.md`).
 
 ## Commands
 
-From the repository root: `npm run dev` (http://localhost:5173), `npm run build`.
+From the repository root: `npm run dev` (http://localhost:5173), `npm run build`. From this
+folder: `npm run start` (serves a build), `npm run preview` (build then start).

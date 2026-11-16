@@ -1,15 +1,13 @@
 import { supportedLocales, type Locale } from '@playhoot/app-core';
 import { useIntl } from 'react-intl';
-import { useStore } from 'zustand';
 
-import { useServices } from '../app/ServicesContext';
 import { languageNames } from './catalogs';
 import styles from './LanguagePicker.module.css';
+import { useLocale } from './LocaleContext';
 
 // A native select: accessible and comfortable on phones without extra code.
 export function LanguagePicker() {
-  const { app } = useServices();
-  const locale = useStore(app.store, (state) => state.locale);
+  const { locale, setLocale } = useLocale();
   const intl = useIntl();
   return (
     <label className={styles.picker}>
@@ -23,7 +21,7 @@ export function LanguagePicker() {
       <select
         className={styles.select}
         value={locale}
-        onChange={(event) => app.setLocale(event.target.value as Locale)}
+        onChange={(event) => setLocale(event.target.value as Locale)}
       >
         {supportedLocales.map((option) => (
           <option key={option} value={option} lang={option}>

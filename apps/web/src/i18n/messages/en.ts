@@ -8,6 +8,23 @@ export const en = {
   'sound.mute': 'Turn sound off',
   'sound.unmute': 'Turn sound on',
 
+  'home.title': 'Play together, anywhere',
+  'home.intro':
+    'Playhoot is a place to play games with the people around you. Join with a code from any device, or create your own game.',
+  'home.join': 'Join with a code',
+  'home.create': 'Create a game',
+
+  'seo.home.title': 'Playhoot — play games together, anywhere',
+  'seo.home.description':
+    'Join a game with a code from any device and play with friends, your class or your team. Create your own games too.',
+  'seo.join.title': 'Join a game with a code — Playhoot',
+  'seo.join.description':
+    'Type the code your host gave you and join the game from any device, with no app to install.',
+  'seo.signIn.title': 'Sign in — Playhoot',
+  'seo.signIn.description': 'Sign in or create your Playhoot account to host and create games.',
+  'seo.signInGuest.title': 'Play as a guest — Playhoot',
+  'seo.signInGuest.description': 'Choose a name and join the game as a guest.',
+
   'enterCode.title': 'Join a game',
   'enterCode.codeLabel': 'Game code',
   'enterCode.join': 'Join',

@@ -8,6 +8,24 @@ export const es: Messages = {
   'sound.mute': 'Silenciar el sonido',
   'sound.unmute': 'Activar el sonido',
 
+  'home.title': 'Jueguen juntos, donde sea',
+  'home.intro':
+    'Playhoot es un lugar para jugar con la gente que te rodea. Únete con un código desde cualquier dispositivo, o crea tu propio juego.',
+  'home.join': 'Únete con un código',
+  'home.create': 'Crea un juego',
+
+  'seo.home.title': 'Playhoot: juega en grupo, donde sea',
+  'seo.home.description':
+    'Únete a una partida con un código desde cualquier dispositivo y juega con tus amigos, tu clase o tu equipo. También puedes crear tus propios juegos.',
+  'seo.join.title': 'Únete a una partida con un código | Playhoot',
+  'seo.join.description':
+    'Escribe el código que te dio quien organiza y entra a la partida desde cualquier dispositivo, sin instalar nada.',
+  'seo.signIn.title': 'Inicia sesión | Playhoot',
+  'seo.signIn.description':
+    'Inicia sesión o crea tu cuenta de Playhoot para organizar partidas y crear juegos.',
+  'seo.signInGuest.title': 'Juega como invitado | Playhoot',
+  'seo.signInGuest.description': 'Elige un nombre y entra a la partida como invitado.',
+
   'enterCode.title': 'Únete a una partida',
   'enterCode.codeLabel': 'Código de la partida',
   'enterCode.join': 'Unirme',

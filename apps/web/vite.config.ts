@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-import react from '@vitejs/plugin-react';
+import { reactRouter } from '@react-router/dev/vite';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 
 // In development the browser talks only to this dev server; `/v1` (REST and WebSocket) is proxied
@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
   const backend = env.PLAYHOOT_BACKEND_URL || 'http://localhost:8081';
 
   return {
-    plugins: [react(), fixtureGames()],
+    plugins: [reactRouter(), fixtureGames()],
     server: {
       port: 5173,
       strictPort: true,

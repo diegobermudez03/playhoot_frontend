@@ -1,9 +1,8 @@
 import { useEffect, type ReactNode } from 'react';
 import { IntlProvider } from 'react-intl';
-import { useStore } from 'zustand';
 
-import { useServices } from '../app/ServicesContext';
 import { catalogs } from './catalogs';
+import { useLocale } from './LocaleContext';
 
 // Tags messages may use for markup. Translators move them with the words they wrap.
 const richTextElements = {
@@ -11,9 +10,10 @@ const richTextElements = {
   mark: (chunks: ReactNode[]) => <strong className="i18n-mark">{chunks}</strong>,
 };
 
-// Provides the person's language (app-global state) to every component.
+// Provides the page's language to every component. The document's `lang` is rendered by the
+// server; this keeps it right after a language change or a client navigation.
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const locale = useStore(useServices().app.store, (state) => state.locale);
+  const { locale } = useLocale();
 
   useEffect(() => {
     document.documentElement.lang = locale;

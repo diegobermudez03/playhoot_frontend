@@ -8,7 +8,8 @@ import { useStore } from 'zustand';
 import { useAuth, useServices } from '../../app/ServicesContext';
 import { AppShell, Button, Card, Owl, SplitStage, Stage, TextField } from '../../ui';
 import { useLayout } from '../layout';
-import { joinCodeOf, safeNext, signInPath } from '../paths';
+import { useLocalePaths } from '../../i18n/useLocalePaths';
+import { joinCodeOf, safeNext } from '../paths';
 import styles from './SignIn.module.css';
 
 // `/sign-in/guest?next=…`: play as a guest by giving a name, the easiest way in for an operation
@@ -16,15 +17,17 @@ import styles from './SignIn.module.css';
 export function GuestSignInRoute() {
   const auth = useAuth();
   const location = useLocation();
+  const paths = useLocalePaths();
   const next = safeNext(location.search);
   // Already someone: nothing to do here.
   if (auth.status === 'guest' || auth.status === 'authenticated')
-    return <Navigate to={next ?? '/'} replace />;
+    return <Navigate to={next ?? paths.home} replace />;
   return <GuestSignInScreen next={next} />;
 }
 
 function GuestSignInScreen({ next }: { next: string | null }) {
   const intl = useIntl();
+  const paths = useLocalePaths();
   const layout = useLayout();
   const signIn = useGuestSignIn();
   const state = useStore(signIn.store);
@@ -74,7 +77,7 @@ function GuestSignInScreen({ next }: { next: string | null }) {
     <p className={styles.alternative}>
       <FormattedMessage
         id="identity.useAccount"
-        values={{ link: (text) => <Link to={signInPath(next ?? undefined)}>{text}</Link> }}
+        values={{ link: (text) => <Link to={paths.signIn(next ?? undefined)}>{text}</Link> }}
       />
     </p>
   );

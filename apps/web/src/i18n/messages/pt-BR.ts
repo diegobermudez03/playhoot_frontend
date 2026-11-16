@@ -8,6 +8,24 @@ export const ptBR: Messages = {
   'sound.mute': 'Desativar o som',
   'sound.unmute': 'Ativar o som',
 
+  'home.title': 'Joguem juntos, em qualquer lugar',
+  'home.intro':
+    'O Playhoot é um lugar para jogar com as pessoas ao seu redor. Entre com um código de qualquer dispositivo, ou crie o seu próprio jogo.',
+  'home.join': 'Entre com um código',
+  'home.create': 'Crie um jogo',
+
+  'seo.home.title': 'Playhoot: joguem juntos, em qualquer lugar',
+  'seo.home.description':
+    'Entre em uma partida com um código de qualquer dispositivo e jogue com seus amigos, sua turma ou sua equipe. Você também pode criar seus próprios jogos.',
+  'seo.join.title': 'Entre em uma partida com um código | Playhoot',
+  'seo.join.description':
+    'Digite o código que o organizador te deu e entre na partida de qualquer dispositivo, sem instalar nada.',
+  'seo.signIn.title': 'Entrar | Playhoot',
+  'seo.signIn.description':
+    'Entre ou crie sua conta do Playhoot para organizar partidas e criar jogos.',
+  'seo.signInGuest.title': 'Jogue como convidado | Playhoot',
+  'seo.signInGuest.description': 'Escolha um nome e entre na partida como convidado.',
+
   'enterCode.title': 'Entre em uma partida',
   'enterCode.codeLabel': 'Código da partida',
   'enterCode.join': 'Entrar',

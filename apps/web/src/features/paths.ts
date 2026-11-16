@@ -38,6 +38,8 @@ export const signInRoute = '/sign-in';
 // Playing as a guest, with the account option. Only for operations that allow guests.
 export const guestSignInRoute = '/sign-in/guest';
 
+// The language-independent form of the public paths. Screens link to them through
+// `i18n/useLocalePaths.ts`, which puts the reader's language in front.
 export const signInPath = (next?: string) => withNext(signInRoute, next);
 export const guestSignInPath = (next?: string) => withNext(guestSignInRoute, next);
 
@@ -63,7 +65,7 @@ export function joinCodeOf(next: string | null): string | null {
   return match ? decodeURIComponent(match[1]!).toUpperCase() : null;
 }
 
-function withNext(path: string, next: string | undefined): string {
+export function withNext(path: string, next: string | undefined): string {
   return next ? `${path}?${new URLSearchParams({ next }).toString()}` : path;
 }
 

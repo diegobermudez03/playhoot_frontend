@@ -3,6 +3,7 @@ import { useIntl } from 'react-intl';
 import { Link } from 'react-router';
 
 import { AccountButton } from '../app/AccountButton';
+import { useLocalePaths } from '../i18n/useLocalePaths';
 import { LanguagePicker } from '../i18n/LanguagePicker';
 import { SoundToggle } from '../sound/SoundToggle';
 import styles from './AppShell.module.css';
@@ -20,6 +21,7 @@ interface AppShellProps {
 
 export function AppShell({ children, bare = false, immersive = false }: AppShellProps) {
   const intl = useIntl();
+  const paths = useLocalePaths();
   if (immersive) {
     return (
       <div className={styles.shell}>
@@ -34,7 +36,7 @@ export function AppShell({ children, bare = false, immersive = false }: AppShell
       <header className={styles.bar}>
         {!bare && (
           <Link
-            to="/"
+            to={paths.home}
             className={styles.home}
             aria-label={intl.formatMessage({ id: 'app.homeLink' })}
           >

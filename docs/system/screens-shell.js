@@ -42,7 +42,7 @@ PH.screen({
 
 PH.screen({
   id: 'home',
-  path: '/',
+  path: '/{language}',
   status: 'planned',
   name: 'Home / public entry',
   summary:
@@ -51,7 +51,7 @@ PH.screen({
   access: 'anonymous',
   variants: 'horizontal+vertical',
   shows:
-    'Hero with a one-paragraph explanation and the join-code input; visible accesses to join, create a game and use Playhoot as a teacher (P14§1); a Discovery section that H2 ships as a curated placeholder and H4 replaces with the approved catalog, search and filters; a teacher band with the trial call to action. Server-rendered with per-route metadata and JSON-LD for SEO (D-019); fully usable without an account.',
+    'Hero with a one-paragraph explanation and the join-code input; visible accesses to join, create a game and use Playhoot as a teacher (P14§1); a Discovery section that H2 ships as a curated placeholder and H4 replaces with the approved catalog, search and filters; a teacher band with the trial call to action. Server-rendered with per-route metadata and JSON-LD for SEO (D-019); fully usable without an account. T-201 built the rendering base of this address (server rendering, metadata, hreflang, the page written out at build time) with placeholder content; T-204 builds the content described here.',
   actions: [
     { name: 'Join with a code', calls: null, navigatesTo: 'join-by-code' },
     {
@@ -66,7 +66,7 @@ PH.screen({
 
 PH.screen({
   id: 'auth-contextual',
-  path: '/sign-in',
+  path: '/{language}/sign-in',
   status: 'planned',
   name: 'Contextual sign-in',
   summary:

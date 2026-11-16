@@ -1,4 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src"]
+  "compilerOptions": {
+    // React Router writes the route types here (`react-router typegen`).
+    "rootDirs": [".", "./.react-router/types"],
+    "types": ["node"]
+  },
+  "include": ["src", ".react-router/types/**/*"]
 }

@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "npm run typecheck && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
+    "dev": "react-router dev",
+    "build": "npm run typecheck && react-router build",
+    "start": "node ./server.js",
+    "preview": "npm run build && npm run start",
+    "typecheck": "react-router typegen && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
   },
   "dependencies": {
     "@fontsource-variable/fredoka": "^5.3.0",
@@ -23,6 +24,11 @@
     "@playhoot/feature-sign-in": "*",
     "@playhoot/game-host": "*",
     "@playhoot/protocol": "*",
+    "@react-router/express": "^7.18.4",
+    "@react-router/node": "^7.18.4",
+    "compression": "^1.8.2",
+    "express": "^5.3.0",
+    "isbot": "^5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-intl": "^12.1.5",
@@ -31,9 +37,9 @@
   },
   "devDependencies": {
     "@formatjs/icu-messageformat-parser": "^3.5.22",
+    "@react-router/dev": "^7.18.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.2",
     "vite": "^8.3.4"
   }
 }
