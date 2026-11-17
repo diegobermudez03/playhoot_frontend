@@ -61,11 +61,13 @@ PH.screen({
   access: 'admin',
   variants: 'single',
   shows:
-    'The admin navigation (queues, budget, email, second factor; later milestones add their panels), who is in admin mode and how long it lasts, the way out of it, and a summary row: current restriction-ladder level with the last hour’s spend, dead tasks in all and per queue, email mode and today’s consumption. Every figure links to its panel.',
+    'The admin navigation (queues, budget, email, markets, texts, second factor; later milestones add their panels), who is in admin mode and how long it lasts, the way out of it, and a summary row: current restriction-ladder level with the last hour’s spend, dead tasks in all and per queue, email mode and today’s consumption, current market rules with how many are scheduled, and acceptance texts published with how many kind-language pairs are still missing. Every figure links to its panel.',
   actions: [
     { name: 'Budget summary', calls: 'GET:/admin/v1/budget', navigatesTo: 'admin-budget' },
     { name: 'Dead-task summary', calls: 'GET:/admin/v1/queues/dead', navigatesTo: 'admin-queues' },
     { name: 'Email summary', calls: 'GET:/admin/v1/email', navigatesTo: 'admin-email' },
+    { name: 'Market matrix summary', calls: 'GET:/admin/v1/markets', navigatesTo: 'admin-markets' },
+    { name: 'Acceptance texts summary', calls: 'GET:/admin/v1/texts', navigatesTo: 'admin-texts' },
   ],
 });
 
@@ -133,11 +135,11 @@ PH.screen({
   ],
 });
 
-// ---------- H3 panels (designed by T-300, planned): markets and acceptance texts ----------
+// ---------- H3 panels (designed by T-300, built by T-306): markets and acceptance texts ----------
 PH.screen({
   id: 'admin-markets',
   path: '/admin/markets',
-  status: 'planned',
+  status: 'implemented',
   name: 'Market matrix',
   summary:
     'The market-and-function matrix over the H1 endpoints: current rules, scheduled ones, history, and appending a change.',
@@ -159,7 +161,7 @@ PH.screen({
 PH.screen({
   id: 'admin-texts',
   path: '/admin/texts',
-  status: 'planned',
+  status: 'implemented',
   name: 'Acceptance texts',
   summary:
     'The four acceptance texts by language: versions, publish dates, missing pairs, and publishing a new immutable version.',
@@ -167,7 +169,7 @@ PH.screen({
   access: 'admin',
   variants: 'single',
   shows:
-    'Each kind (terms, own-data, class data agreement, marketing) by language with its current version and publish date; a kind-language pair with no version is named plainly, because production serves nothing until the real text is published (CREATOR_TODO P-23) — this panel is where the creator loads them without a deploy. Publishing shows the text as it will be served, warns that a version is immutable and that people will be asked to accept the new one where an operation requires a current acceptance (D-037), and records it. Existing versions can be read and downloaded.',
+    'Each kind (terms, own-data, class data agreement, marketing) by language with its current version and publish date, and how many older versions stand behind it; a kind-language pair with no version is named plainly, because production serves nothing until the real text is published (CREATOR_TODO P-23) — this panel is where the creator loads them without a deploy. Publishing types the content in, previews it exactly as it will be served, warns that a version is immutable and that people will be asked to accept the new one where an operation requires a current acceptance (D-037), and records it. The current version of each pair can be read and downloaded here; `GET /v1/compliance/texts/{kind}` answers only the current one, so an older, superseded version has no content left to read anywhere (correcting the design, which promised it for every version).',
   actions: [
     { name: 'List texts and versions', calls: 'GET:/admin/v1/texts', navigatesTo: null },
     { name: 'Publish a new version', calls: 'PUT:/admin/v1/texts', navigatesTo: null },

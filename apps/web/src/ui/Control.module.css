@@ -37,6 +37,14 @@
   cursor: not-allowed;
 }
 
+.textarea {
+  min-height: calc(var(--control-height-lg) * 3);
+  padding: var(--space-3) var(--space-4);
+  resize: vertical;
+  font-weight: 400;
+  font-family: var(--font-mono);
+}
+
 /* A select draws its own arrow: the native one does not belong to this ink. */
 .select {
   appearance: none;

@@ -64,6 +64,8 @@ export default [
       route('admin/queues', 'routes/admin-queues.tsx'),
       route('admin/budget', 'routes/admin-budget.tsx'),
       route('admin/email', 'routes/admin-email.tsx'),
+      route('admin/markets', 'routes/admin-markets.tsx'),
+      route('admin/texts', 'routes/admin-texts.tsx'),
     ]),
     // The person's own corner and its subscreens: personal addresses, never offered to crawlers
     // and carrying no language (D-022).

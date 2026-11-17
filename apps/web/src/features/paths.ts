@@ -246,6 +246,8 @@ export const adminPaths = {
   queues: '/admin/queues',
   budget: '/admin/budget',
   email: '/admin/email',
+  markets: '/admin/markets',
+  texts: '/admin/texts',
 } as const;
 
 // Where to send someone whose admin mode is not open (or has just lapsed), so that signing in

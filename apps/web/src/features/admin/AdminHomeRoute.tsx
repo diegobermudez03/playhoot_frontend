@@ -1,4 +1,10 @@
-import { createBudgetPanel, createEmailPanel, createQueuesPanel } from '@playhoot/feature-admin';
+import {
+  createBudgetPanel,
+  createEmailPanel,
+  createMarketsPanel,
+  createQueuesPanel,
+  createTextsPanel,
+} from '@playhoot/feature-admin';
 import { FormattedMessage, FormattedNumber, useIntl } from 'react-intl';
 import { Link } from 'react-router';
 
@@ -18,6 +24,10 @@ export function AdminHomeRoute() {
   const budget = useAdminPanel(() => createBudgetPanel({ admin, secondFactor }));
   const queues = useAdminPanel(() => createQueuesPanel({ admin }));
   const email = useAdminPanel(() => createEmailPanel({ admin }));
+  const markets = useAdminPanel(() => createMarketsPanel({ admin }));
+  const texts = useAdminPanel(() => createTextsPanel({ admin }));
+
+  const missingTexts = texts.state.catalog.filter((entry) => entry.versions.length === 0).length;
 
   const deadByQueue = new Map<string, number>();
   for (const task of queues.state.tasks) {
@@ -114,6 +124,56 @@ export function AdminHomeRoute() {
             </>
           ) : (
             <Unavailable text={email.state.error ? adminErrorText(intl, email.state.error) : ''} />
+          )}
+        </Link>
+
+        <Link className={styles.figure} to={adminPaths.markets}>
+          <span className={styles.figureName}>
+            <FormattedMessage id="admin.home.markets" />
+          </span>
+          {markets.state.status === 'loading' ? (
+            <Skeleton width="8ch" />
+          ) : markets.state.matrix ? (
+            <>
+              <span className={styles.figureValue}>
+                <FormattedNumber value={markets.state.matrix.current.length} />
+              </span>
+              <span className={styles.note}>
+                <FormattedMessage
+                  id="admin.home.marketsScheduled"
+                  values={{ count: markets.state.matrix.scheduled.length }}
+                />
+              </span>
+            </>
+          ) : (
+            <Unavailable
+              text={markets.state.error ? adminErrorText(intl, markets.state.error) : ''}
+            />
+          )}
+        </Link>
+
+        <Link className={styles.figure} to={adminPaths.texts}>
+          <span className={styles.figureName}>
+            <FormattedMessage id="admin.home.texts" />
+          </span>
+          {texts.state.status === 'loading' ? (
+            <Skeleton width="8ch" />
+          ) : texts.state.status === 'ready' ? (
+            <>
+              <span className={styles.figureValue}>
+                <FormattedMessage
+                  id="admin.home.textsPublished"
+                  values={{ count: texts.state.catalog.length - missingTexts }}
+                />
+              </span>
+              {missingTexts > 0 && (
+                <Tag tone="accent">
+                  <FormattedMessage id="admin.home.textsMissing" values={{ count: missingTexts }} />
+                </Tag>
+              )}
+            </>
+          ) : (
+            <Unavailable text={texts.state.error ? adminErrorText(intl, texts.state.error) : ''} />
           )}
         </Link>
       </div>

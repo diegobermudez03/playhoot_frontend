@@ -29,6 +29,7 @@ import {
   StatusArea,
   Switch,
   Tag,
+  TextareaField,
   TextField,
 } from '../ui';
 import styles from './DesignRoute.module.css';
@@ -175,6 +176,11 @@ export function DesignRoute() {
               <option value="en">English</option>
               <option value="pt">Português</option>
             </Select>
+            <TextareaField
+              label="Text content"
+              placeholder="The text as it will be served…"
+              hint="Monospaced, so a long document is easy to proofread."
+            />
             <Checkbox
               label="I live in this country and I am old enough to use Playhoot here."
               hint="A declaration, not a verification."

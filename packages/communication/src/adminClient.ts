@@ -7,11 +7,16 @@ import {
   adminDeadTasksPath,
   adminEmailModePath,
   adminEmailPath,
+  adminMarketsPath,
   adminRetryDeadTaskPath,
+  adminTextsPath,
   budgetStatusSchema,
   deadTasksResponseSchema,
   emailStatusSchema,
+  marketsResponseSchema,
   outcomeResponseSchema,
+  publishedTextResponseSchema,
+  textCatalogResponseSchema,
   type BudgetControlsRequest,
   type BudgetCutoffRequest,
   type BudgetReopenRequest,
@@ -19,6 +24,11 @@ import {
   type DeadTasksResponse,
   type EmailModeRequest,
   type EmailStatusResponse,
+  type MarketsResponse,
+  type PublishedTextResponse,
+  type PublishTextRequest,
+  type SetMarketRuleRequest,
+  type TextCatalogResponse,
 } from '@playhoot/protocol';
 
 import type { HttpClient, HttpFailure } from './http';
@@ -37,6 +47,11 @@ export interface AdminClient {
   reopen(request: BudgetReopenRequest): Promise<Result<string, HttpFailure>>;
   email(): Promise<Result<EmailStatusResponse, HttpFailure>>;
   setEmailMode(request: EmailModeRequest): Promise<Result<string, HttpFailure>>;
+  markets(): Promise<Result<MarketsResponse, HttpFailure>>;
+  // The backend's outcome (`recorded`); `conditions_pending` and `invalid` come back as failures.
+  setMarketRule(request: SetMarketRuleRequest): Promise<Result<string, HttpFailure>>;
+  texts(): Promise<Result<TextCatalogResponse, HttpFailure>>;
+  publishText(request: PublishTextRequest): Promise<Result<PublishedTextResponse, HttpFailure>>;
 }
 
 export function createAdminClient(http: HttpClient): AdminClient {
@@ -60,5 +75,17 @@ export function createAdminClient(http: HttpClient): AdminClient {
     reopen: (request) => outcome('POST', adminBudgetReopenPath, request),
     email: () => http.request({ method: 'GET', path: adminEmailPath, response: emailStatusSchema }),
     setEmailMode: (request) => outcome('PUT', adminEmailModePath, request),
+    markets: () =>
+      http.request({ method: 'GET', path: adminMarketsPath(), response: marketsResponseSchema }),
+    setMarketRule: (request) => outcome('PUT', adminMarketsPath(), request),
+    texts: () =>
+      http.request({ method: 'GET', path: adminTextsPath, response: textCatalogResponseSchema }),
+    publishText: (request) =>
+      http.request({
+        method: 'PUT',
+        path: adminTextsPath,
+        body: request,
+        response: publishedTextResponseSchema,
+      }),
   };
 }

@@ -120,6 +120,8 @@ export const es: Messages = {
   'seo.admin.queues.title': 'Colas | Playhoot',
   'seo.admin.budget.title': 'Presupuesto | Playhoot',
   'seo.admin.email.title': 'Correo | Playhoot',
+  'seo.admin.markets.title': 'Matriz de mercados | Playhoot',
+  'seo.admin.texts.title': 'Textos de aceptación | Playhoot',
 
   'seo.home.title': 'Playhoot: juega en grupo, donde sea',
   'seo.home.description':
@@ -773,6 +775,8 @@ export const es: Messages = {
   'admin.nav.queues': 'Colas',
   'admin.nav.budget': 'Presupuesto',
   'admin.nav.email': 'Correo',
+  'admin.nav.markets': 'Mercados',
+  'admin.nav.texts': 'Textos',
   'admin.nav.secondFactor': 'Segundo factor',
   'admin.signedInAs': 'Entraste como {name}',
   'admin.sessionRemaining':
@@ -839,6 +843,11 @@ export const es: Messages = {
   'admin.home.perQueue': '{queue}: {count, number}',
   'admin.home.email': 'Modo de correo',
   'admin.home.emailToday': '{count, plural, one {# correo hoy} other {# correos hoy}}',
+  'admin.home.markets': 'Reglas de mercado',
+  'admin.home.marketsScheduled': '{count, plural, one {# programada} other {# programadas}}',
+  'admin.home.texts': 'Textos de aceptación',
+  'admin.home.textsPublished': '{count, number} publicados',
+  'admin.home.textsMissing': '{count, plural, one {# par faltante} other {# pares faltantes}}',
   'admin.queues.title': 'Colas y cartas muertas',
   'admin.queues.lead':
     'Las tareas muertas más recientes de cada cola de dominio. Reintentar la vuelve a dejar pendiente; cancelar libera su clave.',
@@ -958,6 +967,72 @@ export const es: Messages = {
     'Estados tal como los guarda el backend. Los cuerpos nunca se almacenan.',
   'admin.email.deliveryCount': '{state}: {count, number}',
   'admin.email.noDeliveries': 'No hay envíos registrados.',
+
+  'admin.markets.title': 'Matriz de mercados',
+  'admin.markets.lead':
+    'Qué función está disponible en qué mercado, desde qué edad, y el cambio que lo dejó así.',
+  'admin.markets.applied': 'Listo. El backend respondió {outcome}.',
+  'admin.markets.groupLabel': 'Qué reglas mostrar',
+  'admin.markets.group.current': 'Vigentes ({count, number})',
+  'admin.markets.group.scheduled': 'Programadas ({count, number})',
+  'admin.markets.group.history': 'Historial ({count, number})',
+  'admin.markets.column.place': 'País / subdivisión',
+  'admin.markets.placeWithSubdivision': '{country} / {subdivision}',
+  'admin.markets.column.function': 'Función',
+  'admin.markets.column.enabled': 'Habilitada',
+  'admin.markets.column.minAge': 'Edad mín.',
+  'admin.markets.column.conditionsNote': 'Condiciones pendientes',
+  'admin.markets.column.effectiveAt': 'Vigente desde',
+  'admin.markets.column.reason': 'Motivo',
+  'admin.markets.yes': 'Sí',
+  'admin.markets.no': 'No',
+  'admin.markets.none': 'Nada en este grupo.',
+  'admin.markets.appendTitle': 'Agregar una regla',
+  'admin.markets.appendSubmit': 'Agregar la regla',
+  'admin.markets.countryLabel': 'País',
+  'admin.markets.countryHint': 'ISO 3166-1 alfa-2, por ejemplo CO.',
+  'admin.markets.subdivisionLabel': 'Subdivisión',
+  'admin.markets.subdivisionHint':
+    'El sufijo del estado o provincia, por ejemplo CA de US-CA; vacío para todo el país.',
+  'admin.markets.minAgeHint': 'Solo para una función que necesita edad declarada; 0 en las demás.',
+  'admin.markets.conditionsNoteHint':
+    'Condiciones operativas aún pendientes; un mercado no puede habilitarse mientras esto esté puesto.',
+  'admin.markets.effectiveAtLabel': 'Vigente desde',
+  'admin.markets.effectiveAtHint': 'Déjalo vacío para ahora mismo. Nunca en el pasado.',
+  'admin.markets.enabledLabel': 'Habilitada',
+  'admin.markets.error.conditionsPending':
+    'Este mercado tiene una nota de condiciones pendientes. Confirma que las condiciones realmente se cumplen, quita la nota e inténtalo de nuevo.',
+  'admin.markets.function.create-games': 'Crear juegos',
+  'admin.markets.function.subscribe': 'Suscribirse',
+  'admin.markets.function.teach': 'Enseñar',
+  'admin.markets.function.minor-class-participation': 'Menor, participación en clase',
+  'admin.markets.function.minor-family-participation': 'Menor, participación familiar',
+  'admin.markets.function.interactive-use': 'Uso interactivo',
+
+  'admin.texts.title': 'Textos de aceptación',
+  'admin.texts.lead':
+    'Cada tipo de texto que la gente acepta, por idioma, con su versión publicada. Publicar aquí llega a producción sin un despliegue.',
+  'admin.texts.published': 'Listo. {kind} ({language}) ahora es la versión {version}.',
+  'admin.texts.column.language': 'Idioma',
+  'admin.texts.column.version': 'Versión',
+  'admin.texts.column.publishedAt': 'Publicado el',
+  'admin.texts.column.olderVersions': 'Versiones anteriores',
+  'admin.texts.column.actions': 'Acciones',
+  'admin.texts.olderCount':
+    '{count, plural, one {# versión anterior} other {# versiones anteriores}}',
+  'admin.texts.missing': 'Todavía no publicado — no se sirve nada para este par.',
+  'admin.texts.read': 'Leer',
+  'admin.texts.readFailed': 'Eso no se pudo leer en este momento.',
+  'admin.texts.publishTitle': 'Publicar una nueva versión',
+  'admin.texts.immutableWarning':
+    'Una versión publicada nunca se edita: esto crea una nueva. Las aceptaciones registradas siguen apuntando a la versión que aceptaron, incluso después de publicar una más nueva.',
+  'admin.texts.kindLabel': 'Tipo',
+  'admin.texts.contentLabel': 'Contenido',
+  'admin.texts.contentHint':
+    'Exactamente lo que se servirá — este build no aplica ningún formato propio.',
+  'admin.texts.preview': 'Vista previa tal como se sirve',
+  'admin.texts.hidePreview': 'Ocultar vista previa',
+  'admin.texts.publish': 'Publicar esta versión',
 
   'auth.or': 'o',
   'identity.guestExpiry':

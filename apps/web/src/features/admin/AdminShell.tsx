@@ -27,6 +27,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <AdminLink to={adminPaths.queues} messageId="admin.nav.queues" />
           <AdminLink to={adminPaths.budget} messageId="admin.nav.budget" />
           <AdminLink to={adminPaths.email} messageId="admin.nav.email" />
+          <AdminLink to={adminPaths.markets} messageId="admin.nav.markets" />
+          <AdminLink to={adminPaths.texts} messageId="admin.nav.texts" />
           <AdminLink to={adminPaths.secondFactor} messageId="admin.nav.secondFactor" />
         </nav>
         <AdminIdentity />

@@ -3,6 +3,7 @@ import {
   emailDeliveryStates,
   emailModes,
   budgetWindows,
+  marketFunctions,
 } from '@playhoot/protocol';
 import type { IntlShape } from 'react-intl';
 
@@ -49,6 +50,14 @@ export function deliveryStateText(intl: IntlShape, state: string): string {
   return known(emailDeliveryStates, state)
     ? intl.formatMessage({ id: `admin.email.state.${state}` })
     : state;
+}
+
+// The plain name of a market function (the matrix table, the append form); `declaration.function.*`
+// is a whole sentence and does not fit here.
+export function functionText(intl: IntlShape, marketFunction: string): string {
+  return known(marketFunctions, marketFunction)
+    ? intl.formatMessage({ id: `admin.markets.function.${marketFunction}` })
+    : marketFunction;
 }
 
 export function deliveryTone(state: string): TagTone {

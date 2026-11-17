@@ -5,7 +5,9 @@ import { createBudgetPanel } from './budgetPanel';
 import { createEmailPanel } from './emailPanel';
 import { createEnrollment } from './enrollment';
 import { adminFailure } from './failures';
+import { createMarketsPanel } from './marketsPanel';
 import { createQueuesPanel } from './queuesPanel';
+import { createTextsPanel } from './textsPanel';
 
 const ok = <T>(value: T): { ok: true; value: T } => ({ ok: true, value });
 const httpError = (
@@ -58,6 +60,12 @@ function adminClient(overrides: Partial<AdminClient> = {}): AdminClient {
       ok({ mode: 'automatic', mode_since: '', mode_reason: '', deliveries_30d: {} }),
     ),
     setEmailMode: vi.fn(async () => ok('changed')),
+    markets: vi.fn(async () => ok({ current: [], scheduled: [], history: [] })),
+    setMarketRule: vi.fn(async () => ok('recorded')),
+    texts: vi.fn(async () => ok({ texts: [] })),
+    publishText: vi.fn(async () =>
+      ok({ kind: 'terms', language: 'en', version: 1, published_at: '' }),
+    ),
     ...overrides,
   } as AdminClient;
 }
@@ -211,6 +219,71 @@ describe('createEmailPanel', () => {
       admin: adminClient({ setEmailMode: async () => httpError(400, 'invalid') }),
     });
     await expect(panel.setMode('nonsense', 'why')).resolves.toBe(false);
+    expect(panel.store.getState().actionError).toEqual({ kind: 'invalid' });
+  });
+});
+
+describe('createMarketsPanel', () => {
+  const rule: Parameters<ReturnType<typeof createMarketsPanel>['appendRule']>[0] = {
+    country: 'CO',
+    subdivision: '',
+    function: 'create-games',
+    enabled: true,
+    min_age: 18,
+    conditions_note: '',
+    reason: 'launch',
+  };
+
+  it('reads the matrix again after appending a rule', async () => {
+    const setMarketRule = vi.fn(async () => ok('recorded'));
+    const markets = vi.fn(async () => ok({ current: [], scheduled: [], history: [] }));
+    const panel = createMarketsPanel({ admin: adminClient({ setMarketRule, markets }) });
+    await expect(panel.appendRule(rule)).resolves.toBe(true);
+    expect(setMarketRule).toHaveBeenCalledWith(rule);
+    expect(markets).toHaveBeenCalledTimes(1);
+    expect(panel.store.getState().result).toBe('recorded');
+  });
+
+  it('keeps conditions_pending as a conflict the admin must clear first', async () => {
+    const panel = createMarketsPanel({
+      admin: adminClient({
+        setMarketRule: async () => httpError(409, 'conditions_pending'),
+      }),
+    });
+    await expect(panel.appendRule(rule)).resolves.toBe(false);
+    expect(panel.store.getState().actionError).toEqual({
+      kind: 'conflict',
+      code: 'conditions_pending',
+    });
+  });
+});
+
+describe('createTextsPanel', () => {
+  it('reads the catalog again after publishing a version', async () => {
+    const publishText = vi.fn(async () =>
+      ok({ kind: 'terms', language: 'en', version: 2, published_at: '2026-11-16T10:00:00Z' }),
+    );
+    const texts = vi.fn(async () => ok({ texts: [] }));
+    const panel = createTextsPanel({ admin: adminClient({ publishText, texts }) });
+    await expect(
+      panel.publish({ kind: 'terms', language: 'en', content: 'The terms.' }),
+    ).resolves.toBe(true);
+    expect(publishText).toHaveBeenCalledWith({
+      kind: 'terms',
+      language: 'en',
+      content: 'The terms.',
+    });
+    expect(texts).toHaveBeenCalledTimes(1);
+    expect(panel.store.getState().result?.version).toBe(2);
+  });
+
+  it('keeps an invalid publication out of the catalog', async () => {
+    const panel = createTextsPanel({
+      admin: adminClient({ publishText: async () => httpError(400, 'invalid') }),
+    });
+    await expect(panel.publish({ kind: 'terms', language: 'en', content: '' })).resolves.toBe(
+      false,
+    );
     expect(panel.store.getState().actionError).toEqual({ kind: 'invalid' });
   });
 });

@@ -5,6 +5,8 @@ export * from './budgetPanel';
 export * from './emailPanel';
 export * from './enrollment';
 export * from './failures';
+export * from './marketsPanel';
 export * from './qr';
 export * from './queuesPanel';
 export * from './stepUp';
+export * from './textsPanel';
