@@ -43,7 +43,10 @@ export function createBrowserCredentialStore(
 
 function parseCredential(value: unknown): Credential | null {
   if (typeof value !== 'object' || value === null) return null;
-  const { token, refreshToken, userUUID, kind, displayName } = value as Record<string, unknown>;
+  const { token, refreshToken, userUUID, kind, displayName, mode } = value as Record<
+    string,
+    unknown
+  >;
   if (typeof userUUID !== 'string' || !userUUID) return null;
   if (kind !== 'guest' && kind !== 'account') return null;
   const credential: Credential = { token: '', userUUID, kind };
@@ -51,6 +54,7 @@ function parseCredential(value: unknown): Credential | null {
   else if (typeof token === 'string' && token) credential.token = token;
   else return null;
   if (typeof displayName === 'string' && displayName) credential.displayName = displayName;
+  if (typeof mode === 'string' && mode) credential.mode = mode;
   return credential;
 }
 

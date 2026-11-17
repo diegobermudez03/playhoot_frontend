@@ -27,6 +27,7 @@ import {
   Skeleton,
   Status,
   StatusArea,
+  Switch,
   Tag,
   TextField,
 } from '../ui';
@@ -179,6 +180,7 @@ export function DesignRoute() {
               hint="A declaration, not a verification."
             />
             <Checkbox label="Tick to go on" defaultChecked={false} error="Tick this to continue." />
+            <SwitchDemo />
           </div>
         </Orientations>
         <p className={styles.caption}>Code input (join code, second factor)</p>
@@ -473,6 +475,19 @@ function SoundBoard() {
         {music ? 'stop lobby music' : 'lobby music'}
       </Button>
     </div>
+  );
+}
+
+// A switch, which only makes sense with something to turn on and off.
+function SwitchDemo() {
+  const [on, setOn] = useState(true);
+  return (
+    <Switch
+      label="News about your games by email"
+      hint="You can turn this off whenever you like."
+      checked={on}
+      onChange={setOn}
+    />
   );
 }
 

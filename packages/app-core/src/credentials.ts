@@ -12,6 +12,10 @@ export interface Credential {
   kind: 'guest' | 'account';
   // How the person is named, as the backend returned it (or chosen locally).
   displayName?: string;
+  // The face of the account this credential was issued for (`normal`, `teacher`, or a value the
+  // backend may add). A guest is always normal. Absent in a credential stored before modes
+  // existed, which reads as normal (D-034).
+  mode?: string;
 }
 
 // Platform persistence of the credential (browser storage on web, secure storage on mobile). A

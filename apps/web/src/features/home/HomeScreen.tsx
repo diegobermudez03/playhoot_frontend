@@ -1,13 +1,14 @@
-import { joinCodeAlphabet, joinCodeLength } from '@playhoot/protocol';
+import { joinCodeAlphabet, joinCodeLength, operations } from '@playhoot/protocol';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Link, useNavigate } from 'react-router';
 
 import type { MessageId } from '../../i18n/catalogs';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
-import { Button, Card, CodeInput, Dialog, Mascot, Tag } from '../../ui';
+import { Button, Card, CodeInput, Mascot, Tag } from '../../ui';
 import type { Layout } from '../layout';
-import { joinPath, newGamePath } from '../paths';
+import { useNavigateToOperation } from '../access';
+import { joinPath, newGamePath, teacherPath } from '../paths';
 import styles from './HomeScreen.module.css';
 
 /*
@@ -24,8 +25,11 @@ export function HomeScreen({ layout }: { layout: Layout }) {
   const navigate = useNavigate();
   const paths = useLocalePaths();
   const [code, setCode] = useState('');
-  const [teacherOpen, setTeacherOpen] = useState(false);
   const complete = code.length === joinCodeLength;
+  // Teaching is real for an account since H3: the band and the intro both lead to the teacher
+  // screen, through the sign-in screen when the account level is still missing.
+  const goToOperation = useNavigateToOperation();
+  const teach = () => goToOperation(operations.setOwnMode, teacherPath, 'teach');
 
   const join = (event: FormEvent) => {
     event.preventDefault();
@@ -44,7 +48,7 @@ export function HomeScreen({ layout }: { layout: Layout }) {
         <Link className={styles.create} to={newGamePath}>
           <FormattedMessage id="home.create" />
         </Link>
-        <button type="button" className={styles.teach} onClick={() => setTeacherOpen(true)}>
+        <button type="button" className={styles.teach} onClick={teach}>
           <FormattedMessage id="home.teach" />
         </button>
       </div>
@@ -133,24 +137,10 @@ export function HomeScreen({ layout }: { layout: Layout }) {
             <FormattedMessage id="home.teacher.body" />
           </p>
         </div>
-        <Button variant="secondary" size="lg" onClick={() => setTeacherOpen(true)}>
+        <Button variant="secondary" size="lg" onClick={teach}>
           <FormattedMessage id="home.teacher.cta" />
         </Button>
       </Card>
-
-      <Dialog
-        open={teacherOpen}
-        title={intl.formatMessage({ id: 'mode.teacher.title' })}
-        closeLabel={intl.formatMessage({ id: 'common.close' })}
-        onClose={() => setTeacherOpen(false)}
-        actions={
-          <Button onClick={() => setTeacherOpen(false)}>
-            <FormattedMessage id="common.gotIt" />
-          </Button>
-        }
-      >
-        <FormattedMessage id="mode.teacher.body" />
-      </Dialog>
     </div>
   );
 }

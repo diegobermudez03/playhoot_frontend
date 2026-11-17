@@ -16,6 +16,8 @@ const credential = {
   userUUID: 'u-1',
   kind: 'guest',
   displayName: 'Ana',
+  // Every credential says which face of the account it was issued for; a guest is always normal.
+  mode: 'normal',
 };
 
 function identityWith(answer: () => Response) {

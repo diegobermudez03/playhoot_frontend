@@ -12,8 +12,13 @@ const catalog: OperationCatalog = {
   ]),
 };
 const none: AuthSnapshot = { status: 'none' };
-const guest: AuthSnapshot = { status: 'guest', userUUID: 'u', displayName: 'Ana' };
-const account: AuthSnapshot = { status: 'authenticated', userUUID: 'u', displayName: 'Ana' };
+const guest: AuthSnapshot = { status: 'guest', userUUID: 'u', displayName: 'Ana', mode: 'normal' };
+const account: AuthSnapshot = {
+  status: 'authenticated',
+  userUUID: 'u',
+  displayName: 'Ana',
+  mode: 'normal',
+};
 
 describe('operationAccess', () => {
   it('sends a person without identity to the weakest authentication the operation allows', () => {

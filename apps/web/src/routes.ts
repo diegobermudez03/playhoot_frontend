@@ -65,6 +65,17 @@ export default [
       route('admin/budget', 'routes/admin-budget.tsx'),
       route('admin/email', 'routes/admin-email.tsx'),
     ]),
+    // The person's own corner and its subscreens: personal addresses, never offered to crawlers
+    // and carrying no language (D-022).
+    route('profile', 'routes/profile.tsx'),
+    route('profile/methods', 'routes/profile-methods.tsx'),
+    route('profile/legal', 'routes/profile-legal.tsx'),
+    route('profile/delete', 'routes/profile-delete.tsx'),
+    // Where teacher mode lands until H8 builds teaching (D-034).
+    route('teacher', 'routes/teacher.tsx'),
+    // The notification history the bell panel abbreviates, and the email preferences behind it.
+    route('notifications', 'routes/notifications.tsx'),
+    route('notifications/preferences', 'routes/notification-preferences.tsx'),
     // Where a gated function sends a person who has not declared where they live and that they
     // have the age that place asks for (D-038); it returns to what asked.
     route('declaration', 'routes/declaration.tsx'),

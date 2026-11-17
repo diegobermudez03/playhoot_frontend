@@ -20,6 +20,15 @@ export const operations = {
   declareResidenceAndAge: 'DECLARE_RESIDENCE_AND_AGE',
   // Reading the texts people accept and recording an acceptance (D-037).
   acceptTexts: 'ACCEPT_TEXTS',
+  // The caller's own corner (D-034, D-035, D-036): listing and changing the ways into the
+  // account, the mode it is in, the language it reads in, and ending the identity.
+  manageSignInMethods: 'MANAGE_SIGN_IN_METHODS',
+  setOwnMode: 'SET_OWN_MODE',
+  setInterfaceLanguage: 'SET_INTERFACE_LANGUAGE',
+  deleteOwnIdentity: 'DELETE_OWN_IDENTITY',
+  // The notification history and the email preferences behind it (P14§4, P31§4).
+  readNotifications: 'READ_NOTIFICATIONS',
+  setNotificationPreferences: 'SET_NOTIFICATION_PREFERENCES',
 } as const;
 export type Operation = (typeof operations)[keyof typeof operations];
 

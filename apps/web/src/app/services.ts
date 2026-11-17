@@ -7,6 +7,7 @@ import {
   createGamesClient,
   createHttpClient,
   createIdentityClient,
+  createMeClient,
   createNotificationsClient,
   createPreviewConnector,
   createSessionConnector,
@@ -20,6 +21,7 @@ import {
   type GamesClient,
   type HttpClient,
   type IdentityClient,
+  type MeClient,
   type NotificationsClient,
   type PreviewConnector,
   type SecondFactorClient,
@@ -90,6 +92,9 @@ export interface Services {
   gameAssets: AssetLoader;
   http: HttpClient;
   identity: IdentityClient;
+  // The caller's own data and the two settings only they decide: the mode and the interface
+  // language, plus the end of their identity (backend `api/me`).
+  me: MeClient;
   // The shell's notifications: the unread count and the panel's entries. App-global, because the
   // bar outlives every route.
   notifications: Notifications;
@@ -189,6 +194,7 @@ export function createServices(): Services {
     gamesApi: createGamesClient(http),
     http,
     identity: identityClient,
+    me: createMeClient(http),
     notifications: createNotifications({ app, client: notificationsApi }),
     notificationsApi,
     previews: createPreviewConnector({

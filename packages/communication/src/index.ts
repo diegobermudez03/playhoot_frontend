@@ -6,6 +6,7 @@ export * from './complianceClient';
 export * from './gamesClient';
 export * from './http';
 export * from './identityClient';
+export * from './meClient';
 export * from './notificationsClient';
 export * from './previewConnection';
 export * from './result';

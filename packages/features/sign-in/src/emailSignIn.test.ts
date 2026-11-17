@@ -54,6 +54,10 @@ function setup(identity: Partial<IdentityClient> = {}, signedIn: Credential | nu
     completeEmailLogin: vi.fn(async () => ({ ok: true as const, value: account })),
     startLinkProvider: vi.fn(),
     completeLinkProvider: vi.fn(),
+    listSignInMethods: vi.fn(),
+    startLinkEmail: vi.fn(),
+    completeLinkEmail: vi.fn(),
+    removeSignInMethod: vi.fn(),
     ...identity,
   };
   const signIn = createEmailSignIn({ app, identity: client });

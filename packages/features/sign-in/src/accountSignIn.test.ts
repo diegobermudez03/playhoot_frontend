@@ -52,6 +52,10 @@ function setup(identity: Partial<IdentityClient> = {}, signedIn: Credential | nu
     completeEmailLogin: vi.fn(),
     startLinkProvider: vi.fn(),
     completeLinkProvider: vi.fn(),
+    listSignInMethods: vi.fn(),
+    startLinkEmail: vi.fn(),
+    completeLinkEmail: vi.fn(),
+    removeSignInMethod: vi.fn(),
     ...identity,
   };
   const leaveTo = vi.fn();

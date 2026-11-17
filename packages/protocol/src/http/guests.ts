@@ -9,6 +9,8 @@ export const credentialsResponseSchema = z.object({
     display_name: z.string().default(''),
     // `guest` or `account`; the backend may add values.
     level: z.string().min(1),
+    // The face of the account this credential was issued for; a guest is always normal (D-034).
+    mode: z.string().default('normal'),
   }),
   access_token: z.string().min(1),
   access_expires_at: z.string().min(1),
@@ -97,3 +99,12 @@ export const meResponseSchema = z.object({
 export const loginProvidersPath = '/v1/identity/login/providers';
 
 export const loginProvidersResponseSchema = z.object({ providers: z.array(z.string()) });
+
+// The display name may be changed a few times per rolling window (V-10); beyond that the refusal
+// is `429 change_limit_reached` and says when the next change is possible. The allowance itself
+// is not in any answer, so the screen states it from here.
+export const changeLimitReachedCode = 'change_limit_reached';
+export const displayNameChangesPerWindow = 3;
+export const displayNameChangeWindowDays = 30;
+
+export const changeLimitBodySchema = z.object({ next_change_at: z.string().min(1) });

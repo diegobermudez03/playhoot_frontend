@@ -1,9 +1,10 @@
-import type { NotificationEntry } from '@playhoot/communication';
 import { useEffect } from 'react';
 import { useIntl } from 'react-intl';
-import { useLocation } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useStore } from 'zustand';
 
+import { titleOf } from '../../features/notifications/notificationTypes';
+import { notificationPaths } from '../../features/paths';
 import type { MessageId } from '../../i18n/catalogs';
 import { useAuth, useOptionalServices, useServices } from '../ServicesContext';
 import styles from './NotificationsBell.module.css';
@@ -92,32 +93,13 @@ function Bell() {
             </li>
           ))}
         </ul>
+        {/* The whole history, with its filters, is a page of its own (P14§4). */}
+        <Link className={styles.seeAll} to={notificationPaths.history}>
+          {intl.formatMessage({ id: 'notifications.seeAll' })}
+        </Link>
       </div>
     </details>
   );
-}
-
-// What each kind of event says, in the person's language. The backend's list of types is open: a
-// type this build does not know is still shown, as a notification without a sentence of its own.
-const titles: Record<string, MessageId> = {
-  welcome: 'notifications.type.welcome',
-  'purchase-confirmed': 'notifications.type.purchaseConfirmed',
-  'plan-changed': 'notifications.type.planChanged',
-  'payment-failed': 'notifications.type.paymentFailed',
-  'trial-update': 'notifications.type.trialUpdate',
-  'account-security': 'notifications.type.accountSecurity',
-  'guardian-authorization': 'notifications.type.guardianAuthorization',
-  'ai-work-finished': 'notifications.type.aiWorkFinished',
-  'capacity-warning': 'notifications.type.capacityWarning',
-  'discovery-review': 'notifications.type.discoveryReview',
-  'discovery-restriction': 'notifications.type.discoveryRestriction',
-  'class-activity': 'notifications.type.classActivity',
-  'budget-level-changed': 'notifications.type.budgetLevelChanged',
-  marketing: 'notifications.type.marketing',
-};
-
-function titleOf(entry: NotificationEntry): MessageId {
-  return titles[entry.type] ?? 'notifications.type.unknown';
 }
 
 function failureMessage(kind: 'unauthenticated' | 'busy' | 'unavailable' | undefined): MessageId {

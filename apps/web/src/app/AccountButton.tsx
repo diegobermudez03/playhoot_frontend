@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Link, useLocation } from 'react-router';
 
-import { aiConnectionsPath, authRoute, myGamesPath } from '../features/paths';
+import { aiConnectionsPath, authRoute, myGamesPath, profilePaths } from '../features/paths';
 import { publicPathOf } from '../i18n/localePaths';
 import { useLocalePaths } from '../i18n/useLocalePaths';
 import { Avatar } from '../ui/Avatar';
@@ -42,16 +42,19 @@ function AccountButtonInner() {
   }
 
   const name = auth.displayName || intl.formatMessage({ id: 'account.unnamed' });
+  // A guest has a corner of their own too: their name, what a guest is, and the way out of it.
   if (auth.status === 'guest') {
     return (
       <AccountMenu
         name={name}
         kind={intl.formatMessage({ id: 'account.guest' })}
+        links={[{ to: profilePaths.home, label: 'account.profile' }]}
         action={
           onSignInPage
             ? null
             : { kind: 'link', to: paths.auth({ next: here }), label: 'account.signIn' }
         }
+        secondary={{ run: app.signOut, label: 'account.signOut' }}
       />
     );
   }
@@ -60,6 +63,7 @@ function AccountButtonInner() {
       name={name}
       kind={null}
       links={[
+        { to: profilePaths.home, label: 'account.profile' },
         { to: myGamesPath, label: 'account.myGames' },
         { to: aiConnectionsPath, label: 'account.aiConnections' },
       ]}
@@ -72,19 +76,24 @@ type MenuAction =
   | { kind: 'link'; to: string; label: 'account.signIn' }
   | { kind: 'button'; run: () => void; label: 'account.signOut' };
 
+type MenuLinkLabel = 'account.profile' | 'account.myGames' | 'account.aiConnections';
+
 // A native disclosure: keyboard and screen-reader friendly without extra code.
 function AccountMenu({
   name,
   kind,
   links = [],
   action,
+  secondary,
 }: {
   name: string;
   // What kind of identity it is, when worth saying (a guest).
   kind: string | null;
-  // The account's own pages.
-  links?: { to: string; label: 'account.myGames' | 'account.aiConnections' }[];
+  // The person's own pages.
+  links?: { to: string; label: MenuLinkLabel }[];
   action: MenuAction | null;
+  // One more action under the main one (a guest signs out as well as signing in).
+  secondary?: { run: () => void; label: 'account.signOut' };
 }) {
   const intl = useIntl();
   const menu = useRef<HTMLDetailsElement>(null);
@@ -126,6 +135,18 @@ function AccountMenu({
             }}
           >
             <FormattedMessage id={action.label} />
+          </button>
+        )}
+        {secondary && (
+          <button
+            type="button"
+            className={styles.item}
+            onClick={() => {
+              menu.current?.removeAttribute('open');
+              secondary.run();
+            }}
+          >
+            <FormattedMessage id={secondary.label} />
           </button>
         )}
       </div>

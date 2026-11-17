@@ -36,3 +36,45 @@ export const markNotificationReadSchema = z.object({ outcome: z.string() });
 
 export type NotificationEntryResponse = z.infer<typeof notificationEntrySchema>;
 export type NotificationListResponse = z.infer<typeof notificationListSchema>;
+
+// What the history page may ask of the list. `domain` and `type` are the backend's own open
+// values; `from`/`to` bound when the entry was created, and `limit` caps one page.
+export interface NotificationFilter {
+  domain?: string;
+  type?: string;
+  from?: string;
+  to?: string;
+  before?: string;
+  limit?: number;
+}
+
+// The most entries one page asks for; the backend keeps its own ceiling (100).
+export const notificationsPageLimit = 50;
+
+export function notificationsQuery(filter: NotificationFilter): string {
+  const query = new URLSearchParams();
+  for (const [name, value] of Object.entries(filter)) {
+    if (value !== undefined && value !== '') query.set(name, String(value));
+  }
+  const search = query.toString();
+  return search ? `${notificationsPath}?${search}` : notificationsPath;
+}
+
+// GET/PUT /v1/notifications/preferences (Bearer, account): the optional email groups and the
+// marketing choice (P31§4, V-07). Access, security and billing email is necessary and is not
+// here: it cannot be turned off, and in-app notifications are never trimmed by any of this.
+export const notificationPreferencesPath = '/v1/notifications/preferences';
+
+export const notificationPreferencesSchema = z.object({
+  ai_email: z.boolean(),
+  capacity_email: z.boolean(),
+  review_email: z.boolean(),
+  marketing_email: z.boolean(),
+});
+
+export type NotificationPreferencesResponse = z.infer<typeof notificationPreferencesSchema>;
+
+// The optional groups as this build names them; marketing is apart, because turning it on or off
+// is an acceptance or a withdrawal of its text (D-037).
+export const optionalEmailGroups = ['ai', 'capacity', 'review'] as const;
+export type OptionalEmailGroup = (typeof optionalEmailGroups)[number];

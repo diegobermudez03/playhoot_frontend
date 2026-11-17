@@ -17,6 +17,7 @@
     "@playhoot/app-core": "*",
     "@playhoot/communication": "*",
     "@playhoot/device": "*",
+    "@playhoot/feature-account": "*",
     "@playhoot/feature-admin": "*",
     "@playhoot/feature-game-authoring": "*",
     "@playhoot/feature-notifications": "*",

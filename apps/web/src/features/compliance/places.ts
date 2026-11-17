@@ -349,3 +349,16 @@ function regionNames(locale: string): Intl.DisplayNames | null {
     return null;
   }
 }
+
+// One place named in the language the page is read in, for a declaration already recorded. An
+// unknown code is left as it is, which is still unambiguous.
+export function countryName(locale: string, code: string): string {
+  if (!code) return '';
+  return regionNames(locale)?.of(code) ?? code;
+}
+
+// The state or province of a country whose rules are kept per subdivision; otherwise the code.
+export function subdivisionName(country: string, code: string): string {
+  if (!code) return '';
+  return subdivisionsByCountry[country]?.find((place) => place.code === code)?.name ?? code;
+}

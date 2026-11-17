@@ -54,6 +54,10 @@ export interface AppState {
   // The identity in use was renamed on the backend: shows the new name right away. Its access
   // token still carries the old one until renewed.
   renamed(displayName: string): void;
+  // The backend reissued the access token of the session in use without touching the session
+  // itself (switching the account's mode does, D-040). The new token replaces the one in hand,
+  // carries the mode it was issued for, and its renewal is rescheduled.
+  accessReissued(access: { token: string; expiresAt: number | undefined; mode?: string }): void;
   // Forgets the credential, and ends its session on the backend.
   signOut(): void;
   // Renews the access token now if it expires within a minute (when the page becomes visible again
@@ -212,6 +216,17 @@ export function createAppState(options: AppStateOptions): AppState {
       credential = { ...credential, displayName };
       options.credentials.save(credential);
       store.setState({ auth: authSnapshotOf(credential) });
+    },
+    accessReissued(access) {
+      if (!credential) return;
+      const next: Credential = {
+        ...credential,
+        token: access.token,
+        ...(access.expiresAt !== undefined && { expiresAt: access.expiresAt }),
+        ...(access.mode && { mode: access.mode }),
+      };
+      options.credentials.save(next);
+      activate(next);
     },
     signOut() {
       const refreshToken = credential?.refreshToken;

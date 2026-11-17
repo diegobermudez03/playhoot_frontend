@@ -33,6 +33,10 @@ function setup(createGuest: IdentityClient['createGuest']) {
     completeEmailLogin: vi.fn(),
     startLinkProvider: vi.fn(),
     completeLinkProvider: vi.fn(),
+    listSignInMethods: vi.fn(),
+    startLinkEmail: vi.fn(),
+    completeLinkEmail: vi.fn(),
+    removeSignInMethod: vi.fn(),
   };
   let keys = 0;
   const telemetry: SignInTelemetry[] = [];
@@ -59,6 +63,7 @@ describe('createGuestSignIn', () => {
       status: 'guest',
       userUUID: 'u-1',
       displayName: 'Ana',
+      mode: 'normal',
     });
     expect(t.state()).toEqual({ submitting: false, error: null });
   });

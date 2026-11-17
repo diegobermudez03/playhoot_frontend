@@ -79,6 +79,10 @@ export const authReasons = [
   'edit-game',
   'my-games',
   'connect-ai',
+  // Teaching with Playhoot: the home band and the shell's mode switch ask for an account first.
+  'teach',
+  // The profile and its subscreens, which a guest may reach but an account owns.
+  'profile',
   // The admin area asks for an account before its own second factor (D-023).
   'admin',
 ] as const;
@@ -164,6 +168,33 @@ export const profilePaths = {
   methods: '/profile/methods',
   legal: '/profile/legal',
   delete: '/profile/delete',
+} as const;
+
+// What `/profile/methods` was told about a provider round trip that has just come back, read
+// from its address: the identity became another way in, or it is another account's way in and
+// matching addresses never merge (P03§11).
+export const methodLinkOutcomes = ['linked', 'in-use'] as const;
+export type MethodLinkOutcome = (typeof methodLinkOutcomes)[number];
+
+export function methodsPathWith(outcome: MethodLinkOutcome): string {
+  return `${profilePaths.methods}?${new URLSearchParams({ linked: outcome }).toString()}`;
+}
+
+export function methodLinkOutcome(search: string): MethodLinkOutcome | null {
+  const value = new URLSearchParams(search).get('linked');
+  return value !== null && (methodLinkOutcomes as readonly string[]).includes(value)
+    ? (value as MethodLinkOutcome)
+    : null;
+}
+
+// Where teacher mode lands until H8 builds teaching (D-034).
+export const teacherPath = '/teacher';
+
+// The notification history the bell panel abbreviates, and the email preferences behind it.
+// Personal addresses, so no language in the path.
+export const notificationPaths = {
+  history: '/notifications',
+  preferences: '/notifications/preferences',
 } as const;
 
 // The contextual residence-and-age declaration (D-038): a gated function refuses, and the person

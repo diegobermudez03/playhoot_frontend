@@ -66,6 +66,7 @@ describe('createAppState', () => {
       status: 'guest',
       userUUID: 'u-1',
       displayName: null,
+      mode: 'normal',
     });
     expect(state.credentials.currentToken()).toBe('t-guest');
   });
@@ -86,6 +87,7 @@ describe('createAppState', () => {
       status: 'authenticated',
       userUUID: 'u-2',
       displayName: 'Ana',
+      mode: 'normal',
     });
 
     state.signOut();

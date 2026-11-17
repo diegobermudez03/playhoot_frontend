@@ -1,12 +1,13 @@
 /* global PH */
-// H3 design (T-300): the profile area, the declaration journey, the teacher
-// presentation and the notifications pages. All of these are personal, carry no
-// language in the path and are never offered to crawlers, so they are app routes
-// under ClientLayout; the address still reproduces each screen (path navigation).
+// H3: the profile area, the declaration journey, the teacher presentation and the
+// notifications pages. All of these are personal, carry no language in the path and
+// are never offered to crawlers, so they are app routes under ClientLayout; the
+// address still reproduces each screen (path navigation). Designed by T-300 and
+// built by T-304 (the declaration) and T-305 (the rest).
 PH.screen({
   id: 'profile',
   path: '/profile',
-  status: 'planned',
+  status: 'implemented',
   name: 'Profile',
   summary:
     "The person's own corner: who they are, their mode and language, and the doors to methods, legal, notifications and deletion.",
@@ -14,7 +15,7 @@ PH.screen({
   access: 'anonymous',
   variants: 'horizontal+vertical',
   shows:
-    'Who the person is: display name with its change action (3 changes per rolling 30 days, V-10, and the screen says how many remain), guest or account, and for a guest the 90-day inactivity expiry stated plainly (P02§9) beside the upgrade offer (a new account keeps the name and games, P03§10). For an account: the mode (normal or teacher, same switch as the shell), the interface language (stored on the account, so emails follow it), and the doors to sign-in methods, legal, notification preferences and deletion; purchases and history are named with the milestone that brings them (H5, H6), inventing nothing. Without any identity the screen explains what an account gives and offers sign-in (SPEC_MAP §19: profile accessible without an account, with calls to action). Sign out is here and in the shell menu.',
+    'Who the person is: display name with its change action (3 changes per rolling 30 days, V-10: the screen states the allowance, because the backend answers only the refusal, and the refusal says the date of the next possible change, D-043), guest or account, and for a guest the 90-day inactivity expiry stated plainly (P02§9) beside the upgrade offer (a new account keeps the name and games, P03§10). For an account: the mode (normal or teacher, same switch as the shell), the interface language (stored on the account, so emails follow it), and the doors to sign-in methods, legal, notification preferences and deletion; purchases and history are named with the milestone that brings them (H5, H6), inventing nothing. Without any identity the screen explains what an account gives and offers sign-in (SPEC_MAP §19: profile accessible without an account, with calls to action). Sign out is here and in the shell menu. Two implementations: one column on a compact display, two on a wide one, each section whole.',
   actions: [
     { name: 'Read my data', calls: 'GET:/v1/me', navigatesTo: null },
     {
@@ -40,7 +41,7 @@ PH.screen({
 PH.screen({
   id: 'profile-methods',
   path: '/profile/methods',
-  status: 'planned',
+  status: 'implemented',
   name: 'Sign-in methods',
   summary:
     'The linked ways into this account; add one by proving control of it, remove one while another remains (P03§11-12).',
@@ -48,7 +49,7 @@ PH.screen({
   access: 'account',
   variants: 'horizontal+vertical',
   shows:
-    'Each linked method (Google with the identity it observed, email with its address) and when it was added. Adding an email sends a code to the new address and asks for it here; adding a provider leaves for it and returns, exactly like signing in. A method already on another account is refused in place — the screen says plainly that matching emails never merge accounts (P03§11). Removal explains the guard: the last method cannot be removed, because signing in through any linked method is how an account is recovered (P03§12) — which is also why this screen recommends adding the email way in.',
+    'Each linked method (Google with the identity it observed, email with its address) and when it was added. Adding an email sends a code to the new address and asks for it here; adding a provider leaves for it and returns to this address carrying what it decided (`?linked=linked|in-use`), exactly like signing in. A method already on another account is refused in place — the screen says plainly that matching emails never merge accounts (P03§11). Removal explains the guard: the last method cannot be removed, because signing in through any linked method is how an account is recovered (P03§12) — which is also why this screen recommends adding the email way in.',
   actions: [
     { name: 'List methods', calls: 'GET:/v1/identity/me/methods', navigatesTo: null },
     {
@@ -77,7 +78,7 @@ PH.screen({
 PH.screen({
   id: 'profile-legal',
   path: '/profile/legal',
-  status: 'planned',
+  status: 'implemented',
   name: 'Legal and declaration',
   summary:
     'What the person declared and accepted: the residence-and-age declaration, and every acceptance text with its version and download.',
@@ -99,7 +100,7 @@ PH.screen({
 PH.screen({
   id: 'delete-account',
   path: '/profile/delete',
-  status: 'planned',
+  status: 'implemented',
   name: 'Delete my identity',
   summary:
     'Deletes the guest or the account: access ends at once, data is erased on the 30/90-day clock, shared history survives with a neutral name.',
@@ -107,7 +108,7 @@ PH.screen({
   access: 'guest',
   variants: 'horizontal+vertical',
   shows:
-    'What deletion means before anything is asked to be confirmed: access ends immediately, games are deleted, the name disappears everywhere, erasure completes within 30 days in active systems and 90 in backups (P02§11), and sessions shared with others keep working with a neutral "deleted" reference in place of the name (P02§10). A guest is reminded first that upgrading keeps the name and games (P02§15) — the upgrade offer sits above the deletion. The confirmation is explicit (its own checked statement plus the confirm action in a dialog); done, the person lands on home signed out, and the screen never claims the erasure already finished, only that it is underway (P02§11).',
+    'What deletion means before anything is asked to be confirmed: access ends immediately, games are deleted, the name disappears everywhere, erasure completes within 30 days in active systems and 90 in backups (P02§11), and sessions shared with others keep working with a neutral "deleted" reference in place of the name (P02§10). A guest is reminded first that upgrading keeps the name and games (P02§15) — the upgrade offer sits above the deletion. The confirmation is explicit (its own checked statement plus the confirm action in a dialog, whose default action is Cancel); while it runs the screen says only that, and the person is taken home before the credential is forgotten — everything on screen is rebuilt for whoever is signed in the moment that changes, so leaving first is what makes home the destination (D-043). The screen never claims the erasure already finished, only that it is underway (P02§11). Without any identity it offers the way in rather than sending the person to it, for the same reason.',
   actions: [
     {
       name: 'Upgrade instead (guests): a new account keeps name and games',
@@ -142,7 +143,7 @@ PH.screen({
 PH.screen({
   id: 'teacher-home',
   path: '/teacher',
-  status: 'planned',
+  status: 'implemented',
   name: 'Teacher mode',
   summary:
     'Where teacher mode lands until H8 builds teaching: an honest presentation of what it will be, with the invitation.',
@@ -157,7 +158,7 @@ PH.screen({
 PH.screen({
   id: 'notifications',
   path: '/notifications',
-  status: 'planned',
+  status: 'implemented',
   name: 'Notifications',
   summary:
     'The full notification history the bell panel abbreviates, with filters; this is also the page the emails link to.',
@@ -165,7 +166,7 @@ PH.screen({
   access: 'guest',
   variants: 'horizontal+vertical',
   shows:
-    "Every in-app notification with the endpoint's filters (domain, type, date), unread distinguished from read, translated type names for the types this build knows and the backend's wording survives for ones it does not (T-204 rule). A notification is marked read on opening its content or explicitly, never by opening this list (P14§4). A notification whose destination this build knows navigates there; destinations arrive with each milestone's own types. Emails carry a link to this page and nothing else (P31§5), so it asks for sign-in through the contextual screen when the credential is missing.",
+    "Every in-app notification with the endpoint's filters (domain, type, date), unread distinguished from read, translated type names for the types this build knows and the backend's wording survives for ones it does not (T-204 rule). A notification is marked read on opening its content or explicitly, never by opening this list (P14§4). Read and unread are told apart by a word and a mark, never by colour alone. A notification whose destination this build knows navigates there; destinations arrive with each milestone's own types. Emails carry a link to this page and nothing else (P31§5), so it asks for sign-in through the contextual screen when the credential is missing.",
   actions: [
     {
       name: 'List notifications (filters, history)',
@@ -184,7 +185,7 @@ PH.screen({
 PH.screen({
   id: 'notification-preferences',
   path: '/notifications/preferences',
-  status: 'planned',
+  status: 'implemented',
   name: 'Notification preferences',
   summary:
     'The optional email groups and the marketing choice; necessary email stays on and says so.',
@@ -192,7 +193,7 @@ PH.screen({
   access: 'account',
   variants: 'horizontal+vertical',
   shows:
-    'The optional email groups (AI, capacity, Discovery review) each with its own switch, and marketing apart with its own (P31§4): turning marketing on shows the marketing text and records the acceptance of its exact version; turning it off records the withdrawal (P22§3, D-037). A line explains that access, security and billing email cannot be turned off because they are how problems reach the person, and that in-app notifications are never trimmed by any of this. The unsubscribe link in an email ends on this same understanding: optional email only.',
+    'The optional email groups (AI, capacity, Discovery review) each with its own switch, and marketing apart with its own (P31§4): turning marketing on shows the marketing text and records the acceptance of its exact version before the preference is stored — an unrecorded choice must never look taken — and turning it off records the withdrawal (P22§3, D-037). A text that is not published yet is not accepted: the switch says so and records nothing. A line explains that access, security and billing email cannot be turned off because they are how problems reach the person, and that in-app notifications are never trimmed by any of this. The unsubscribe link in an email ends on this same understanding: optional email only.',
   actions: [
     { name: 'Read preferences', calls: 'GET:/v1/notifications/preferences', navigatesTo: null },
     { name: 'Set email groups', calls: 'PUT:/v1/notifications/preferences', navigatesTo: null },

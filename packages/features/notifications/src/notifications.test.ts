@@ -34,7 +34,13 @@ function setup(client: Partial<NotificationsClient> = {}) {
   app.bootstrap();
   const full: NotificationsClient = {
     list: vi.fn(async () => ({ ok: true as const, value: { unread: 0, entries: [] } })),
+    listFiltered: vi.fn(async () => ({ ok: true as const, value: { unread: 0, entries: [] } })),
     markRead: vi.fn(async () => ({ ok: true as const, value: undefined })),
+    readPreferences: vi.fn(async () => ({
+      ok: true as const,
+      value: { ai: false, capacity: false, review: true, marketing: false },
+    })),
+    setPreferences: vi.fn(async (preferences) => ({ ok: true as const, value: preferences })),
     ...client,
   };
   const signIn = () =>

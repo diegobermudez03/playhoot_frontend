@@ -7,6 +7,8 @@ import {
   emailLoginStartPath,
   linkProviderCompletePath,
   linkProviderStartPath,
+  linkEmailCompletePath,
+  linkEmailStartPath,
   linkProviderStartResponseSchema,
   listOperationsPath,
   listOperationsResponseSchema,
@@ -18,10 +20,14 @@ import {
   logoutPath,
   meResponseSchema,
   refreshPath,
+  removeSignInMethodPath,
+  signInMethodsPath,
+  signInMethodsResponseSchema,
   type CreateGuestRequest,
   type CredentialsResponse,
   type EmailLoginCompleteRequest,
   type EmailLoginStartRequest,
+  type LinkEmailRequest,
   type LinkProviderCompleteRequest,
   type LinkProviderStartRequest,
   type LoginCompleteRequest,
@@ -30,6 +36,7 @@ import {
   type SetDisplayNameRequest,
 } from '@playhoot/protocol';
 import type { Decoder, HttpClient, HttpFailure } from './http';
+import { toSignInMethod, type SignInMethod } from './meClient';
 import type { Result } from './result';
 
 // One operation of the backend's catalog, with the level it requires as the backend wrote it
@@ -81,6 +88,16 @@ export interface IdentityClient {
   startLinkProvider(provider: string, codeChallenge: string): Promise<Result<string, HttpFailure>>;
   // Finishes that round trip. It opens no session: the account was already signed in.
   completeLinkProvider(code: string, codeVerifier: string): Promise<Result<void, HttpFailure>>;
+  // The ways into the account already signed in, each with when it was added.
+  listSignInMethods(): Promise<Result<SignInMethod[], HttpFailure>>;
+  // Asks for a code to be sent to an address the account is adding. The acknowledgement is the
+  // same whatever the address, exactly as signing in by email.
+  startLinkEmail(email: string, language: string): Promise<Result<void, HttpFailure>>;
+  // Verifies that code and adds the address as another way in.
+  completeLinkEmail(email: string, code: string): Promise<Result<void, HttpFailure>>;
+  // Unlinks one way in. The backend refuses the last one (`last_method`): an account must stay
+  // reachable (P03§12).
+  removeSignInMethod(methodID: string): Promise<Result<void, HttpFailure>>;
 }
 
 // `now` is the client's clock, which a received token's lifetime is measured on.
@@ -214,6 +231,44 @@ export function createIdentityClient(
       });
       return result.ok ? { ok: true, value: undefined } : result;
     },
+    async listSignInMethods() {
+      const result = await http.request({
+        method: 'GET',
+        path: signInMethodsPath,
+        response: signInMethodsResponseSchema,
+      });
+      return result.ok
+        ? { ok: true as const, value: result.value.methods.map(toSignInMethod) }
+        : result;
+    },
+    async startLinkEmail(email, language) {
+      const body: LinkEmailRequest = { email, language };
+      const result = await http.request({
+        method: 'POST',
+        path: linkEmailStartPath,
+        body,
+        response: anyBody,
+      });
+      return result.ok ? { ok: true as const, value: undefined } : result;
+    },
+    async completeLinkEmail(email, code) {
+      const body: LinkEmailRequest = { email, code };
+      const result = await http.request({
+        method: 'POST',
+        path: linkEmailCompletePath,
+        body,
+        response: anyBody,
+      });
+      return result.ok ? { ok: true as const, value: undefined } : result;
+    },
+    async removeSignInMethod(methodID) {
+      const result = await http.request({
+        method: 'POST',
+        path: removeSignInMethodPath(methodID),
+        response: anyBody,
+      });
+      return result.ok ? { ok: true as const, value: undefined } : result;
+    },
     async listOperations() {
       const result = await http.request({
         method: 'GET',
@@ -254,5 +309,6 @@ function toCredential(response: CredentialsResponse, receivedAt: number): Creden
     userUUID: response.user.user_uuid,
     kind: response.user.level === 'account' ? 'account' : 'guest',
     ...(response.user.display_name && { displayName: response.user.display_name }),
+    ...(response.user.mode && { mode: response.user.mode }),
   };
 }

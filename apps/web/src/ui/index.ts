@@ -20,5 +20,6 @@ export { PageHeading } from './PageHeading';
 export { Select } from './Select';
 export { Skeleton } from './Skeleton';
 export { Status, StatusArea, ToastStack, type StatusTone } from './Status';
+export { Switch } from './Switch';
 export { Pill, Tag, type TagTone } from './Tag';
 export { TextField } from './TextField';

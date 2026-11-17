@@ -7,7 +7,7 @@ import { useServices } from '../../app/ServicesContext';
 import { capturedSignInCompletion } from '../../platform/signInCompletion';
 import { Button, Card, Mascot, Stage } from '../../ui';
 import { useLocalePaths } from '../../i18n/useLocalePaths';
-import { profilePaths } from '../paths';
+import { methodsPathWith, type MethodLinkOutcome } from '../paths';
 import { accountSignInErrorText } from './accountSignInErrors';
 import styles from './SignIn.module.css';
 
@@ -74,6 +74,6 @@ export function SignInCompleteRoute() {
 
 // Back to the sign-in methods, telling that screen how the link went. `next` wins when the trip
 // was started from somewhere else.
-function linkedMethodsPath(outcome: 'linked' | 'in-use', next: string | null): string {
-  return next ?? `${profilePaths.methods}?${new URLSearchParams({ linked: outcome }).toString()}`;
+function linkedMethodsPath(outcome: MethodLinkOutcome, next: string | null): string {
+  return next ?? methodsPathWith(outcome);
 }
