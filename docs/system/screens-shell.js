@@ -66,7 +66,7 @@ PH.screen({
   status: 'verified',
   name: 'Home / public entry',
   summary:
-    'The public entry: brief product explanation, join code, visible accesses to create and to teach, and a curated catalog section until Discovery arrives.',
+    'The public entry: brief product explanation, join code, visible accesses to create and to teach, and a curated catalog section until Discovery arrives. H4 (planned, T-405): the curated kinds-of-game section (D-029) is replaced by the real thing — popular games and categories from the approved catalog, each leading into Discovery — and keeps its honest empty wording while the catalog is thin; no figures are shown below the V-13 threshold (P14§2).',
   mode: 'normal',
   access: 'anonymous',
   variants: 'horizontal+vertical',
@@ -75,6 +75,7 @@ PH.screen({
   actions: [
     { name: 'Join with a code', calls: null, navigatesTo: 'join-by-code' },
     { name: 'Open the join page', calls: null, navigatesTo: 'enter-code' },
+    { name: 'Read the catalog teaser (H4)', calls: 'GET:/v1/discovery', navigatesTo: 'discovery' },
     {
       name: 'Create a game (through sign-in when the account level is missing)',
       calls: null,

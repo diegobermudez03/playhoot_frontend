@@ -1,21 +1,30 @@
 /* global PH */
 // Screens of game authoring: the account's games, creation, the workspace and its sections, and the
-// external-AI connection screens (OAuth/MCP consent and connected apps).
+// external-AI connection screens (OAuth/MCP consent and connected apps). The H4 design (T-400)
+// reshapes my-games, create-game and the publish section, adds the versions section, and T-406
+// redesigns the whole area's presentation onto the Ink & Sticker system (it still wears the old
+// layouts under the new tokens, GAPS "Frontend").
 PH.screen({
   id: 'my-games',
-  path: '/games',
+  path: '/games  (?q=&category=&tags=&from=&to=)',
   status: 'implemented',
   name: 'My games',
-  summary: "The account's own games, newest first, each leading to its workspace.",
+  summary:
+    "The account's own games, newest first, each leading to its workspace; findable even with a hundred of them (B: my games).",
   mode: 'normal',
   access: 'account',
   variants: 'single',
   shows:
-    'Name, published/visibility, open edition and last-updated date per game; a create button.',
+    'Name, open edition and last-updated date per game; a create button. H4 (planned, T-406): name search and category, tag and date filters carried by the address; per game, its cover and honest public state as chips (private, in review, public, unpublished, blocked — backend kinds, never literals); a "start a session" shortcut (B: many users host their own games); and the holding line "X of Y games" from the composed read, with the refusal the backend answers when the capacity is full (no upsell here: purchases arrive with H6). Two implementations like every redesigned user screen (the single one is the pre-H4 state).',
   actions: [
-    { name: 'List my games', calls: 'GET:/v1/games', navigatesTo: null },
+    {
+      name: 'List my games (search and filters in the address)',
+      calls: 'GET:/v1/games',
+      navigatesTo: null,
+    },
     { name: 'Open a game', calls: null, navigatesTo: 'game-workspace' },
     { name: 'Create a game', calls: null, navigatesTo: 'create-game' },
+    { name: 'Start a session of a game', calls: null, navigatesTo: 'new-session' },
   ],
 });
 
@@ -29,7 +38,7 @@ PH.screen({
   access: 'account',
   variants: 'single',
   shows:
-    'A name field and a template picker (featured templates, search, inspection) or the starter project.',
+    'A name field and a template picker (featured templates, search, inspection) or the starter project. H4 (planned, T-406): a copy from a template is named as what it is — an independent game that keeps credits to its source and consumes one creation like any other (P05§3, P12§14) — and the two capacity refusals the backend can answer (game_limit_reached, creation_limit_reached) are calm outcomes naming what the limit was, not errors; arriving with ?template={gameUUID} from a public card preselects it.',
   actions: [
     { name: 'Browse featured templates', calls: 'GET:/v1/templates', navigatesTo: null },
     { name: 'Search templates', calls: 'GET:/v1/templates/search', navigatesTo: null },
@@ -50,7 +59,7 @@ PH.screen({
   access: 'account',
   variants: 'horizontal+vertical',
   shows:
-    'The brief (agreed game and phase) and a field to paste a change JSON from the AI, plus the section nav (AI changes, Files, Resources, Build, Test game, Scenarios, History, Share, Card and publishing).',
+    'The brief (agreed game and phase) and a field to paste a change JSON from the AI, plus the section nav (AI changes, Files, Resources, Build, Test game, Scenarios, History, Share, Versions, Card and publishing). H4 (planned, T-406): the area is redesigned onto the design system (it still wears the old layouts under the new tokens) and gains the Versions section; a blocked game shows its service-restriction notice at the top of every section.',
   actions: [
     { name: 'Read the draft', calls: 'GET:/v1/games/{g}/draft', navigatesTo: null },
     { name: 'Apply a pasted change', calls: 'POST:/v1/games/{g}/draft/changes', navigatesTo: null },
@@ -61,6 +70,7 @@ PH.screen({
     { name: 'Open Scenarios', calls: null, navigatesTo: 'game-workspace-scenarios' },
     { name: 'Open History', calls: null, navigatesTo: 'game-workspace-history' },
     { name: 'Open Share with my AI', calls: null, navigatesTo: 'game-workspace-share' },
+    { name: 'Open Versions (H4)', calls: null, navigatesTo: 'game-workspace-versions' },
     { name: 'Open Card and publishing', calls: null, navigatesTo: 'game-workspace-publish' },
   ],
 });
@@ -221,26 +231,78 @@ PH.screen({
   path: '/games/:gameUUID/edit?section=publish',
   status: 'implemented',
   name: 'Game workspace — Card and publishing',
-  summary: "The game's card (name, description, logo, photos) and its publication.",
+  summary:
+    'The working card, the publication state, the template permission and the ways out (unpublish, delete). Reshaped by H4 (T-406): finishing a version moved to the Versions section.',
   mode: 'normal',
   access: 'account',
   variants: 'horizontal+vertical',
   shows:
-    'The card fields, publish controls (public/private, blockers), "new version" and a link to create a Session of the game.',
+    'The working card: name, description, logo, photos, the one category and the tags from the allowed vocabulary (backend values, H4). The publication area tells the truth about the distance between the working card and what Discovery shows: never published; in review (the submitted combination, with "Discovery keeps showing the approved one meanwhile" when there is one, P04§4); denied, with the admin\'s note and the way to fix and resubmit; public, with a link to the public card and a plain "your edits here reach Discovery only through a new review" when the working card has moved. Requesting publication asks the mandatory private-content question — "yes" explains the game stays private and playable (B) — the category if missing, and the academic claim; the market gate can answer with the declaration screen (D-038). The template switch shows the standard permission text at its exact version, asks for the asset-rights confirmation, and explains the lasting effect on copies (P05§1); disabling explains existing copies survive (P05§4). Unpublish, republish and delete are three separate, confirmed actions that say exactly what each one does and does not do (P04§6); delete confirms in a dialog whose cancel is focused (D-044).',
   actions: [
-    { name: 'Read the card', calls: 'GET:/v1/games/{g}', navigatesTo: null },
-    { name: 'Update the card', calls: 'PATCH:/v1/games/{g}', navigatesTo: null },
+    { name: 'Read the card and publication state', calls: 'GET:/v1/games/{g}', navigatesTo: null },
+    {
+      name: 'Update the card (name, description, category, tags)',
+      calls: 'PATCH:/v1/games/{g}',
+      navigatesTo: null,
+    },
     { name: 'Upload the logo', calls: 'PUT:/v1/games/{g}/logo', navigatesTo: null },
     { name: 'Remove the logo', calls: 'POST:/v1/games/{g}/logo/remove', navigatesTo: null },
     { name: 'Upload a photo', calls: 'POST:/v1/games/{g}/photos', navigatesTo: null },
     { name: 'Remove a photo', calls: 'POST:/v1/games/{g}/photos/{id}/remove', navigatesTo: null },
     {
-      name: 'Publish the current revision',
-      calls: 'POST:/v1/games/{g}/publish',
+      name: 'Request publication (H4)',
+      calls: 'POST:/v1/games/{g}/publication',
+      navigatesTo: null,
+    },
+    {
+      name: 'Read the template permission text (H4)',
+      calls: 'GET:/v1/compliance/texts/{kind}',
+      navigatesTo: null,
+    },
+    { name: 'Enable as template (H4)', calls: 'POST:/v1/games/{g}/template', navigatesTo: null },
+    {
+      name: 'Disable template (H4)',
+      calls: 'POST:/v1/games/{g}/template/disable',
+      navigatesTo: null,
+    },
+    { name: 'Unpublish (H4)', calls: 'POST:/v1/games/{g}/unpublish', navigatesTo: null },
+    { name: 'Republish (H4)', calls: 'POST:/v1/games/{g}/republish', navigatesTo: null },
+    { name: 'Delete the game (H4)', calls: 'POST:/v1/games/{g}/delete', navigatesTo: 'my-games' },
+    { name: 'Open the public card (when public)', calls: null, navigatesTo: 'game-card-public' },
+    { name: 'Create a session of the game', calls: null, navigatesTo: 'new-session' },
+  ],
+});
+
+PH.screen({
+  id: 'game-workspace-versions',
+  path: '/games/:gameUUID/edit?section=versions',
+  status: 'planned',
+  name: 'Game workspace — Versions',
+  summary:
+    'The version history and the three acts over it: finish the draft, choose the version new sessions use (or none), open a new edition (P04§1,§5).',
+  mode: 'normal',
+  access: 'account',
+  variants: 'horizontal+vertical',
+  shows:
+    'Each version newest first with its condition in plain words — in editing, ready, used for new sessions, approved for Discovery, offered — so the four conditions are never confused (P15§2). "Finish this version" runs the ready checks and freezes it with its assets, saying what finishing means and offering "use it for new sessions" ticked by default (P04§1-2); a blocker (build missing, assets missing, revision moved) is named, not errored. Choosing a previous version says whether its approval is retained — offering it publicly again needs no new review — and that waiting or running sessions never move (P04§3,§5); "make unavailable" stops new sessions only. "New version" opens an edition from the current one. Public sessions always run the approved combination: the screen says so when the chosen version is newer than the approved one (P04§4).',
+  actions: [
+    {
+      name: 'List versions with their conditions',
+      calls: 'GET:/v1/games/{g}/versions',
+      navigatesTo: null,
+    },
+    {
+      name: 'Finish the draft version',
+      calls: 'POST:/v1/games/{g}/versions/finish',
+      navigatesTo: null,
+    },
+    {
+      name: 'Choose the version for new sessions / make unavailable',
+      calls: 'PUT:/v1/games/{g}/versions/current',
       navigatesTo: null,
     },
     { name: 'Open a new edition', calls: 'POST:/v1/games/{g}/editions', navigatesTo: null },
-    { name: 'Create a session of the game', calls: null, navigatesTo: 'new-session' },
+    { name: 'Open Build for a blocker', calls: null, navigatesTo: 'game-workspace-build' },
   ],
 });
 

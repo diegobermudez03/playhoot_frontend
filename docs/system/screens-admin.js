@@ -176,3 +176,94 @@ PH.screen({
     { name: 'Preview a served text', calls: 'GET:/v1/compliance/texts/{kind}', navigatesTo: null },
   ],
 });
+
+// ---------- H4 (T-400 design; built by T-407) ----------
+PH.screen({
+  id: 'admin-reviews',
+  path: '/admin/reviews  (and /admin/reviews/{reviewUUID} for one task)',
+  status: 'planned',
+  name: 'Admin: publication reviews',
+  summary:
+    'The review queue: pending combinations oldest first, each opened to approve or deny exactly what was submitted (P04§4).',
+  mode: 'admin',
+  access: 'admin',
+  variants: 'single',
+  shows:
+    'The pending queue with age and count (a long queue is a wait to communicate, never an auto-approval) and the decided history. One task shows the exact submitted combination: snapshot name, description, cover and screenshots, category, tags, languages, players, devices, the academic claim to confirm or remove, the private-content declaration, the template state, and the game\u2019s current state \u2014 a task whose game was deleted, unpublished or blocked reads as moot and can only be cancelled. Approve and deny are explicit; deny requires the note the creator will read. Values come from the backend, never closed lists (T-206 checklist).',
+  actions: [
+    { name: 'List the queue and history', calls: 'GET:/admin/v1/reviews', navigatesTo: null },
+    {
+      name: 'Approve or deny with a note',
+      calls: 'POST:/admin/v1/reviews/{reviewUUID}/decide',
+      navigatesTo: null,
+    },
+    {
+      name: 'Block the game instead (serious content)',
+      calls: 'POST:/admin/v1/games/{g}/block',
+      navigatesTo: null,
+    },
+  ],
+});
+
+PH.screen({
+  id: 'admin-taxonomy',
+  path: '/admin/taxonomy',
+  status: 'planned',
+  name: 'Admin: categories and tags',
+  summary:
+    'Create, rename, reorder and retire the categories and the allowed tags, with reasons (B: admin).',
+  mode: 'admin',
+  access: 'admin',
+  variants: 'single',
+  shows:
+    'Two lists \u2014 categories (ordered) and tags \u2014 each entry with its three names, slug and state; retired entries stay visible as retired because old games still reference them. Every change asks for a reason and lands in the append-only history shown beside each entry.',
+  actions: [
+    { name: 'Read the taxonomy with history', calls: 'GET:/admin/v1/taxonomy', navigatesTo: null },
+    {
+      name: 'Create, rename, reorder or retire',
+      calls: 'POST:/admin/v1/taxonomy',
+      navigatesTo: null,
+    },
+  ],
+});
+
+PH.screen({
+  id: 'admin-featured-templates',
+  path: '/admin/featured-templates',
+  status: 'planned',
+  name: 'Admin: featured templates',
+  summary:
+    'The bounded selection of templates the AI always sees first, distinct from "available as a template" (P05\u00a71).',
+  mode: 'admin',
+  access: 'admin',
+  variants: 'single',
+  shows:
+    'The current selection in order, each game with its template state (a featured game whose grant or offering lapsed shows as hidden); add by game identifier, reorder, remove \u2014 all with reasons. The bound is stated: a short list, not a second catalog.',
+  actions: [
+    { name: 'Read the selection', calls: 'GET:/admin/v1/featured-templates', navigatesTo: null },
+    {
+      name: 'Add, reorder or remove',
+      calls: 'POST:/admin/v1/featured-templates',
+      navigatesTo: null,
+    },
+  ],
+});
+
+PH.screen({
+  id: 'admin-games',
+  path: '/admin/games  (?q=)',
+  status: 'planned',
+  name: 'Admin: find and block games',
+  summary:
+    'Find any game and apply or lift the administrative block, with a reason (P04\u00a76; the complete games panel is H10).',
+  mode: 'admin',
+  access: 'admin',
+  variants: 'single',
+  shows:
+    'Search by identifier, name or owner; every game reachable, private and deleted included. One game shows its state (offering, publication, template, block history) and the block and unblock actions, each confirmed with the reason kind the owner will see worded as a service restriction \u2014 blocking is distinct from unpublishing and from deletion, and never interrupts running sessions (stopping one arrives with H9).',
+  actions: [
+    { name: 'Find games', calls: 'GET:/admin/v1/games', navigatesTo: null },
+    { name: 'Block with a reason', calls: 'POST:/admin/v1/games/{g}/block', navigatesTo: null },
+    { name: 'Unblock', calls: 'POST:/admin/v1/games/{g}/unblock', navigatesTo: null },
+  ],
+});

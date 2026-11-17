@@ -5,6 +5,7 @@ PH.load([
   'screens-identity.js',
   'screens-sessions.js',
   'screens-games.js',
+  'screens-discovery.js',
   'screens-shell.js',
   'screens-account.js',
   'screens-admin.js',
