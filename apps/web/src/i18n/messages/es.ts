@@ -1120,12 +1120,8 @@ export const es: Messages = {
 
   'createGame.restricted': 'Crear juegos no está disponible donde estás.',
 
-  'outcome.declarationRequired.title': 'Primero una cosa',
-  'outcome.declarationRequired.body':
-    'Dinos dónde vives y que tienes la edad que pide, y te traemos de vuelta aquí.',
   'outcome.marketRestricted.title': 'No está disponible aquí',
   'outcome.marketRestricted.body': 'Playhoot no ofrece esto donde estás.',
-  'outcome.action.declare': 'Decir dónde vivo',
 
   'seo.declaration.title': 'Dónde vives | Playhoot',
 

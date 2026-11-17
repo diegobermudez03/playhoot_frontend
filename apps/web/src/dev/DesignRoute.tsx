@@ -270,7 +270,8 @@ export function DesignRoute() {
         <DialogDemo />
         <p className={styles.note}>
           Built on the native dialog element: the browser traps focus inside it, closes it on Escape
-          and returns focus to the button that opened it.
+          and returns focus to the button that opened it. It opens on the element marked
+          data-autofocus (here, the safe choice), else on its close button.
         </p>
       </Section>
 
@@ -423,7 +424,7 @@ function DialogDemo() {
         onClose={() => setOpen(false)}
         actions={
           <>
-            <Button variant="secondary" onClick={() => setOpen(false)}>
+            <Button variant="secondary" data-autofocus onClick={() => setOpen(false)}>
               Stay
             </Button>
             <Button onClick={() => setOpen(false)}>Leave</Button>
@@ -655,6 +656,5 @@ const noActions = {
   retry: () => undefined,
   leave: () => undefined,
   enterAnotherCode: () => undefined,
-  declare: () => undefined,
   copyInvite: async () => true,
 };

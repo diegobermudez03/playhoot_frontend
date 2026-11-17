@@ -7,7 +7,7 @@
 PH.screen({
   id: 'profile',
   path: '/profile',
-  status: 'implemented',
+  status: 'verified',
   name: 'Profile',
   summary:
     "The person's own corner: who they are, their mode and language, and the doors to methods, legal, notifications and deletion.",
@@ -41,7 +41,7 @@ PH.screen({
 PH.screen({
   id: 'profile-methods',
   path: '/profile/methods',
-  status: 'implemented',
+  status: 'verified',
   name: 'Sign-in methods',
   summary:
     'The linked ways into this account; add one by proving control of it, remove one while another remains (P03§11-12).',
@@ -78,7 +78,7 @@ PH.screen({
 PH.screen({
   id: 'profile-legal',
   path: '/profile/legal',
-  status: 'implemented',
+  status: 'verified',
   name: 'Legal and declaration',
   summary:
     'What the person declared and accepted: the residence-and-age declaration, and every acceptance text with its version and download.',
@@ -100,7 +100,7 @@ PH.screen({
 PH.screen({
   id: 'delete-account',
   path: '/profile/delete',
-  status: 'implemented',
+  status: 'verified',
   name: 'Delete my identity',
   summary:
     'Deletes the guest or the account: access ends at once, data is erased on the 30/90-day clock, shared history survives with a neutral name.',
@@ -122,7 +122,7 @@ PH.screen({
 PH.screen({
   id: 'declaration',
   path: '/declaration?function={kind}&next={path}',
-  status: 'implemented',
+  status: 'verified',
   name: 'Residence and age declaration',
   summary:
     'The contextual declaration: a gated operation sends the person here, the declaration is recorded, and they continue where they were.',
@@ -143,7 +143,7 @@ PH.screen({
 PH.screen({
   id: 'teacher-home',
   path: '/teacher',
-  status: 'implemented',
+  status: 'verified',
   name: 'Teacher mode',
   summary:
     'Where teacher mode lands until H8 builds teaching: an honest presentation of what it will be, with the invitation.',
@@ -158,7 +158,7 @@ PH.screen({
 PH.screen({
   id: 'notifications',
   path: '/notifications',
-  status: 'implemented',
+  status: 'verified',
   name: 'Notifications',
   summary:
     'The full notification history the bell panel abbreviates, with filters; this is also the page the emails link to.',
@@ -185,7 +185,7 @@ PH.screen({
 PH.screen({
   id: 'notification-preferences',
   path: '/notifications/preferences',
-  status: 'implemented',
+  status: 'verified',
   name: 'Notification preferences',
   summary:
     'The optional email groups and the marketing choice; necessary email stays on and says so.',

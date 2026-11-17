@@ -1110,12 +1110,8 @@ export const ptBR: Messages = {
 
   'createGame.restricted': 'Criar jogos não está disponível onde você está.',
 
-  'outcome.declarationRequired.title': 'Primeiro uma coisa',
-  'outcome.declarationRequired.body':
-    'Diga onde você mora e que tem a idade pedida, e trazemos você de volta para cá.',
   'outcome.marketRestricted.title': 'Não está disponível aqui',
   'outcome.marketRestricted.body': 'O Playhoot não oferece isto onde você está.',
-  'outcome.action.declare': 'Dizer onde moro',
 
   'seo.declaration.title': 'Onde você mora | Playhoot',
 

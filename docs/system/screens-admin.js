@@ -139,7 +139,7 @@ PH.screen({
 PH.screen({
   id: 'admin-markets',
   path: '/admin/markets',
-  status: 'implemented',
+  status: 'verified',
   name: 'Market matrix',
   summary:
     'The market-and-function matrix over the H1 endpoints: current rules, scheduled ones, history, and appending a change.',
@@ -161,7 +161,7 @@ PH.screen({
 PH.screen({
   id: 'admin-texts',
   path: '/admin/texts',
-  status: 'implemented',
+  status: 'verified',
   name: 'Acceptance texts',
   summary:
     'The four acceptance texts by language: versions, publish dates, missing pairs, and publishing a new immutable version.',

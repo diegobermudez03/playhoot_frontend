@@ -215,9 +215,12 @@ function openPage(session) {
       }
     },
 
-    async key(key, { code = key, windowsVirtualKeyCode } = {}) {
+    // A key that types a character (Enter, Space) needs it sent with the press, or a button or
+    // checkbox focused at the time is never activated.
+    async key(key, { code = key, windowsVirtualKeyCode, text } = {}) {
       const base = { key, code, ...(windowsVirtualKeyCode ? { windowsVirtualKeyCode } : {}) };
-      await session.send('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...base });
+      const down = text ? { type: 'keyDown', text, unmodifiedText: text } : { type: 'rawKeyDown' };
+      await session.send('Input.dispatchKeyEvent', { ...down, ...base });
       await session.send('Input.dispatchKeyEvent', { type: 'keyUp', ...base });
     },
 

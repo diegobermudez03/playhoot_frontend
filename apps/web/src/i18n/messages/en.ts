@@ -1101,12 +1101,8 @@ export const en = {
 
   'createGame.restricted': 'Creating games is not available where you are.',
 
-  'outcome.declarationRequired.title': 'One thing first',
-  'outcome.declarationRequired.body':
-    'Tell us where you live and that you have the age it asks for, and we will bring you back here.',
   'outcome.marketRestricted.title': 'Not available here',
   'outcome.marketRestricted.body': 'Playhoot does not offer this where you are.',
-  'outcome.action.declare': 'Tell us where you live',
 
   'seo.declaration.title': 'Where you live | Playhoot',
 

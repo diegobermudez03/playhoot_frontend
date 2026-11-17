@@ -3,7 +3,7 @@ import type { JoinOutcome } from '@playhoot/feature-session-join';
 import type { MessageId } from '../../i18n/catalogs';
 import type { MascotMood } from '../../ui';
 
-export type OutcomeAction = 'retry' | 'enter-code' | 'play-here' | 'declare';
+export type OutcomeAction = 'retry' | 'enter-code' | 'play-here';
 
 // How the screen reacts: a problem shakes the owl, a farewell is calm, a celebration cheers.
 export type OutcomeTone = 'problem' | 'farewell' | 'celebration';
@@ -21,7 +21,6 @@ export const outcomeActionLabels: Record<OutcomeAction, MessageId> = {
   retry: 'outcome.action.retry',
   'play-here': 'outcome.action.playHere',
   'enter-code': 'outcome.action.enterCode',
-  declare: 'outcome.action.declare',
 };
 
 // What a person reads when a join is over (as message ids), and what they can do next.
@@ -58,7 +57,6 @@ type OutcomeKey =
   | 'limitReached'
   | 'codeExpired'
   | 'cannotRejoin'
-  | 'declarationRequired'
   | 'marketRestricted'
   | 'lobbyExpired'
   | 'hostClosedLobby'
@@ -83,7 +81,6 @@ const tones: Record<OutcomeKey, OutcomeTone> = {
   limitReached: 'farewell',
   codeExpired: 'problem',
   cannotRejoin: 'farewell',
-  declarationRequired: 'problem',
   marketRestricted: 'farewell',
   lobbyExpired: 'farewell',
   hostClosedLobby: 'farewell',
@@ -148,6 +145,10 @@ function rejectedCopy(reason: Extract<JoinOutcome, { kind: 'rejected' }>['reason
     case 'participant_disconnected':
     case 'rejoin_rejected':
       return copy('cannotRejoin', 'sleepy', ['enter-code']);
+    // The service does not offer playing where the person is (C-01: joining asks nothing, so
+    // there is no declaration to offer; the market gate only ever refuses this way).
+    case 'market_restricted':
+      return copy('marketRestricted', 'sleepy', ['enter-code']);
     // Every other refusal (and an unknown one) is unexpected for the player.
     default:
       return unexpected;

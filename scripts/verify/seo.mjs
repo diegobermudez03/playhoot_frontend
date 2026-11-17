@@ -239,7 +239,17 @@ for (const path of publicPaths) {
     body.includes(`Sitemap: ${origin}/sitemap.xml`),
     `/robots.txt: does not name ${origin}/sitemap.xml`,
   );
-  for (const path of ['/sign-in', '/sessions/', '/games/', '/account/', '/admin']) {
+  for (const path of [
+    '/sign-in',
+    '/sessions/',
+    '/games/',
+    '/account/',
+    '/admin',
+    '/profile',
+    '/notifications',
+    '/teacher',
+    '/declaration',
+  ]) {
     check(body.includes(`Disallow: ${path}`), `/robots.txt: ${path} is not disallowed`);
   }
 }

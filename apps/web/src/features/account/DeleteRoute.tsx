@@ -185,7 +185,7 @@ function DeleteIdentity({ feature }: { feature: Deletion }) {
         actions={
           <>
             {/* Cancel is the default action: the dialog opens on the way back out. */}
-            <Button variant="ghost" autoFocus onClick={() => setConfirming(false)}>
+            <Button variant="ghost" data-autofocus onClick={() => setConfirming(false)}>
               <FormattedMessage id="common.cancel" />
             </Button>
             <Button

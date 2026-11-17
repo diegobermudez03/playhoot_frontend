@@ -86,10 +86,14 @@ of a host that is already up (`scripts/verify/`, added by T-207):
 - `npm run verify:seo -- --base http://localhost:3000 --origin https://playhoot.com` — every
   public page in every language, fetched with no JavaScript: content, title, description,
   canonical, hreflang, Open Graph, JSON-LD, robots.txt, the sitemap, the redirects and the 404.
-  Needs a production build served by `apps/web/server.js`.
-- `npm run verify:a11y -- --base http://localhost:5173` — axe-core over the H2 screens at
-  WCAG 2.2 A/AA. Add `--totp-secret <base32>` to audit the admin panels too. axe is fetched into
-  `node_modules/.cache` on the first run; it is not a dependency.
+  Needs a production build served by `apps/web/server.js`, built and served with
+  `PLAYHOOT_SITE_URL` set to the `--origin` (the sitemap and robots are written at build time).
+- `npm run verify:a11y -- --base http://localhost:5173` — axe-core at WCAG 2.2 A/AA over the
+  public screens, then, as a fresh account in a browser of its own, the screens behind sign-in
+  (H3), ending with a scripted keyboard pass. Add `--totp-secret <base32> --account <name>` to
+  audit the admin panels too; `--no-account` skips the signed-in part. A new screen joins its list
+  in the task that builds it. axe is fetched into `node_modules/.cache` on the first run; it is
+  not a dependency.
 - `npm run verify:pwa -- --base http://localhost:3000` — the worker, the precache, the manifest,
   the absence of push, and the offline page with the network really cut (production build only;
   there is no worker in development).

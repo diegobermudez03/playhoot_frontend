@@ -17,8 +17,6 @@ export interface SessionScreenActions {
   retry(): void;
   leave(): void;
   enterAnotherCode(): void;
-  // To the residence-and-age declaration, coming back here once it is recorded (D-038).
-  declare(): void;
   copyInvite(): Promise<boolean>;
 }
 
@@ -252,7 +250,6 @@ function OutcomeStep({
     retry: actions.retry,
     'play-here': actions.retry,
     'enter-code': actions.enterAnotherCode,
-    declare: actions.declare,
   };
   return (
     <Stage>

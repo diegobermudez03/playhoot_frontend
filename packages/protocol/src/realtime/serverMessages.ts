@@ -26,9 +26,8 @@ export const rejectReasons = [
   'invalid_session',
   'session_ended',
   // The market gate refused before the Session was even looked up (`api/play/market_access.go`,
-  // D-038): the person has to declare where they live and that they have the age it asks for,
-  // or the service does not offer interactive use where they are.
-  'declaration_required',
+  // D-038): the service does not offer interactive use where the person is. Joining never asks
+  // for a declaration (C-01).
   'market_restricted',
 ] as const;
 export type RejectReason = (typeof rejectReasons)[number];

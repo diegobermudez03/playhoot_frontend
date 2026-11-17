@@ -18,6 +18,10 @@ interface DialogProps {
  * A modal built on the native <dialog> element: the browser traps focus inside
  * it, sends focus back to what opened it when it closes, and closes on Escape
  * (WCAG 2.2 2.1.2, 2.4.3). Nothing here re-implements that.
+ *
+ * It opens on its first focusable element, the close button, unless an element
+ * inside is marked `data-autofocus`: React never writes `autofocus` to the page,
+ * so the browser cannot see a component's `autoFocus` (found by the T-307 audit).
  */
 export function Dialog({ open, title, onClose, closeLabel, children, actions }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -29,7 +33,10 @@ export function Dialog({ open, title, onClose, closeLabel, children, actions }: 
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
-    if (open && !element.open) element.showModal();
+    if (open && !element.open) {
+      element.showModal();
+      element.querySelector<HTMLElement>('[data-autofocus]')?.focus();
+    }
     if (!open && element.open) element.close();
   }, [open]);
 
